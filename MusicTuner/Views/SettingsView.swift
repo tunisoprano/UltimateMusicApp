@@ -55,25 +55,28 @@ struct SettingsView: View {
             
             ScrollView {
                 VStack(spacing: 24) {
-                    // Theme Section
+                    // Appearance Section
                     SettingsSectionCard(title: "Appearance") {
-                        VStack(spacing: 16) {
-                            HStack {
+                        HStack {
+                            Image(systemName: "circle.lefthalf.filled")
+                                .font(.system(size: 18))
+                                .foregroundStyle(theme.accent)
+                                .frame(width: 28)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
                                 Text("Theme")
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .font(.system(size: 15, weight: .medium, design: .rounded))
                                     .foregroundStyle(theme.textPrimary)
-                                Spacer()
+                                Text("Follows system settings")
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundStyle(theme.textSecondary)
                             }
                             
-                            Picker("Theme", selection: Binding(
-                                get: { theme.currentTheme },
-                                set: { theme.currentTheme = $0 }
-                            )) {
-                                ForEach(AppTheme.allCases) { appTheme in
-                                    Text(appTheme.rawValue).tag(appTheme)
-                                }
-                            }
-                            .pickerStyle(.segmented)
+                            Spacer()
+                            
+                            Text("Auto")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(theme.inactive)
                         }
                     }
                     
