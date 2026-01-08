@@ -13,10 +13,6 @@
     <string>Music Tuner</string>
     <key>CFBundleDisplayName</key>
     <string>Music Tuner</string>
-    <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleLightContent</string>
-    <key>UIUserInterfaceStyle</key>
-    <string>Dark</string>
     <key>GADApplicationIdentifier</key>
     <string>ca-app-pub-1674562447830288~7955258392</string>
     <key>SKAdNetworkItems</key>

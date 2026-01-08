@@ -2,119 +2,91 @@
 //  ThemeManager.swift
 //  MusicTuner
 //
-//  Created by MusicTuner
+//  Apple-standard adaptive theme with light/dark mode support
 //
 
 import SwiftUI
 
-/// App theme options
-enum AppTheme: String, CaseIterable, Identifiable {
-    case cozy = "Cozy"
-    case dark = "Dark"
-    
-    var id: String { rawValue }
-}
-
-/// Centralized theme manager for the app
+/// Centralized theme manager using Apple's adaptive color system
 @MainActor
 final class ThemeManager: ObservableObject {
     
     static let shared = ThemeManager()
     
-    @AppStorage("selectedTheme") private var selectedThemeRaw: String = AppTheme.cozy.rawValue
-    
-    var currentTheme: AppTheme {
-        get { AppTheme(rawValue: selectedThemeRaw) ?? .cozy }
-        set { 
-            selectedThemeRaw = newValue.rawValue
-            objectWillChange.send()
-        }
-    }
-    
     private init() {}
     
-    // MARK: - Colors
+    // MARK: - Adaptive Colors (Automatically switch with system)
     
+    /// Main background - adapts to light/dark mode
     var background: Color {
-        switch currentTheme {
-        case .cozy: return Color(hex: "FAF9F6")
-        case .dark: return Color(hex: "2C2C2C")
-        }
+        Color(uiColor: .systemBackground)
     }
     
+    /// Background gradient - subtle depth
     var backgroundGradient: LinearGradient {
-        switch currentTheme {
-        case .cozy:
-            return LinearGradient(
-                colors: [Color(hex: "FAF9F6"), Color(hex: "F5F3EF")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        case .dark:
-            return LinearGradient(
-                colors: [Color(hex: "2C2C2C"), Color(hex: "1F1F1F")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
+        LinearGradient(
+            colors: [
+                Color(uiColor: .systemBackground),
+                Color(uiColor: .secondarySystemBackground)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
     
+    /// Card background - slightly elevated
     var cardBackground: Color {
-        switch currentTheme {
-        case .cozy: return Color(hex: "FFFFFF")
-        case .dark: return Color(hex: "3A3A3A")
-        }
+        Color(uiColor: .secondarySystemBackground)
     }
     
+    /// Primary text color
     var textPrimary: Color {
-        switch currentTheme {
-        case .cozy: return Color(hex: "4A4A4A")
-        case .dark: return Color(hex: "E0E0E0")
-        }
+        Color(uiColor: .label)
     }
     
+    /// Secondary text color
     var textSecondary: Color {
-        switch currentTheme {
-        case .cozy: return Color(hex: "8A8A8A")
-        case .dark: return Color(hex: "A0A0A0")
-        }
+        Color(uiColor: .secondaryLabel)
     }
     
+    /// Accent color - App's primary brand color (navy blue to match icon)
     var accent: Color {
-        Color(hex: "D4A373") // Muted Terracotta - same for both themes
+        Color(hex: "1E3A5F") // Navy blue matching app icon
     }
     
+    /// Success color - In tune indicator
     var success: Color {
-        Color(hex: "84A98C") // Desaturated Sage Green
+        Color(uiColor: .systemGreen)
     }
     
+    /// Warning color - Almost in tune
     var warning: Color {
-        Color(hex: "E9C46A") // Warm Yellow
+        Color(uiColor: .systemOrange)
     }
     
+    /// Error color - Out of tune
     var error: Color {
-        Color(hex: "E07A5F") // Soft Coral
+        Color(uiColor: .systemRed)
     }
     
+    /// Inactive/disabled elements
     var inactive: Color {
-        switch currentTheme {
-        case .cozy: return Color(hex: "C4C4C4")
-        case .dark: return Color(hex: "5A5A5A")
-        }
+        Color(uiColor: .tertiaryLabel)
     }
     
+    /// Shadow color
     var shadow: Color {
-        switch currentTheme {
-        case .cozy: return Color.black.opacity(0.06)
-        case .dark: return Color.black.opacity(0.3)
-        }
+        Color.black.opacity(0.1)
     }
     
-    // MARK: - Accent Gradient
+    // MARK: - Gradients
     
     var accentGradient: LinearGradient {
         LinearGradient(
-            colors: [accent, accent.opacity(0.85)],
+            colors: [
+                Color(hex: "1E3A5F"),
+                Color(hex: "2D5A87")
+            ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -122,17 +94,20 @@ final class ThemeManager: ObservableObject {
     
     var successGradient: LinearGradient {
         LinearGradient(
-            colors: [success, success.opacity(0.85)],
+            colors: [
+                Color(uiColor: .systemGreen),
+                Color(uiColor: .systemGreen).opacity(0.85)
+            ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
     
-    // MARK: - Corner Radii
+    // MARK: - Corner Radii (Apple HIG)
     
-    static let radiusSmall: CGFloat = 12
-    static let radiusMedium: CGFloat = 20
-    static let radiusLarge: CGFloat = 28
+    static let radiusSmall: CGFloat = 10
+    static let radiusMedium: CGFloat = 16
+    static let radiusLarge: CGFloat = 22
 }
 
 // MARK: - Color Extension
@@ -167,13 +142,19 @@ extension Color {
 
 struct ThemeCardModifier: ViewModifier {
     @ObservedObject var theme = ThemeManager.shared
+    @Environment(\.colorScheme) var colorScheme
     
     func body(content: Content) -> some View {
         content
             .background(
                 RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
                     .fill(theme.cardBackground)
-                    .shadow(color: theme.shadow, radius: 12, x: 0, y: 6)
+                    .shadow(
+                        color: colorScheme == .dark ? .clear : theme.shadow,
+                        radius: 8,
+                        x: 0,
+                        y: 4
+                    )
             )
     }
 }
@@ -203,7 +184,7 @@ struct ThemeButtonStyle: ButtonStyle {
             .background(
                 RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
                     .fill(isPrimary ? theme.accentGradient : LinearGradient(colors: [theme.cardBackground], startPoint: .top, endPoint: .bottom))
-                    .shadow(color: theme.shadow, radius: configuration.isPressed ? 4 : 10, x: 0, y: configuration.isPressed ? 2 : 5)
+                    .shadow(color: theme.shadow, radius: configuration.isPressed ? 4 : 8, x: 0, y: configuration.isPressed ? 2 : 4)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
