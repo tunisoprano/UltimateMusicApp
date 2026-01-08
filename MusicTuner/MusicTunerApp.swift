@@ -2,16 +2,27 @@
 //  MusicTunerApp.swift
 //  MusicTuner
 //
-//  Created by Tunahan Sarı on 6.01.2026.
+//  Main entry point - directly opens MainMenuView
 //
 
 import SwiftUI
 
 @main
 struct MusicTunerApp: App {
+    @StateObject private var themeManager = ThemeManager.shared
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                MainMenuView()
+            }
+            .preferredColorScheme(themeManager.currentTheme == .dark ? .dark : .light)
+            .onAppear {
+                // Initialize AdMob after app is fully loaded
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    AdsManager.shared.initializeAdMob()
+                }
+            }
         }
     }
 }

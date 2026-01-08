@@ -2,20 +2,17 @@
 //  ContentView.swift
 //  MusicTuner
 //
-//  Created by Tunahan Sarı on 6.01.2026.
+//  Root content view - redirects to MainMenuView
 //
 
 import SwiftUI
 
+/// Root content view (alternative entry point if needed)
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            MainMenuView()
         }
-        .padding()
     }
 }
 
