@@ -1,118 +1,222 @@
-# 🎸 MusicTuner
+<p align="center">
+  <img src="https://img.icons8.com/3d-fluency/94/guitar.png" width="100" alt="MusicTuner Logo"/>
+</p>
 
-A beautiful and feature-rich instrument tuner app for iOS, built with SwiftUI.
+<h1 align="center">🎸 Ultimate Music App</h1>
+
+<p align="center">
+  <strong>Your all-in-one musical companion for iOS</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/iOS-17.0+-blue?style=for-the-badge&logo=apple" alt="iOS 17+"/>
+  <img src="https://img.shields.io/badge/Swift-5.9-orange?style=for-the-badge&logo=swift" alt="Swift 5.9"/>
+  <img src="https://img.shields.io/badge/SwiftUI-Framework-purple?style=for-the-badge&logo=swift" alt="SwiftUI"/>
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/tunisoprano/UltimateMusicApp?style=social" alt="Stars"/>
+  <img src="https://img.shields.io/github/forks/tunisoprano/UltimateMusicApp?style=social" alt="Forks"/>
+</p>
+
+---
 
 ## ✨ Features
 
+<table>
+<tr>
+<td width="50%">
+
 ### 🎵 Chromatic Tuner
-- **Real-time pitch detection** with ultra-smooth needle movement
-- **Exponential smoothing algorithm** for stable readings
-- **Tuning Lock** feature with visual, audio (ding), and haptic feedback
-- **Multiple instrument support**: Guitar, Ukulele, Bass, Violin
-- **Headstock visualization** showing string positions
+- Real-time FFT pitch detection
+- Ultra-smooth needle with exponential smoothing
+- **Tuning Lock** - Visual, haptic & audio feedback
+- Multiple instruments support
+
+</td>
+<td width="50%">
 
 ### 🥁 Metronome
-- Adjustable BPM (40-240)
+- 40-240 BPM range
 - Multiple time signatures
 - Visual beat indicator
-- Tap tempo support
+- Tap tempo
 
-### 📚 Practice Exercises
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📚 Practice Mode
 - Note recognition exercises
 - Progressive difficulty levels
-- Track your learning progress
+- Track your improvement
 
-### 🎨 Beautiful Design
-- Custom "Cozy" theme with warm colors
+</td>
+<td width="50%">
+
+### 🎨 Premium Design
+- Custom "Cozy" warm theme
+- Glassmorphism effects
+- Smooth animations
 - Dark mode optimized
-- Smooth animations throughout
-- Modern glassmorphism effects
 
-## 📱 Screenshots
+</td>
+</tr>
+</table>
 
-*Coming soon*
+---
+
+## 🎼 Supported Instruments
+
+| Instrument | Tuning | Strings |
+|:----------:|:------:|:-------:|
+| 🎸 Guitar | E A D G B E | 6 |
+| 🪕 Ukulele | G C E A | 4 |
+| 🎸 Bass | E A D G | 4 |
+| 🎻 Violin | G D A E | 4 |
+
+---
 
 ## 🛠 Tech Stack
 
-- **SwiftUI** - Modern declarative UI framework
-- **AVFoundation** - Audio capture and playback
-- **Accelerate** - High-performance FFT for pitch detection
-- **StoreKit 2** - In-app purchases for premium features
-- **Google AdMob** - Monetization
-
-## 📋 Requirements
-
-- iOS 17.0+
-- Xcode 15.0+
-- Swift 5.9+
-
-## 🚀 Getting Started
-
-1. Clone the repository:
-```bash
-git clone https://github.com/YOUR_USERNAME/MusicTuner.git
+```
+┌─────────────────────────────────────────────────────┐
+│                    SwiftUI                          │
+├─────────────────────────────────────────────────────┤
+│  AVFoundation  │  Accelerate  │  StoreKit 2        │
+├─────────────────────────────────────────────────────┤
+│           Core Audio / FFT Processing              │
+└─────────────────────────────────────────────────────┘
 ```
 
-2. Open `MusicTuner.xcodeproj` in Xcode
+| Technology | Purpose |
+|------------|---------|
+| **SwiftUI** | Modern declarative UI |
+| **AVFoundation** | Audio capture & playback |
+| **Accelerate** | High-performance FFT |
+| **StoreKit 2** | In-app purchases |
+| **Google AdMob** | Monetization |
 
-3. Build and run on your device or simulator
+---
 
-> **Note**: Microphone access is required for tuner functionality. The app will request permission on first launch.
-
-## 📁 Project Structure
+## 📁 Architecture
 
 ```
 MusicTuner/
-├── Audio/
-│   ├── AudioManager.swift      # Audio session management
-│   ├── PitchDetector.swift     # FFT-based pitch detection
-│   └── MetronomeEngine.swift   # Metronome audio engine
-├── Components/
-│   ├── CozyTheme.swift         # Custom theme colors
-│   ├── ThemeManager.swift      # Theme state management
-│   ├── TunerGaugeView.swift    # Tuner needle display
-│   └── NoteDisplayView.swift   # Note name display
-├── Managers/
-│   ├── StoreKitManager.swift   # In-app purchase handling
-│   └── AdsManager.swift        # Google AdMob integration
-├── Models/
-│   ├── Note.swift              # Musical note model
-│   ├── Instrument.swift        # Instrument definitions
-│   ├── ExerciseLevel.swift     # Exercise difficulty levels
-│   └── NoteFormatter.swift     # Note formatting utilities
-├── ViewModels/
-│   ├── TunerViewModel.swift    # Tuner business logic
-│   └── ExerciseViewModel.swift # Exercise logic
-└── Views/
-    ├── MainMenuView.swift      # Home screen
-    ├── TunerView.swift         # Main tuner interface
-    ├── MetronomeView.swift     # Metronome interface
-    ├── ExerciseView.swift      # Practice exercises
-    ├── HeadstockView.swift     # Instrument headstock
-    └── SettingsView.swift      # App settings
+├── 🔊 Audio/
+│   ├── AudioManager.swift       # Audio session
+│   ├── PitchDetector.swift      # FFT pitch detection
+│   └── MetronomeEngine.swift    # Beat generator
+│
+├── 🎨 Components/
+│   ├── CozyTheme.swift          # Color palette
+│   ├── ThemeManager.swift       # Theme state
+│   ├── TunerGaugeView.swift     # Needle display
+│   └── NoteDisplayView.swift    # Note indicator
+│
+├── 💼 Managers/
+│   ├── StoreKitManager.swift    # Purchases
+│   └── AdsManager.swift         # AdMob
+│
+├── 📦 Models/
+│   ├── Note.swift               # Note model
+│   ├── Instrument.swift         # Instruments
+│   └── ExerciseLevel.swift      # Difficulty
+│
+├── 🧠 ViewModels/
+│   ├── TunerViewModel.swift     # Tuner logic
+│   └── ExerciseViewModel.swift  # Exercise logic
+│
+└── 📱 Views/
+    ├── MainMenuView.swift       # Home
+    ├── TunerView.swift          # Tuner UI
+    ├── MetronomeView.swift      # Metronome UI
+    ├── ExerciseView.swift       # Exercises
+    └── SettingsView.swift       # Settings
 ```
 
-## 🎯 Key Features in Detail
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- macOS 14.0+ with Xcode 15+
+- iOS 17.0+ device or simulator
+- Apple Developer account (for device testing)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/tunisoprano/UltimateMusicApp.git
+
+# Open in Xcode
+cd UltimateMusicApp
+open MusicTuner.xcodeproj
+
+# Build and run (⌘ + R)
+```
+
+> ⚠️ **Note**: Microphone permission is required for tuner functionality.
+
+---
+
+## 🎯 Key Algorithms
 
 ### Pitch Detection
-The app uses Fast Fourier Transform (FFT) via Apple's Accelerate framework to detect pitch in real-time. The detected frequency is smoothed using an exponential moving average for stable needle movement.
+```
+Audio Input → FFT → Peak Detection → Frequency → Note Mapping
+                         ↓
+              Exponential Smoothing → Smooth Display
+```
 
 ### Tuning Lock
-When a note is held in tune (within ±5 cents) for 1.5 seconds, the app provides:
-- ✅ Visual confirmation (green glow effect)
-- 🔔 Audio feedback (pleasant ding sound)
-- 📳 Haptic feedback (success vibration)
+When pitch stays within **±5 cents** for **1.5 seconds**:
+- ✅ Green visual confirmation
+- 🔔 Pleasant ding sound
+- 📳 Success haptic feedback
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <i>Coming soon...</i>
+</p>
+
+---
+
+## 🗺 Roadmap
+
+- [ ] Apple Watch companion app
+- [ ] Chord detection
+- [ ] Recording & playback
+- [ ] Custom tuning presets
+- [ ] Widget support
+
+---
 
 ## 📄 License
 
-This project is available under the MIT License. See the [LICENSE](LICENSE) file for more info.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 👨‍💻 Author
 
-**Tunahan Sarı**
+<p align="center">
+  <strong>Tunahan Sarı</strong><br>
+  <a href="https://github.com/tunisoprano">@tunisoprano</a>
+</p>
 
 ---
 
 <p align="center">
-  Made with ❤️ and 🎵
+  Made with ❤️ and 🎵 in Turkey
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"/>
 </p>
