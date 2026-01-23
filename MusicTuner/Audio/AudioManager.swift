@@ -37,13 +37,18 @@ final class AudioManager: ObservableObject {
     
     // MARK: - Configuration
     /// Noise gate threshold - below this amplitude, consider silence
-    private let noiseGateThreshold: Float = 0.01
+    /// Lower threshold for bass to catch quieter low frequencies
+    private var noiseGateThreshold: Float = 0.01
     
     /// Minimum frequency to detect (filters out noise)
-    private let minFrequency: Double = 60.0
+    /// Bass E1 = 41Hz, so we need to go lower
+    private var minFrequency: Double = 30.0
     
     /// Maximum frequency to detect
-    private let maxFrequency: Double = 1400.0
+    private var maxFrequency: Double = 1400.0
+    
+    /// Current instrument for optimized detection
+    private var currentInstrument: Instrument = .guitar
     
     // MARK: - Initialization
     private init() {}
@@ -51,21 +56,32 @@ final class AudioManager: ObservableObject {
     // MARK: - Configuration for Instruments
     
     func configureForInstrument(_ instrument: Instrument) {
-        // AudioKit handles all frequencies well, but we can adjust range
+        currentInstrument = instrument
+        
         switch instrument {
         case .guitar:
             // E2 (82Hz) to E5 (659Hz)
-            break
+            minFrequency = 70.0
+            maxFrequency = 700.0
+            noiseGateThreshold = 0.01
         case .bass:
             // E1 (41Hz) to G3 (196Hz)
-            break
-        case .free:
-            // Full range
-            break
+            // Lower noise gate for bass - low frequencies have less amplitude
+            minFrequency = 30.0
+            maxFrequency = 250.0
+            noiseGateThreshold = 0.005
         case .ukulele:
             // G4 (392Hz) to A4 (440Hz)
-            break
+            minFrequency = 200.0
+            maxFrequency = 500.0
+            noiseGateThreshold = 0.01
+        case .free:
+            // Full range
+            minFrequency = 27.5  // A0
+            maxFrequency = 4000.0
+            noiseGateThreshold = 0.008
         }
+        print("🎸 Configured for \(instrument.rawValue): \(minFrequency)Hz - \(maxFrequency)Hz")
     }
     
     // MARK: - Permission

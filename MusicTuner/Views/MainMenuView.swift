@@ -193,8 +193,4 @@ struct MenuCard: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        MainMenuView()
-    }
-}
+
