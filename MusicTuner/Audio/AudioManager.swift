@@ -66,10 +66,11 @@ final class AudioManager: ObservableObject {
             noiseGateThreshold = 0.01
         case .bass:
             // E1 (41Hz) to G3 (196Hz)
-            // Lower noise gate for bass - low frequencies have less amplitude
+            // Much lower noise gate for bass - low frequencies have less amplitude
+            // Bass strings vibrate slower and need more sensitivity
             minFrequency = 30.0
             maxFrequency = 250.0
-            noiseGateThreshold = 0.005
+            noiseGateThreshold = 0.003  // Very sensitive for bass detection
         case .ukulele:
             // G4 (392Hz) to A4 (440Hz)
             minFrequency = 200.0

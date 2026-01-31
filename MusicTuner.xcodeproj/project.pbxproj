@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		041037AC2F2D53DE0003FAC9 /* Guitar.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = 041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */; };
 		041EFCFD2F0E848600C65EAF /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 041EFCFC2F0E848600C65EAF /* GoogleMobileAds */; };
 		04F859BF2F0D72350086C717 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859BE2F0D72350086C717 /* AudioKit */; };
 		04F859C22F0D725F0086C717 /* SoundpipeAudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859C12F0D725F0086C717 /* SoundpipeAudioKit */; };
@@ -30,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Guitar.sf2; sourceTree = "<group>"; };
 		0490AA312F0C8183008DE0D9 /* MusicTuner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicTuner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490AA3E2F0C8184008DE0D9 /* MusicTunerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicTunerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490AA482F0C8184008DE0D9 /* MusicTunerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicTunerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,6 +99,7 @@
 		0490AA282F0C8183008DE0D9 = {
 			isa = PBXGroup;
 			children = (
+				041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */,
 				0490AA332F0C8183008DE0D9 /* MusicTuner */,
 				0490AA412F0C8184008DE0D9 /* MusicTunerTests */,
 				0490AA4B2F0C8184008DE0D9 /* MusicTunerUITests */,
@@ -217,6 +220,7 @@
 			knownRegions = (
 				en,
 				Base,
+				tr,
 			);
 			mainGroup = 0490AA282F0C8183008DE0D9;
 			minimizedProjectReferenceProxies = 1;
@@ -242,6 +246,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				041037AC2F2D53DE0003FAC9 /* Guitar.sf2 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

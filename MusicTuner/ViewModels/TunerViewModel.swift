@@ -41,11 +41,27 @@ final class TunerViewModel: ObservableObject {
     // MARK: - ULTRA SMOOTH: Exponential Smoothing
     // Uses exponential weighted moving average (EWMA) for buttery smooth movement
     private var ewmaValue: Double = 0
-    private let smoothingAlpha: Double = 0.08  // Lower = smoother (0.05-0.15 range)
     
-    // Additional buffer for stability
+    // Dynamic smoothing based on instrument
+    // Bass needs more smoothing (lower alpha) due to slower string vibration
+    private var smoothingAlpha: Double {
+        switch selectedInstrument {
+        case .bass:
+            return 0.05  // More smoothing for bass stability
+        case .guitar:
+            return 0.08  // Standard smoothing
+        case .ukulele:
+            return 0.10  // Faster response for higher frequencies
+        case .free:
+            return 0.08
+        }
+    }
+    
+    // Additional buffer for stability - larger for bass
     private var centsBuffer: [Double] = []
-    private let bufferSize: Int = 5
+    private var bufferSize: Int {
+        selectedInstrument == .bass ? 8 : 5  // Larger buffer for bass
+    }
     
     // MARK: - SUCCESS LOCK: Timer-based confirmation
     private let lockThreshold: Double = 3.0      // ±3 cents

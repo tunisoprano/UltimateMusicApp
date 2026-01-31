@@ -1,0 +1,51 @@
+/* 
+  Localizable.strings (Turkish)
+  MusicTuner
+*/
+
+// Navigation
+"ear_training" = "Kulak Eğitimi";
+"fretboard" = "Klavye Eğitimi";
+"tuner" = "Akort";
+"metronome" = "Metronom";
+"settings" = "Ayarlar";
+
+// Actions
+"start" = "Başlat";
+"stop" = "Durdur";
+"continue" = "Devam";
+"skip" = "Atla";
+
+// Game
+"score_format" = "Puan: %lld";
+"level_locked" = "Seviye Kilitli";
+"complete_previous" = "Önceki seviyeyi tamamla";
+"coming_soon" = "Yakında";
+
+// Onboarding
+"onboarding_welcome_title" = "MusicTuner'a Hoş Geldin";
+"onboarding_welcome_subtitle" = "Müzik eğitiminde yol arkadaşın. Öğren, pratik yap ve enstrümanında ustalaş.";
+"onboarding_features_title" = "Kulağını Eğit";
+"onboarding_features_subtitle" = "Akor tanıma oyunları ve klavye egzersizleriyle müzik kulağını geliştir.";
+"onboarding_start_title" = "İlerlemeni Takip Et";
+"onboarding_start_subtitle" = "Geliştikçe yeni seviyelerin kilidini aç. Her gün kendine meydan oku!";
+
+// Theme
+"theme_system" = "Sistem";
+"theme_light" = "Açık";
+"theme_dark" = "Koyu";
+"appearance" = "Görünüm";
+
+// Chord Library
+"chord_library" = "Akor Kütüphanesi";
+"tap_to_play" = "Çalmak için dokun";
+"major" = "Majör";
+"minor" = "Minör";
+"seventh" = "7'li";
+
+// Ear Training
+"listen" = "Dinle";
+"learning" = "Öğrenme";
+"next" = "Sonraki";
+"start_quiz" = "Quiz'e Başla";
+

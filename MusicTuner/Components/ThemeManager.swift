@@ -3,15 +3,66 @@
 //  MusicTuner
 //
 //  Apple-standard adaptive theme with light/dark mode support
+//  Now includes user-selectable theme preference
 //
 
 import SwiftUI
+
+// MARK: - App Theme
+
+enum AppTheme: String, CaseIterable, Identifiable {
+    case system = "System"
+    case light = "Light"
+    case dark = "Dark"
+    
+    var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .system: return String(localized: "theme_system")
+        case .light: return String(localized: "theme_light")
+        case .dark: return String(localized: "theme_dark")
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        }
+    }
+    
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
+// MARK: - Theme Manager
 
 /// Centralized theme manager using Apple's adaptive color system
 @MainActor
 final class ThemeManager: ObservableObject {
     
     static let shared = ThemeManager()
+    
+    @AppStorage("selectedTheme") private var selectedThemeRaw: String = AppTheme.system.rawValue
+    
+    var currentTheme: AppTheme {
+        get { AppTheme(rawValue: selectedThemeRaw) ?? .system }
+        set { 
+            selectedThemeRaw = newValue.rawValue 
+            objectWillChange.send()
+        }
+    }
+    
+    var colorScheme: ColorScheme? {
+        currentTheme.colorScheme
+    }
     
     private init() {}
     

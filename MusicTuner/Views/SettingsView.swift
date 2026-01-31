@@ -56,27 +56,35 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Appearance Section
-                    SettingsSectionCard(title: "Appearance") {
-                        HStack {
-                            Image(systemName: "circle.lefthalf.filled")
-                                .font(.system(size: 18))
-                                .foregroundStyle(theme.accent)
-                                .frame(width: 28)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
+                    SettingsSectionCard(title: String(localized: "appearance")) {
+                        VStack(spacing: 16) {
+                            HStack {
+                                Image(systemName: theme.currentTheme.icon)
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(theme.accent)
+                                    .frame(width: 28)
+                                
                                 Text("Theme")
                                     .font(.system(size: 15, weight: .medium, design: .rounded))
                                     .foregroundStyle(theme.textPrimary)
-                                Text("Follows system settings")
-                                    .font(.system(size: 12, design: .rounded))
-                                    .foregroundStyle(theme.textSecondary)
+                                
+                                Spacer()
                             }
                             
-                            Spacer()
-                            
-                            Text("Auto")
-                                .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundStyle(theme.inactive)
+                            // Theme Picker
+                            HStack(spacing: 12) {
+                                ForEach(AppTheme.allCases) { themeOption in
+                                    ThemeOptionButton(
+                                        option: themeOption,
+                                        isSelected: theme.currentTheme == themeOption,
+                                        theme: theme
+                                    ) {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            theme.currentTheme = themeOption
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     
@@ -301,6 +309,37 @@ struct SettingsSectionCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
                     .fill(theme.cardBackground)
                     .shadow(color: theme.shadow, radius: 12, x: 0, y: 6)
+            )
+        }
+    }
+}
+
+// MARK: - Theme Option Button
+
+struct ThemeOptionButton: View {
+    let option: AppTheme
+    let isSelected: Bool
+    let theme: ThemeManager
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: option.icon)
+                    .font(.system(size: 20))
+                Text(option.displayName)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+            }
+            .foregroundStyle(isSelected ? .white : theme.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .background(
+                RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
+                    .fill(isSelected ? theme.accentGradient : LinearGradient(colors: [theme.cardBackground], startPoint: .top, endPoint: .bottom))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
+                    .stroke(isSelected ? Color.clear : theme.inactive.opacity(0.3), lineWidth: 1)
             )
         }
     }

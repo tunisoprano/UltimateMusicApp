@@ -1,0 +1,51 @@
+/* 
+  Localizable.strings (English)
+  MusicTuner
+*/
+
+// Navigation
+"ear_training" = "Ear Training";
+"fretboard" = "Fretboard";
+"tuner" = "Tuner";
+"metronome" = "Metronome";
+"settings" = "Settings";
+
+// Actions
+"start" = "Start";
+"stop" = "Stop";
+"continue" = "Continue";
+"skip" = "Skip";
+
+// Game
+"score_format" = "Score: %lld";
+"level_locked" = "Level Locked";
+"complete_previous" = "Complete previous level";
+"coming_soon" = "Coming Soon";
+
+// Onboarding
+"onboarding_welcome_title" = "Welcome to MusicTuner";
+"onboarding_welcome_subtitle" = "Your complete music education companion. Learn, practice, and master your instrument.";
+"onboarding_features_title" = "Train Your Ear";
+"onboarding_features_subtitle" = "Develop your musical ear with chord recognition games and fretboard exercises.";
+"onboarding_start_title" = "Track Your Progress";
+"onboarding_start_subtitle" = "Unlock new levels as you improve. Challenge yourself every day!";
+
+// Theme
+"theme_system" = "System";
+"theme_light" = "Light";
+"theme_dark" = "Dark";
+"appearance" = "Appearance";
+
+// Chord Library
+"chord_library" = "Chord Library";
+"tap_to_play" = "Tap to play";
+"major" = "Major";
+"minor" = "Minor";
+"seventh" = "7th";
+
+// Ear Training
+"listen" = "Listen";
+"learning" = "Learning";
+"next" = "Next";
+"start_quiz" = "Start Quiz";
+
