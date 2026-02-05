@@ -24,14 +24,16 @@ enum ChordType: String, CaseIterable, Identifiable {
     case major = "Major"
     case minor = "Minor"
     case seventh = "7th"
+    case power = "Power"
     
     var id: String { rawValue }
     
     var localizedName: String {
         switch self {
-        case .major: return String(localized: "major")
-        case .minor: return String(localized: "minor")
-        case .seventh: return String(localized: "seventh")
+        case .major: return L("major")
+        case .minor: return L("minor")
+        case .seventh: return L("seventh")
+        case .power: return L("power")
         }
     }
     
@@ -40,6 +42,7 @@ enum ChordType: String, CaseIterable, Identifiable {
         case .major: return ""
         case .minor: return "m"
         case .seventh: return "7"
+        case .power: return "5"
         }
     }
 }
@@ -116,7 +119,39 @@ struct BarreInfo: Equatable, Hashable {
     let toString: Int    // 5 = high e
 }
 
+// MARK: - Chord Variation (NEW - Multi-voicing support)
+
+/// Represents a single chord voicing/position
+struct ChordVariation: Identifiable, Equatable, Hashable {
+    let id = UUID()
+    let positionName: String  // e.g., "Open", "Barre 3rd", "Triad"
+    
+    /// Fret positions for 6 strings (E A D G B e). nil = muted string, 0 = open string
+    let fretPositions: [Int?]
+    
+    /// Starting fret for diagram display (1 for open chords, higher for barre chords)
+    let startFret: Int
+    
+    /// Finger positions (0 = not pressed, 1=Index, 2=Middle, 3=Ring, 4=Pinky)
+    let fingerPositions: [Int]
+    
+    /// MIDI notes for audio playback
+    let midiNotes: [UInt8]
+    
+    /// Which finger creates the barre (nil if no barre)
+    let barreInfo: BarreInfo?
+    
+    static func == (lhs: ChordVariation, rhs: ChordVariation) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
 // MARK: - Chord Database
+
 
 /// Comprehensive database of guitar chords with MIDI mappings and diagram data
 struct ChordDatabase {
@@ -460,10 +495,123 @@ struct ChordDatabase {
         )
     ]
     
+    // MARK: - Power Chords
+    
+    static let powerChords: [ChordDefinition] = [
+        // E5 - Open Power Chord
+        ChordDefinition(
+            rootNote: .E, type: .power,
+            midiNotes: [40, 47, 52],
+            fretPositions: [0, 2, 2, nil, nil, nil],
+            startFret: 1,
+            fingerPositions: [0, 1, 2, 0, 0, 0],
+            barreInfo: nil
+        ),
+        // F5 - Power Chord
+        ChordDefinition(
+            rootNote: .F, type: .power,
+            midiNotes: [41, 48, 53],
+            fretPositions: [1, 3, 3, nil, nil, nil],
+            startFret: 1,
+            fingerPositions: [1, 3, 4, 0, 0, 0],
+            barreInfo: nil
+        ),
+        // F#5 - Power Chord
+        ChordDefinition(
+            rootNote: .Fsharp, type: .power,
+            midiNotes: [42, 49, 54],
+            fretPositions: [2, 4, 4, nil, nil, nil],
+            startFret: 2,
+            fingerPositions: [1, 3, 4, 0, 0, 0],
+            barreInfo: nil
+        ),
+        // G5 - Power Chord
+        ChordDefinition(
+            rootNote: .G, type: .power,
+            midiNotes: [43, 50, 55],
+            fretPositions: [3, 5, 5, nil, nil, nil],
+            startFret: 3,
+            fingerPositions: [1, 3, 4, 0, 0, 0],
+            barreInfo: nil
+        ),
+        // G#5 - Power Chord
+        ChordDefinition(
+            rootNote: .Gsharp, type: .power,
+            midiNotes: [44, 51, 56],
+            fretPositions: [4, 6, 6, nil, nil, nil],
+            startFret: 4,
+            fingerPositions: [1, 3, 4, 0, 0, 0],
+            barreInfo: nil
+        ),
+        // A5 - Open Power Chord
+        ChordDefinition(
+            rootNote: .A, type: .power,
+            midiNotes: [45, 52, 57],
+            fretPositions: [nil, 0, 2, 2, nil, nil],
+            startFret: 1,
+            fingerPositions: [0, 0, 1, 2, 0, 0],
+            barreInfo: nil
+        ),
+        // A#5 - Power Chord
+        ChordDefinition(
+            rootNote: .Asharp, type: .power,
+            midiNotes: [46, 53, 58],
+            fretPositions: [nil, 1, 3, 3, nil, nil],
+            startFret: 1,
+            fingerPositions: [0, 1, 3, 4, 0, 0],
+            barreInfo: nil
+        ),
+        // B5 - Power Chord
+        ChordDefinition(
+            rootNote: .B, type: .power,
+            midiNotes: [47, 54, 59],
+            fretPositions: [nil, 2, 4, 4, nil, nil],
+            startFret: 2,
+            fingerPositions: [0, 1, 3, 4, 0, 0],
+            barreInfo: nil
+        ),
+        // C5 - Power Chord
+        ChordDefinition(
+            rootNote: .C, type: .power,
+            midiNotes: [48, 55, 60],
+            fretPositions: [nil, 3, 5, 5, nil, nil],
+            startFret: 3,
+            fingerPositions: [0, 1, 3, 4, 0, 0],
+            barreInfo: nil
+        ),
+        // C#5 - Power Chord
+        ChordDefinition(
+            rootNote: .Csharp, type: .power,
+            midiNotes: [49, 56, 61],
+            fretPositions: [nil, 4, 6, 6, nil, nil],
+            startFret: 4,
+            fingerPositions: [0, 1, 3, 4, 0, 0],
+            barreInfo: nil
+        ),
+        // D5 - Open Power Chord
+        ChordDefinition(
+            rootNote: .D, type: .power,
+            midiNotes: [50, 57, 62],
+            fretPositions: [nil, nil, 0, 2, 3, nil],
+            startFret: 1,
+            fingerPositions: [0, 0, 0, 1, 2, 0],
+            barreInfo: nil
+        ),
+        // D#5 - Power Chord
+        ChordDefinition(
+            rootNote: .Dsharp, type: .power,
+            midiNotes: [51, 58, 63],
+            fretPositions: [nil, nil, 1, 3, 4, nil],
+            startFret: 1,
+            fingerPositions: [0, 0, 1, 3, 4, 0],
+            barreInfo: nil
+        )
+    ]
+    
     // MARK: - All Chords
     
     static var allChords: [ChordDefinition] {
-        majorChords + minorChords + seventhChords
+        majorChords + minorChords + seventhChords + powerChords
     }
     
     /// Get chord by root note and type
@@ -477,8 +625,10 @@ struct ChordDatabase {
         case .major: return majorChords
         case .minor: return minorChords
         case .seventh: return seventhChords
+        case .power: return powerChords
         }
     }
+
     
     /// Get basic chords for ear training (compatible with old Chord struct)
     static let earTrainingChords: [ChordDefinition] = [
@@ -488,6 +638,128 @@ struct ChordDatabase {
         chord(root: .E, type: .minor)!,
         chord(root: .A, type: .minor)!
     ]
+    
+    // MARK: - Chord Variations (Multi-voicing)
+    
+    /// C Major - 5 Variations
+    static let cMajorVariations: [ChordVariation] = [
+        // 1. Open Position (Standard)
+        ChordVariation(
+            positionName: "Open",
+            fretPositions: [nil, 3, 2, 0, 1, 0],
+            startFret: 1,
+            fingerPositions: [0, 3, 2, 0, 1, 0],
+            midiNotes: [48, 52, 55, 60, 64],
+            barreInfo: nil
+        ),
+        // 2. Barre (A Shape) - 3rd fret
+        ChordVariation(
+            positionName: "Barre (3rd)",
+            fretPositions: [nil, 3, 5, 5, 5, 3],
+            startFret: 3,
+            fingerPositions: [0, 1, 3, 3, 3, 1],
+            midiNotes: [48, 55, 60, 64, 67],
+            barreInfo: BarreInfo(fret: 3, fromString: 1, toString: 5)
+        ),
+        // 3. Barre (E Shape) - 8th fret
+        ChordVariation(
+            positionName: "Barre (8th)",
+            fretPositions: [8, 10, 10, 9, 8, 8],
+            startFret: 8,
+            fingerPositions: [1, 3, 4, 2, 1, 1],
+            midiNotes: [48, 55, 60, 64, 67, 72],
+            barreInfo: BarreInfo(fret: 8, fromString: 0, toString: 5)
+        ),
+        // 4. Triad (High Strings)
+        ChordVariation(
+            positionName: "Triad",
+            fretPositions: [nil, nil, nil, 5, 5, 5],
+            startFret: 5,
+            fingerPositions: [0, 0, 0, 1, 2, 3],
+            midiNotes: [60, 64, 67],
+            barreInfo: nil
+        ),
+        // 5. Cadd9 Open (Bonus voicing)
+        ChordVariation(
+            positionName: "Add9",
+            fretPositions: [nil, 3, 2, 0, 3, 0],
+            startFret: 1,
+            fingerPositions: [0, 2, 1, 0, 3, 0],
+            midiNotes: [48, 52, 55, 62, 64],
+            barreInfo: nil
+        )
+    ]
+    
+    /// G Major - 5 Variations
+    static let gMajorVariations: [ChordVariation] = [
+        // 1. Open Position (Standard)
+        ChordVariation(
+            positionName: "Open",
+            fretPositions: [3, 2, 0, 0, 0, 3],
+            startFret: 1,
+            fingerPositions: [2, 1, 0, 0, 0, 3],
+            midiNotes: [43, 47, 50, 55, 59, 67],
+            barreInfo: nil
+        ),
+        // 2. Barre (E Shape) - 3rd fret
+        ChordVariation(
+            positionName: "Barre (3rd)",
+            fretPositions: [3, 5, 5, 4, 3, 3],
+            startFret: 3,
+            fingerPositions: [1, 3, 4, 2, 1, 1],
+            midiNotes: [43, 50, 55, 59, 62, 67],
+            barreInfo: BarreInfo(fret: 3, fromString: 0, toString: 5)
+        ),
+        // 3. Barre (A Shape) - 10th fret
+        ChordVariation(
+            positionName: "Barre (10th)",
+            fretPositions: [nil, 10, 12, 12, 12, 10],
+            startFret: 10,
+            fingerPositions: [0, 1, 3, 3, 3, 1],
+            midiNotes: [55, 62, 67, 71, 74],
+            barreInfo: BarreInfo(fret: 10, fromString: 1, toString: 5)
+        ),
+        // 4. Triad (High Strings)
+        ChordVariation(
+            positionName: "Triad",
+            fretPositions: [nil, nil, nil, 0, 0, 3],
+            startFret: 1,
+            fingerPositions: [0, 0, 0, 0, 0, 3],
+            midiNotes: [55, 59, 67],
+            barreInfo: nil
+        ),
+        // 5. Folk G (4 finger version)
+        ChordVariation(
+            positionName: "Folk",
+            fretPositions: [3, 2, 0, 0, 3, 3],
+            startFret: 1,
+            fingerPositions: [2, 1, 0, 0, 3, 4],
+            midiNotes: [43, 47, 50, 55, 62, 67],
+            barreInfo: nil
+        )
+    ]
+    
+    /// Get variations for a specific chord (returns array of voicings)
+    static func variations(for root: RootNote, type: ChordType) -> [ChordVariation] {
+        // Currently only C and G Major have full variations
+        switch (root, type) {
+        case (.C, .major): return cMajorVariations
+        case (.G, .major): return gMajorVariations
+        default:
+            // For other chords, return single variation from existing chord
+            if let chord = chord(root: root, type: type) {
+                return [ChordVariation(
+                    positionName: "Standard",
+                    fretPositions: chord.fretPositions,
+                    startFret: chord.startFret,
+                    fingerPositions: chord.fingerPositions,
+                    midiNotes: chord.midiNotes,
+                    barreInfo: chord.barreInfo
+                )]
+            }
+            return []
+        }
+    }
 }
 
 // MARK: - Chord Engine
@@ -512,6 +784,9 @@ final class ChordEngine: ObservableObject {
     // MARK: - Configuration
     private let strumDelay: TimeInterval = 0.04  // 40ms between notes for strumming effect
     private let noteDuration: TimeInterval = 4.0 // How long each note rings (increased for realism)
+    
+    // Playback tracking - prevents race conditions
+    private var currentPlaybackID: UUID?
     
     private init() {}
     
@@ -584,7 +859,8 @@ final class ChordEngine: ObservableObject {
         var loaded = false
         
         // Method 1: Try loadMelodicSoundFont (for melodic SF2 files)
-        for preset in [0, 25, 24, 1] {
+        // Order: 25=Steel String, 24=Nylon, 0=Default, 1=Bright - try cleaner presets first
+        for preset in [25, 24, 0, 1] {
             do {
                 try sampler.loadMelodicSoundFont(fileName, preset: preset)
                 print("✅ Loaded with loadMelodicSoundFont, preset: \(preset)")
@@ -597,7 +873,7 @@ final class ChordEngine: ObservableObject {
         
         // Method 2: Try with full path if filename method failed
         if !loaded {
-            for preset in [0, 25, 24, 1] {
+            for preset in [25, 24, 0, 1] {
                 do {
                     try sampler.loadSoundFont(url.path, preset: preset, bank: 0)
                     print("✅ Loaded with loadSoundFont path, preset: \(preset)")
@@ -638,25 +914,41 @@ final class ChordEngine: ObservableObject {
     
     /// Play a chord with arpeggiated strumming effect
     func playChord(_ chord: ChordDefinition) {
+        
         guard isInitialized else {
             print("⚠️ ChordEngine: Not initialized")
             return
         }
         
-        // Stop any currently playing notes
+        // Generate new playback ID to cancel any pending stop from previous chord
+        let playbackID = UUID()
+        currentPlaybackID = playbackID
+        
+        // Stop any currently playing notes immediately
         stopAllNotes()
         
+        // Transpose up one octave (+12 semitones) for brighter sound
+        let transposedNotes = chord.midiNotes.map { $0 + 12 }
+        
+        // Calculate total strum duration
+        let totalStrumTime = Double(transposedNotes.count) * strumDelay
+        
         // Play notes with strum delay
-        for (index, midiNote) in chord.midiNotes.enumerated() {
+        for (index, midiNote) in transposedNotes.enumerated() {
             let delay = Double(index) * strumDelay
             
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                // Only play if this is still the current playback
+                guard self?.currentPlaybackID == playbackID else { return }
                 self?.playNote(midiNote: midiNote, velocity: 80)
             }
         }
         
-        // Schedule note off
-        DispatchQueue.main.asyncAfter(deadline: .now() + noteDuration) { [weak self] in
+        // Schedule note off - account for strum time + note duration
+        let stopDelay = totalStrumTime + noteDuration
+        DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) { [weak self] in
+            // Only stop if this is still the current playback (no new chord started)
+            guard self?.currentPlaybackID == playbackID else { return }
             self?.stopAllNotes()
         }
     }

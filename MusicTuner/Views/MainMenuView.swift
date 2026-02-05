@@ -64,7 +64,7 @@ struct MainMenuView: View {
                     .foregroundStyle(.white)
             }
             
-            Text("MusicTuner")
+            Text("2Jam")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(theme.textPrimary)
             
@@ -82,7 +82,7 @@ struct MainMenuView: View {
             NavigationLink(destination: EarTrainingView()) {
                 HeroCard(
                     icon: "ear.fill",
-                    title: String(localized: "ear_training"),
+                    title: L("ear_training"),
                     subtitle: "Train your ear with chord recognition",
                     gradientColors: [Color.purple, Color.pink],
                     theme: theme
@@ -96,9 +96,23 @@ struct MainMenuView: View {
             NavigationLink(destination: ChordLibraryView()) {
                 HeroCard(
                     icon: "book.fill",
-                    title: String(localized: "chord_library"),
+                    title: L("chord_library"),
                     subtitle: "Learn chords with interactive diagrams",
                     gradientColors: [Color.orange, Color.red],
+                    theme: theme
+                )
+            }
+            .simultaneousGesture(TapGesture().onEnded { _ in
+                adsManager.recordPageTransition()
+            })
+            
+            // Chord Mastery - Learn Chord Diagrams
+            NavigationLink(destination: LevelSelectView()) {
+                HeroCard(
+                    icon: "graduationcap.fill",
+                    title: L("learn_chord_diagrams"),
+                    subtitle: "Master chords step by step",
+                    gradientColors: [Color.cyan, Color.blue],
                     theme: theme
                 )
             }
@@ -110,7 +124,7 @@ struct MainMenuView: View {
             NavigationLink(destination: ExerciseView()) {
                 HeroCard(
                     icon: "guitars.fill",
-                    title: String(localized: "fretboard"),
+                    title: L("fretboard"),
                     subtitle: "Master the fretboard with exercises",
                     gradientColors: [Color.green, Color.teal],
                     theme: theme
@@ -138,7 +152,7 @@ struct MainMenuView: View {
                 NavigationLink(destination: TunerView()) {
                     ToolCard(
                         icon: "tuningfork",
-                        title: String(localized: "tuner"),
+                        title: L("tuner"),
                         color: theme.accent,
                         theme: theme
                     )
@@ -150,7 +164,7 @@ struct MainMenuView: View {
                 NavigationLink(destination: MetronomeView()) {
                     ToolCard(
                         icon: "metronome.fill",
-                        title: String(localized: "metronome"),
+                        title: L("metronome"),
                         color: theme.warning,
                         theme: theme
                     )

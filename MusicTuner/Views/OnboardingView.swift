@@ -12,8 +12,8 @@ import SwiftUI
 struct OnboardingPage: Identifiable {
     let id = UUID()
     let icon: String
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey
+    let titleKey: () -> String
+    let subtitleKey: () -> String
     let color: Color
 }
 
@@ -27,20 +27,20 @@ struct OnboardingView: View {
     private let pages: [OnboardingPage] = [
         OnboardingPage(
             icon: "music.note",
-            title: "onboarding_welcome_title",
-            subtitle: "onboarding_welcome_subtitle",
+            titleKey: { L10n.onboardingWelcomeTitle },
+            subtitleKey: { L10n.onboardingWelcomeSubtitle },
             color: .blue
         ),
         OnboardingPage(
             icon: "ear.fill",
-            title: "onboarding_features_title",
-            subtitle: "onboarding_features_subtitle",
+            titleKey: { L10n.onboardingFeaturesTitle },
+            subtitleKey: { L10n.onboardingFeaturesSubtitle },
             color: .purple
         ),
         OnboardingPage(
             icon: "star.fill",
-            title: "onboarding_start_title",
-            subtitle: "onboarding_start_subtitle",
+            titleKey: { L10n.onboardingStartTitle },
+            subtitleKey: { L10n.onboardingStartSubtitle },
             color: .orange
         )
     ]
@@ -57,7 +57,7 @@ struct OnboardingView: View {
                         Button {
                             completeOnboarding()
                         } label: {
-                            Text("Skip")
+                            Text(L10n.skip)
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
                                 .foregroundStyle(theme.textSecondary)
                         }
@@ -97,7 +97,7 @@ struct OnboardingView: View {
                         completeOnboarding()
                     }
                 } label: {
-                    Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
+                    Text(currentPage < pages.count - 1 ? L10n.next : L10n.getStarted)
                 }
                 .buttonStyle(ThemeButtonStyle())
                 .padding(.horizontal, 40)
@@ -140,12 +140,12 @@ struct OnboardingPageView: View {
             
             // Text
             VStack(spacing: 16) {
-                Text(page.title)
+                Text(page.titleKey())
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.textPrimary)
                     .multilineTextAlignment(.center)
                 
-                Text(page.subtitle)
+                Text(page.subtitleKey())
                     .font(.system(size: 16, weight: .medium, design: .rounded))
                     .foregroundStyle(theme.textSecondary)
                     .multilineTextAlignment(.center)

@@ -1,6 +1,6 @@
 /* 
   Localizable.strings (English)
-  MusicTuner
+  2Jam
 */
 
 // Navigation
@@ -9,12 +9,15 @@
 "tuner" = "Tuner";
 "metronome" = "Metronome";
 "settings" = "Settings";
+"chord_library" = "Chord Library";
 
 // Actions
 "start" = "Start";
 "stop" = "Stop";
 "continue" = "Continue";
 "skip" = "Skip";
+"next" = "Next";
+"get_started" = "Get Started";
 
 // Game
 "score_format" = "Score: %lld";
@@ -23,7 +26,7 @@
 "coming_soon" = "Coming Soon";
 
 // Onboarding
-"onboarding_welcome_title" = "Welcome to MusicTuner";
+"onboarding_welcome_title" = "Welcome to 2Jam";
 "onboarding_welcome_subtitle" = "Your complete music education companion. Learn, practice, and master your instrument.";
 "onboarding_features_title" = "Train Your Ear";
 "onboarding_features_subtitle" = "Develop your musical ear with chord recognition games and fretboard exercises.";
@@ -35,9 +38,31 @@
 "theme_light" = "Light";
 "theme_dark" = "Dark";
 "appearance" = "Appearance";
+"theme" = "Theme";
+
+// Language
+"language" = "Language";
+
+// Settings
+"note_naming" = "Note Naming";
+"display_style" = "Display Style";
+"preview" = "Preview";
+"sound_feedback" = "Sound & Feedback";
+"success_sound" = "Success Sound";
+"play_ding_when_tuned" = "Play ding when tuned";
+"haptic_feedback" = "Haptic Feedback";
+"vibrate_when_tuned" = "Vibrate when tuned";
+"purchases" = "Purchases";
+"premium_status" = "Premium Status";
+"ads_removed" = "Ads removed";
+"free_version" = "Free version";
+"active" = "Active";
+"restore_purchases" = "Restore Purchases";
+"about" = "About";
+"version" = "Version";
+"build" = "Build";
 
 // Chord Library
-"chord_library" = "Chord Library";
 "tap_to_play" = "Tap to play";
 "major" = "Major";
 "minor" = "Minor";
@@ -46,6 +71,47 @@
 // Ear Training
 "listen" = "Listen";
 "learning" = "Learning";
-"next" = "Next";
 "start_quiz" = "Start Quiz";
 
+// Chord Variations
+"position" = "Position";
+"variations" = "Variations";
+"show_fingers" = "Show Fingers";
+"hide_fingers" = "Hide Fingers";
+
+// Chord Mastery
+"learn_chord_diagrams" = "Learn Chord Diagrams";
+"chord_mastery_title" = "Chord Mastery";
+"chord_mastery_subtitle" = "Learn guitar chords step by step with quizzes";
+"power" = "Power";
+
+// Levels
+"level_basics" = "Basics";
+"level_basics_subtitle" = "First chords every guitarist learns";
+"level_open_chords" = "Open Chords";
+"level_open_chords_subtitle" = "Expand your chord vocabulary";
+"level_power_chords" = "Power Chords";
+"level_power_chords_subtitle" = "Rock and punk essentials";
+"level_seventh_chords" = "7th Chords";
+"level_seventh_chords_subtitle" = "Add color to your playing";
+
+// Learning Session
+"study_this_chord" = "Study this chord";
+"previous" = "Previous";
+
+// Quiz
+"quiz" = "Quiz";
+"loading_quiz" = "Loading quiz...";
+"what_chord_is_this" = "What chord is this?";
+"question_n_of_m" = "Question %d of %d";
+"correct" = "Correct!";
+"correct_answer_was" = "It was %@";
+"level_complete" = "Level Complete!";
+"try_again" = "Try Again";
+"level_failed" = "Not Passed";
+"next_level" = "Next Level";
+"pass_threshold" = "70% required to pass";
+"your_score" = "Your Score";
+"next_level_unlocked" = "%@ Unlocked!";
+"done" = "Done";
+"back_to_levels" = "Back to Levels";

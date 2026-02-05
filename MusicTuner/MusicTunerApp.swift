@@ -1,6 +1,6 @@
 //
 //  MusicTunerApp.swift
-//  MusicTuner
+//  2Jam
 //
 //  Main entry point with onboarding and theme support
 //
@@ -11,6 +11,7 @@ import SwiftUI
 struct MusicTunerApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var languageManager = LanguageManager.shared
     
     var body: some Scene {
         WindowGroup {
@@ -23,6 +24,8 @@ struct MusicTunerApp: App {
                     OnboardingView()
                 }
             }
+            .id(languageManager.language) // Force full UI refresh when language changes
+            .environmentObject(languageManager)
             .preferredColorScheme(themeManager.colorScheme)
             .onAppear {
                 // Initialize AdMob after app is fully loaded

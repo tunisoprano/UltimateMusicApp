@@ -39,6 +39,7 @@ enum UserPreferences {
 struct SettingsView: View {
     @ObservedObject var theme = ThemeManager.shared
     @ObservedObject var storeManager = StoreKitManager.shared
+    @ObservedObject var languageManager = LanguageManager.shared
     @AppStorage("noteNamingStyle") private var noteNamingStyle: String = NoteNamingStyle.english.rawValue
     @AppStorage("successSoundEnabled") private var successSoundEnabled: Bool = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled: Bool = true
@@ -55,8 +56,41 @@ struct SettingsView: View {
             
             ScrollView {
                 VStack(spacing: 24) {
+                    // Language Section
+                    SettingsSectionCard(title: L10n.language) {
+                        VStack(spacing: 16) {
+                            HStack {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(theme.accent)
+                                    .frame(width: 28)
+                                
+                                Text(L10n.language)
+                                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                                    .foregroundStyle(theme.textPrimary)
+                                
+                                Spacer()
+                            }
+                            
+                            // Language Picker
+                            HStack(spacing: 12) {
+                                ForEach(Language.allCases) { lang in
+                                    LanguageOptionButton(
+                                        language: lang,
+                                        isSelected: languageManager.language == lang,
+                                        theme: theme
+                                    ) {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            languageManager.language = lang
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     // Appearance Section
-                    SettingsSectionCard(title: String(localized: "appearance")) {
+                    SettingsSectionCard(title: L10n.appearance) {
                         VStack(spacing: 16) {
                             HStack {
                                 Image(systemName: theme.currentTheme.icon)
@@ -64,7 +98,7 @@ struct SettingsView: View {
                                     .foregroundStyle(theme.accent)
                                     .frame(width: 28)
                                 
-                                Text("Theme")
+                                Text(L10n.theme)
                                     .font(.system(size: 15, weight: .medium, design: .rounded))
                                     .foregroundStyle(theme.textPrimary)
                                 
@@ -328,6 +362,37 @@ struct ThemeOptionButton: View {
                 Image(systemName: option.icon)
                     .font(.system(size: 20))
                 Text(option.displayName)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+            }
+            .foregroundStyle(isSelected ? .white : theme.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .background(
+                RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
+                    .fill(isSelected ? theme.accentGradient : LinearGradient(colors: [theme.cardBackground], startPoint: .top, endPoint: .bottom))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
+                    .stroke(isSelected ? Color.clear : theme.inactive.opacity(0.3), lineWidth: 1)
+            )
+        }
+    }
+}
+
+// MARK: - Language Option Button
+
+struct LanguageOptionButton: View {
+    let language: Language
+    let isSelected: Bool
+    let theme: ThemeManager
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Text(language.flag)
+                    .font(.system(size: 24))
+                Text(language.displayName)
                     .font(.system(size: 12, weight: .medium, design: .rounded))
             }
             .foregroundStyle(isSelected ? .white : theme.textSecondary)

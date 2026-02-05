@@ -17,7 +17,7 @@ struct ChordLibraryView: View {
             
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 28) {
                         // Root Note Picker
                         rootNotePicker
                         
@@ -44,7 +44,7 @@ struct ChordLibraryView: View {
                 AdBannerContainer()
             }
         }
-        .navigationTitle(String(localized: "chord_library"))
+        .navigationTitle(L("chord_library"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .onAppear {

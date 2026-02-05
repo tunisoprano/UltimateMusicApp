@@ -48,7 +48,7 @@ struct EarTrainingView: View {
                 AdBannerContainer()
             }
         }
-        .navigationTitle(String(localized: "ear_training"))
+        .navigationTitle(L("ear_training"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .toolbar {
@@ -186,7 +186,7 @@ struct EarTrainingView: View {
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "play.fill")
-                    Text(String(localized: "start"))
+                    Text(L("start"))
                 }
             }
             .buttonStyle(ThemeButtonStyle())
@@ -241,7 +241,7 @@ struct EarTrainingView: View {
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.counterclockwise")
-                    Text(String(localized: "listen"))
+                    Text(L("listen"))
                 }
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundStyle(theme.accent)
@@ -262,7 +262,7 @@ struct EarTrainingView: View {
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "checkmark.circle.fill")
-                        Text(String(localized: "start_quiz"))
+                        Text(L("start_quiz"))
                     }
                 }
                 .buttonStyle(ThemeButtonStyle())
@@ -274,7 +274,7 @@ struct EarTrainingView: View {
                     }
                 } label: {
                     HStack(spacing: 10) {
-                        Text(String(localized: "next"))
+                        Text(L("next"))
                         Image(systemName: "arrow.right")
                     }
                 }
@@ -307,7 +307,7 @@ struct EarTrainingView: View {
                 
                 // Score
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(localized: "score_format", defaultValue: "Score: \(viewModel.score)"))
+                    Text(L("score_format", viewModel.score))
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.textPrimary)
                     Text("\(viewModel.accuracyPercentage)%")

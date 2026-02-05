@@ -1,6 +1,6 @@
 /* 
   Localizable.strings (Turkish)
-  MusicTuner
+  2Jam
 */
 
 // Navigation
@@ -9,12 +9,15 @@
 "tuner" = "Akort";
 "metronome" = "Metronom";
 "settings" = "Ayarlar";
+"chord_library" = "Akor Kütüphanesi";
 
 // Actions
 "start" = "Başlat";
 "stop" = "Durdur";
 "continue" = "Devam";
 "skip" = "Atla";
+"next" = "Sonraki";
+"get_started" = "Başlayalım";
 
 // Game
 "score_format" = "Puan: %lld";
@@ -23,7 +26,7 @@
 "coming_soon" = "Yakında";
 
 // Onboarding
-"onboarding_welcome_title" = "MusicTuner'a Hoş Geldin";
+"onboarding_welcome_title" = "2Jam'e Hoş Geldin";
 "onboarding_welcome_subtitle" = "Müzik eğitiminde yol arkadaşın. Öğren, pratik yap ve enstrümanında ustalaş.";
 "onboarding_features_title" = "Kulağını Eğit";
 "onboarding_features_subtitle" = "Akor tanıma oyunları ve klavye egzersizleriyle müzik kulağını geliştir.";
@@ -35,9 +38,31 @@
 "theme_light" = "Açık";
 "theme_dark" = "Koyu";
 "appearance" = "Görünüm";
+"theme" = "Tema";
+
+// Language
+"language" = "Dil";
+
+// Settings
+"note_naming" = "Nota Adlandırma";
+"display_style" = "Görüntüleme Stili";
+"preview" = "Önizleme";
+"sound_feedback" = "Ses ve Geri Bildirim";
+"success_sound" = "Başarı Sesi";
+"play_ding_when_tuned" = "Akort olduğunda ses çal";
+"haptic_feedback" = "Dokunsal Geri Bildirim";
+"vibrate_when_tuned" = "Akort olduğunda titret";
+"purchases" = "Satın Almalar";
+"premium_status" = "Premium Durumu";
+"ads_removed" = "Reklamlar kaldırıldı";
+"free_version" = "Ücretsiz sürüm";
+"active" = "Aktif";
+"restore_purchases" = "Satın Alımları Geri Yükle";
+"about" = "Hakkında";
+"version" = "Sürüm";
+"build" = "Yapı";
 
 // Chord Library
-"chord_library" = "Akor Kütüphanesi";
 "tap_to_play" = "Çalmak için dokun";
 "major" = "Majör";
 "minor" = "Minör";
@@ -46,6 +71,47 @@
 // Ear Training
 "listen" = "Dinle";
 "learning" = "Öğrenme";
-"next" = "Sonraki";
 "start_quiz" = "Quiz'e Başla";
 
+// Chord Variations
+"position" = "Pozisyon";
+"variations" = "Varyasyonlar";
+"show_fingers" = "Parmakları Göster";
+"hide_fingers" = "Parmakları Gizle";
+
+// Chord Mastery
+"learn_chord_diagrams" = "Akor Diyagramlarını Öğren";
+"chord_mastery_title" = "Akor Ustalığı";
+"chord_mastery_subtitle" = "Quiz'lerle adım adım gitar akorlarını öğren";
+"power" = "Power";
+
+// Levels
+"level_basics" = "Temel Seviye";
+"level_basics_subtitle" = "Her gitaristin öğrendiği ilk akorlar";
+"level_open_chords" = "Açık Akorlar";
+"level_open_chords_subtitle" = "Akor dağarcığını genişlet";
+"level_power_chords" = "Power Akorlar";
+"level_power_chords_subtitle" = "Rock ve punk müziğin olmazsa olmazları";
+"level_seventh_chords" = "7'li Akorlar";
+"level_seventh_chords_subtitle" = "Çalışına renk kat";
+
+// Learning Session
+"study_this_chord" = "Bu akoru çalış";
+"previous" = "Önceki";
+
+// Quiz
+"quiz" = "Quiz";
+"loading_quiz" = "Quiz yükleniyor...";
+"what_chord_is_this" = "Bu hangi akor?";
+"question_n_of_m" = "Soru %d / %d";
+"correct" = "Doğru!";
+"correct_answer_was" = "Doğrusu %@ idi";
+"level_complete" = "Seviye Tamamlandı!";
+"try_again" = "Tekrar Dene";
+"level_failed" = "Geçilemedi";
+"next_level" = "Sıradaki Seviye";
+"pass_threshold" = "Geçmek için %70 gerekli";
+"your_score" = "Skorun";
+"next_level_unlocked" = "%@ Kilidi Açıldı!";
+"done" = "Tamam";
+"back_to_levels" = "Seviyelere Dön";
