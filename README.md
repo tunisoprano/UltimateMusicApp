@@ -37,30 +37,30 @@
 </td>
 <td width="50%">
 
-### 🥁 Metronome
-- 40-240 BPM range
-- Multiple time signatures
-- Visual beat indicator
-- Tap tempo
+### 🎓 Chord Mastery
+- **Interactive Lessons** - Tap to play, swipe to learn
+- **Gamified Quizzes** - Test your knowledge
+- **Level System** - Unlock progressive difficulty
+- **High Quality Audio** - Realistic guitar samples
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### 📚 Practice Mode
-- Note recognition exercises
-- Progressive difficulty levels
-- Track your improvement
+### 🌍 Localization
+- **Multi-language Support** - English & Turkish
+- **Instant Switching** - Change language inside app
+- Does not depend on system language
 
 </td>
 <td width="50%">
 
-### 🎨 Premium Design
-- Custom "Cozy" warm theme
-- Glassmorphism effects
-- Smooth animations
-- Dark mode optimized
+### 🥁 Metronome & Tools
+- 40-240 BPM Metronome
+- **Chord Library** - Comprehensive diagram reference
+- **Fretboard Trainer** - Learn notes on the neck
+- Custom "Cozy" & Dark themes
 
 </td>
 </tr>
@@ -87,17 +87,17 @@
 ├─────────────────────────────────────────────────────┤
 │  AVFoundation  │  Accelerate  │  StoreKit 2        │
 ├─────────────────────────────────────────────────────┤
-│           Core Audio / FFT Processing              │
+│      Combine   │  Core Audio  │  Core Vibrations   │
 └─────────────────────────────────────────────────────┘
 ```
 
 | Technology | Purpose |
 |------------|---------|
-| **SwiftUI** | Modern declarative UI |
-| **AVFoundation** | Audio capture & playback |
-| **Accelerate** | High-performance FFT |
-| **StoreKit 2** | In-app purchases |
-| **Google AdMob** | Monetization |
+| **SwiftUI** | Modern declarative UI with glassmorphism |
+| **AVFoundation** | Audio capture, playback & sampling |
+| **Accelerate** | High-performance FFT for tuner |
+| **StoreKit 2** | In-app purchases (Premium) |
+| **Google AdMob** | Monetization strategy |
 
 ---
 
@@ -106,35 +106,34 @@
 ```
 MusicTuner/
 ├── 🔊 Audio/
-│   ├── AudioManager.swift       # Audio session
-│   ├── PitchDetector.swift      # FFT pitch detection
-│   └── MetronomeEngine.swift    # Beat generator
+│   ├── ChordEngine.swift        # Sampler & Playback
+│   ├── AudioEngine.swift        # Core audio logic
+│   └── PitchDetector.swift      # FFT processing
 │
 ├── 🎨 Components/
-│   ├── CozyTheme.swift          # Color palette
-│   ├── ThemeManager.swift       # Theme state
-│   ├── TunerGaugeView.swift     # Needle display
-│   └── NoteDisplayView.swift    # Note indicator
+│   ├── HeroCard.swift           # Dashboard components
+│   ├── ChordDiagramView.swift   # Dynamic SVG drawing
+│   └── ThemeManager.swift       # Theming system
 │
 ├── 💼 Managers/
-│   ├── StoreKitManager.swift    # Purchases
-│   └── AdsManager.swift         # AdMob
+│   ├── LanguageManager.swift    # Localization logic
+│   ├── StoreKitManager.swift    # IAP handling
+│   └── AdsManager.swift         # AdMob integration
 │
 ├── 📦 Models/
-│   ├── Note.swift               # Note model
-│   ├── Instrument.swift         # Instruments
-│   └── ExerciseLevel.swift      # Difficulty
+│   ├── Chord.swift              # Chord definitions
+│   ├── Curriculum.swift         # Learning path data
+│   └── Note.swift               # Music theory models
 │
 ├── 🧠 ViewModels/
-│   ├── TunerViewModel.swift     # Tuner logic
-│   └── ExerciseViewModel.swift  # Exercise logic
+│   ├── ChordMasteryViewModel.swift # Gamification logic
+│   └── TunerViewModel.swift        # Tuner state
 │
 └── 📱 Views/
-    ├── MainMenuView.swift       # Home
+    ├── MainMenuView.swift       # Dashboard
+    ├── ChordMastery/            # Learning module
     ├── TunerView.swift          # Tuner UI
-    ├── MetronomeView.swift      # Metronome UI
-    ├── ExerciseView.swift       # Exercises
-    └── SettingsView.swift       # Settings
+    └── SettingsView.swift       # Preferences
 ```
 
 ---
