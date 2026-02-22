@@ -2,34 +2,36 @@
 //  MainMenuView.swift
 //  MusicTuner
 //
-//  Modern dashboard with hero cards and tool buttons
+//  Apple HIG-inspired dashboard with clean grouped layout
 //
 
 import SwiftUI
 
-/// Main dashboard with hero section and tools
+/// Main dashboard - Apple-standard grouped design
 struct MainMenuView: View {
     @ObservedObject var theme = ThemeManager.shared
     @ObservedObject var storeManager = StoreKitManager.shared
     @ObservedObject var adsManager = AdsManager.shared
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack {
-            theme.backgroundGradient.ignoresSafeArea()
+            theme.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 28) {
                         headerSection
-                        heroSection
+                        practiceSection
                         toolsSection
+                        learnSection
                         
                         if !storeManager.isPremium {
-                            premiumButton
+                            premiumSection
                         }
                     }
-                    .padding(.top, 20)
-                    .padding(.bottom, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
                 
                 // Banner Ad at bottom
@@ -37,123 +39,48 @@ struct MainMenuView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.background, for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                StreakBadgeView()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 18))
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(theme.textSecondary)
                 }
             }
         }
     }
     
-    // MARK: - Header Section
+    // MARK: - Header
     
     private var headerSection: some View {
-        VStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(theme.accentGradient)
-                    .frame(width: 72, height: 72)
-                    .shadow(color: theme.accent.opacity(0.3), radius: 12, x: 0, y: 6)
-                
-                Image(systemName: "music.note")
-                    .font(.system(size: 32, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
-            
+        VStack(spacing: 6) {
             Text("2Jam")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(size: 34, weight: .bold, design: .rounded))
                 .foregroundStyle(theme.textPrimary)
             
-            Text("Your music education companion")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+            Text(L("app_subtitle"))
+                .font(.subheadline)
                 .foregroundStyle(theme.textSecondary)
         }
+        .padding(.top, 8)
     }
     
-    // MARK: - Hero Section (Main Features)
+    // MARK: - Practice Section (Tools)
     
-    private var heroSection: some View {
-        VStack(spacing: 14) {
-            // Ear Training - Large Card
-            NavigationLink(destination: EarTrainingView()) {
-                HeroCard(
-                    icon: "ear.fill",
-                    title: L("ear_training"),
-                    subtitle: "Train your ear with chord recognition",
-                    gradientColors: [Color.purple, Color.pink],
-                    theme: theme
-                )
-            }
-            .simultaneousGesture(TapGesture().onEnded { _ in
-                adsManager.recordPageTransition()
-            })
-            
-            // Chord Library - Large Card (NEW)
-            NavigationLink(destination: ChordLibraryView()) {
-                HeroCard(
-                    icon: "book.fill",
-                    title: L("chord_library"),
-                    subtitle: "Learn chords with interactive diagrams",
-                    gradientColors: [Color.orange, Color.red],
-                    theme: theme
-                )
-            }
-            .simultaneousGesture(TapGesture().onEnded { _ in
-                adsManager.recordPageTransition()
-            })
-            
-            // Chord Mastery - Learn Chord Diagrams
-            NavigationLink(destination: LevelSelectView()) {
-                HeroCard(
-                    icon: "graduationcap.fill",
-                    title: L("learn_chord_diagrams"),
-                    subtitle: "Master chords step by step",
-                    gradientColors: [Color.cyan, Color.blue],
-                    theme: theme
-                )
-            }
-            .simultaneousGesture(TapGesture().onEnded { _ in
-                adsManager.recordPageTransition()
-            })
-            
-            // Fretboard Training - Large Card
-            NavigationLink(destination: ExerciseView()) {
-                HeroCard(
-                    icon: "guitars.fill",
-                    title: L("fretboard"),
-                    subtitle: "Master the fretboard with exercises",
-                    gradientColors: [Color.green, Color.teal],
-                    theme: theme
-                )
-            }
-            .simultaneousGesture(TapGesture().onEnded { _ in
-                adsManager.recordPageTransition()
-            })
-        }
-        .padding(.horizontal, 20)
-    }
-    
-    // MARK: - Tools Section
-    
-    private var toolsSection: some View {
+    private var practiceSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Tools")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
-                .textCase(.uppercase)
-                .tracking(0.5)
-                .padding(.horizontal, 20)
+            sectionHeader(title: L("tools"), icon: "wrench.and.screwdriver")
             
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
+                // Tuner
                 NavigationLink(destination: TunerView()) {
-                    ToolCard(
+                    ToolTile(
                         icon: "tuningfork",
                         title: L("tuner"),
-                        color: theme.accent,
+                        tint: .blue,
                         theme: theme
                     )
                 }
@@ -161,11 +88,12 @@ struct MainMenuView: View {
                     adsManager.recordPageTransition()
                 })
                 
+                // Metronome
                 NavigationLink(destination: MetronomeView()) {
-                    ToolCard(
+                    ToolTile(
                         icon: "metronome.fill",
                         title: L("metronome"),
-                        color: theme.warning,
+                        tint: .orange,
                         theme: theme
                     )
                 }
@@ -177,26 +105,144 @@ struct MainMenuView: View {
         }
     }
     
-    // MARK: - Premium Button
+    // MARK: - Tools Section → actually "Learn" features
     
-    private var premiumButton: some View {
+    private var toolsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: L("ear_training"), icon: "music.note.list")
+            
+            VStack(spacing: 2) {
+                // Ear Training
+                NavigationLink(destination: EarTrainingLevelSelectView()) {
+                    MenuRow(
+                        icon: "ear.fill",
+                        title: L("ear_training"),
+                        subtitle: L("ear_training_subtitle"),
+                        tint: .purple,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
+                
+                Divider().padding(.leading, 60)
+                
+                // Fretboard Training
+                NavigationLink(destination: ExerciseView()) {
+                    MenuRow(
+                        icon: "guitars.fill",
+                        title: L("fretboard"),
+                        subtitle: L("fretboard_subtitle"),
+                        tint: .green,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
+                
+                Divider().padding(.leading, 60)
+                
+                // Tempo Trainer - Coming Soon
+                MenuRow(
+                    icon: "waveform.path",
+                    title: L("tempo_trainer"),
+                    subtitle: L("coming_soon"),
+                    tint: .indigo,
+                    theme: theme,
+                    isLocked: true
+                )
+            }
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.cardBackground)
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    // MARK: - Learn Section (Chords)
+    
+    private var learnSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: L("chord_library"), icon: "book.fill")
+            
+            VStack(spacing: 2) {
+                // Chord Library
+                NavigationLink(destination: ChordLibraryView()) {
+                    MenuRow(
+                        icon: "book.fill",
+                        title: L("chord_library"),
+                        subtitle: L("chord_library_subtitle"),
+                        tint: .red,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
+                
+                Divider().padding(.leading, 60)
+                
+                // Chord Mastery
+                NavigationLink(destination: LevelSelectView()) {
+                    MenuRow(
+                        icon: "graduationcap.fill",
+                        title: L("learn_chord_diagrams"),
+                        subtitle: L("chord_mastery_subtitle"),
+                        tint: .cyan,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
+            }
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.cardBackground)
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+    
+    // MARK: - Premium Section
+    
+    private var premiumSection: some View {
         Button {
             Task {
-                await storeManager.purchaseRemoveAds()
+                await storeManager.purchaseSubscription()
             }
         } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 18))
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 40, height: 40)
+                    
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.white)
+                }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Remove Ads")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                    Text(L("iap_subscribe"))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
                     
-                    if let product = storeManager.removeAdsProduct {
-                        Text(product.displayPrice)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .opacity(0.8)
+                    if let product = storeManager.subscriptionProduct {
+                        Text(product.displayPrice + " " + L("iap_per_month"))
+                            .font(.system(size: 13))
+                            .foregroundStyle(theme.textSecondary)
                     }
                 }
                 
@@ -204,102 +250,126 @@ struct MainMenuView: View {
                 
                 if storeManager.isPurchasing {
                     ProgressView()
-                        .tint(.white)
                 } else {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(uiColor: .tertiaryLabel))
                 }
             }
-            .foregroundStyle(.white)
-            .padding(16)
+            .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                    .fill(LinearGradient(colors: [.purple, .pink], startPoint: .leading, endPoint: .trailing))
-                    .shadow(color: .purple.opacity(0.3), radius: 10, x: 0, y: 5)
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.cardBackground)
             )
         }
         .disabled(storeManager.isPurchasing)
         .padding(.horizontal, 20)
     }
+    
+    // MARK: - Section Header
+    
+    private func sectionHeader(title: String, icon: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(theme.textSecondary)
+            
+            Text(title.uppercased())
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(theme.textSecondary)
+                .tracking(0.8)
+        }
+        .padding(.horizontal, 24)
+    }
 }
 
-// MARK: - Hero Card
+// MARK: - Tool Tile (Square card for Tuner/Metronome)
 
-struct HeroCard: View {
+struct ToolTile: View {
     let icon: String
     let title: String
-    let subtitle: String
-    let gradientColors: [Color]
+    let tint: Color
     let theme: ThemeManager
     
     var body: some View {
-        HStack(spacing: 16) {
+        VStack(spacing: 14) {
             ZStack {
-                Circle()
-                    .fill(.white.opacity(0.2))
-                    .frame(width: 56, height: 56)
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(tint.gradient)
+                    .frame(width: 52, height: 52)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 26))
+                    .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(.white)
             }
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                
-                Text(subtitle)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
-            }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.7))
+            Text(title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(theme.textPrimary)
         }
-        .padding(20)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 22)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
-                .fill(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
-                .shadow(color: gradientColors[0].opacity(0.3), radius: 12, x: 0, y: 6)
+            RoundedRectangle(cornerRadius: 16)
+                .fill(theme.cardBackground)
         )
     }
 }
 
-// MARK: - Tool Card
+// MARK: - Menu Row (Grouped list item)
 
-struct ToolCard: View {
+struct MenuRow: View {
     let icon: String
     let title: String
-    let color: Color
+    let subtitle: String
+    let tint: Color
     let theme: ThemeManager
+    var isLocked: Bool = false
     
     var body: some View {
-        VStack(spacing: 12) {
+        HStack(spacing: 14) {
             ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 50, height: 50)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(tint.gradient)
+                    .frame(width: 40, height: 40)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundStyle(color)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(.white)
             }
             
-            Text(title)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.textPrimary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(isLocked ? theme.textSecondary : theme.textPrimary)
+                
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(theme.textSecondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            if isLocked {
+                Text("Soon")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.textSecondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(uiColor: .tertiarySystemFill))
+                    )
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color(uiColor: .tertiaryLabel))
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(
-            RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                .fill(theme.cardBackground)
-                .shadow(color: theme.shadow, radius: 8, x: 0, y: 4)
-        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
     }
 }
 

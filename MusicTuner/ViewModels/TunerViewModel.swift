@@ -44,23 +44,26 @@ final class TunerViewModel: ObservableObject {
     
     // Dynamic smoothing based on instrument
     // Bass needs more smoothing (lower alpha) due to slower string vibration
+    /// Smoothing alpha - higher = faster response, lower = smoother
+    /// YIN provides stable output, so we can use higher alpha values
     private var smoothingAlpha: Double {
         switch selectedInstrument {
         case .bass:
-            return 0.05  // More smoothing for bass stability
+            return 0.15  // Some smoothing for bass stability
         case .guitar:
-            return 0.08  // Standard smoothing
+            return 0.20  // Fast response
         case .ukulele:
-            return 0.10  // Faster response for higher frequencies
+            return 0.25  // Very fast response for higher frequencies
         case .free:
-            return 0.08
+            return 0.20
         }
     }
     
     // Additional buffer for stability - larger for bass
     private var centsBuffer: [Double] = []
+    /// Buffer size per instrument - bass needs larger buffer for stability
     private var bufferSize: Int {
-        selectedInstrument == .bass ? 8 : 5  // Larger buffer for bass
+        selectedInstrument == .bass ? 4 : 3
     }
     
     // MARK: - SUCCESS LOCK: Timer-based confirmation
@@ -69,9 +72,23 @@ final class TunerViewModel: ObservableObject {
     private var inZoneStartTime: Date? = nil
     private var hasPlayedSuccessSound: Bool = false
     
+    // MARK: - Streak Timer (30 seconds active usage)
+    private var usageTimer: Timer?
+    private var accumulatedUsageTime: TimeInterval = 0
+    private let streakUsageThreshold: TimeInterval = 30.0  // 30 seconds
+    private var hasMarkedStreakToday = false
+    
     // MARK: - Haptic Feedback
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     private let successHaptic = UINotificationFeedbackGenerator()
+    
+    // MARK: - Calibration
+    
+    /// User calibration in cents (-50 to +50), forwarded to AudioManager
+    var calibrationCents: Double {
+        get { audioManager.calibrationCents }
+        set { audioManager.calibrationCents = newValue }
+    }
     
     // MARK: - Computed Properties
     
@@ -328,6 +345,7 @@ final class TunerViewModel: ObservableObject {
         do {
             try await audioManager.start()
             isListening = true
+            startUsageTimer()
         } catch {
             errorMessage = error.localizedDescription
             isListening = false
@@ -338,6 +356,51 @@ final class TunerViewModel: ObservableObject {
         audioManager.stop()
         isListening = false
         resetSmoothing()
+        stopUsageTimer()
+    }
+    
+    // MARK: - Streak Usage Timer
+    
+    private func startUsageTimer() {
+        // Reset if already marked today
+        if StreakManager.shared.hasCompletedToday {
+            hasMarkedStreakToday = true
+            return
+        }
+        
+        usageTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateUsageTime()
+            }
+        }
+    }
+    
+    private func stopUsageTimer() {
+        usageTimer?.invalidate()
+        usageTimer = nil
+    }
+    
+    private func updateUsageTime() {
+        guard !hasMarkedStreakToday else { return }
+        
+        // Only count time when we're detecting a signal
+        if detectedFrequency > 0 {
+            accumulatedUsageTime += 1.0
+            
+            if accumulatedUsageTime >= streakUsageThreshold {
+                markStreakCompleted()
+            }
+        }
+    }
+    
+    private func markStreakCompleted() {
+        guard !hasMarkedStreakToday else { return }
+        
+        hasMarkedStreakToday = true
+        StreakManager.shared.markDailyActivity()
+        stopUsageTimer()
+        
+        print("🔥 Tuner streak marked after 30s usage")
     }
     
     func toggleListening() async {

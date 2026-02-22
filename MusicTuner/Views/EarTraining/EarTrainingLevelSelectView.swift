@@ -1,15 +1,15 @@
 //
-//  LevelSelectView.swift
+//  EarTrainingLevelSelectView.swift
 //  MusicTuner
 //
-//  Level selection grid for Chord Mastery
-//  Shows 4 levels with lock/unlock states
+//  Level selection for Ear Training
+//  Shows 8 levels with lock/unlock states - matches ChordMastery LevelSelectView
 //
 
 import SwiftUI
 
-struct LevelSelectView: View {
-    @StateObject private var viewModel = ChordMasteryViewModel()
+struct EarTrainingLevelSelectView: View {
+    @StateObject private var viewModel = EarTrainingViewModel()
     @ObservedObject var theme = ThemeManager.shared
     @ObservedObject var storeManager = StoreKitManager.shared
     
@@ -36,7 +36,7 @@ struct LevelSelectView: View {
                 AdBannerContainer()
             }
         }
-        .navigationTitle(L("learn_chord_diagrams"))
+        .navigationTitle(L("ear_training"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .onAppear {
@@ -50,20 +50,20 @@ struct LevelSelectView: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(LinearGradient(colors: [.cyan, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .fill(LinearGradient(colors: [.purple, .pink], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 80, height: 80)
-                    .shadow(color: .cyan.opacity(0.3), radius: 12, x: 0, y: 6)
+                    .shadow(color: .purple.opacity(0.3), radius: 12, x: 0, y: 6)
                 
-                Image(systemName: "graduationcap.fill")
+                Image(systemName: "ear.fill")
                     .font(.system(size: 36))
                     .foregroundStyle(.white)
             }
             
-            Text(L("chord_mastery_title"))
+            Text(L("et_title"))
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(theme.textPrimary)
             
-            Text(L("chord_mastery_subtitle"))
+            Text(L("et_subtitle"))
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(theme.textSecondary)
                 .multilineTextAlignment(.center)
@@ -76,7 +76,7 @@ struct LevelSelectView: View {
     
     private var levelGrid: some View {
         VStack(spacing: 16) {
-            ForEach(ChordCurriculum.levels) { level in
+            ForEach(EarTrainingCurriculum.levels) { level in
                 levelCard(for: level)
             }
         }
@@ -93,7 +93,7 @@ struct LevelSelectView: View {
         let canAccess = isUnlocked && (!isPremiumLevel || storeManager.isPremium)
         
         if canAccess {
-            NavigationLink(destination: LearningSessionView(level: level)) {
+            NavigationLink(destination: EarTrainingLearningView(level: level)) {
                 levelCardContent(level: level, isUnlocked: true, isCompleted: isCompleted, isPremiumLocked: false)
             }
         } else {
@@ -106,7 +106,7 @@ struct LevelSelectView: View {
             // Level Icon
             ZStack {
                 Circle()
-                    .fill(isUnlocked && !isPremiumLocked ? 
+                    .fill(isUnlocked && !isPremiumLocked ?
                           LinearGradient(colors: level.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing) :
                           isPremiumLocked ?
                           LinearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing) :
@@ -143,7 +143,6 @@ struct LevelSelectView: View {
                     .foregroundStyle(theme.textSecondary)
                     .lineLimit(2)
                 
-                // Chord count or Premium badge
                 if isPremiumLocked {
                     HStack(spacing: 4) {
                         Image(systemName: "crown.fill")
@@ -155,7 +154,7 @@ struct LevelSelectView: View {
                     .padding(.top, 2)
                 } else {
                     HStack(spacing: 4) {
-                        Image(systemName: "music.note")
+                        Image(systemName: "speaker.wave.2.fill")
                             .font(.system(size: 10))
                         Text("\(level.chordIdentifiers.count) chords")
                             .font(.system(size: 11, weight: .medium, design: .rounded))
@@ -167,7 +166,6 @@ struct LevelSelectView: View {
             
             Spacer()
             
-            // Arrow, Crown or Lock
             if isPremiumLocked {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 14))
@@ -192,6 +190,6 @@ struct LevelSelectView: View {
 
 #Preview {
     NavigationStack {
-        LevelSelectView()
+        EarTrainingLevelSelectView()
     }
 }

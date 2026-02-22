@@ -289,6 +289,12 @@ final class ChordMasteryViewModel: ObservableObject {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
         }
+        
+        // Show interstitial ad after quiz completion
+        AdsManager.shared.showInterstitial()
+        
+        // Mark daily streak activity
+        StreakManager.shared.markDailyActivity()
     }
     
     // MARK: - Computed Properties

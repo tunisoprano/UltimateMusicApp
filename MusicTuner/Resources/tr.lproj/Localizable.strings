@@ -90,10 +90,18 @@
 "level_basics_subtitle" = "Her gitaristin öğrendiği ilk akorlar";
 "level_open_chords" = "Açık Akorlar";
 "level_open_chords_subtitle" = "Akor dağarcığını genişlet";
+"level_minor_chords" = "Minör Akorlar";
+"level_minor_chords_subtitle" = "Duygusal minör sesleri keşfet";
 "level_power_chords" = "Power Akorlar";
 "level_power_chords_subtitle" = "Rock ve punk müziğin olmazsa olmazları";
 "level_seventh_chords" = "7'li Akorlar";
 "level_seventh_chords_subtitle" = "Çalışına renk kat";
+"level_barre_chords" = "Bare Akorlar";
+"level_barre_chords_subtitle" = "Tüm klavyenin kilidini aç";
+"level_sharp_chords" = "Diyez Akorlar";
+"level_sharp_chords_subtitle" = "Ara notaları öğren";
+"level_final_challenge" = "Final Sınavı";
+"level_final_challenge_subtitle" = "Öğrendiğin her şeyi test et";
 
 // Learning Session
 "study_this_chord" = "Bu akoru çalış";
@@ -115,3 +123,72 @@
 "next_level_unlocked" = "%@ Kilidi Açıldı!";
 "done" = "Tamam";
 "back_to_levels" = "Seviyelere Dön";
+
+// Ear Training - New Level System
+"et_title" = "Kulak Eğitimi";
+"et_subtitle" = "Akorları sesiyle tanımayı öğren";
+"listen_to_chord" = "Bu akoru dinle";
+"what_chord_sounds" = "Bu hangi akor?";
+"play_again" = "Tekrar Çal";
+"et_level_major_basics" = "Majör Temelleri";
+"et_level_major_basics_subtitle" = "Temel majör akorları tanımayı öğren";
+"et_level_minor_intro" = "Minör Giriş";
+"et_level_minor_intro_subtitle" = "Minör akorların sesini keşfet";
+"et_level_mixed_open" = "Karışık Açık";
+"et_level_mixed_open_subtitle" = "Majör ve minörü kulaktan ayırt et";
+"et_level_extended_open" = "Genişletilmiş Açık";
+"et_level_extended_open_subtitle" = "Daha fazla majör akor tanıma";
+"et_level_minor_expansion" = "Minör Genişleme";
+"et_level_minor_expansion_subtitle" = "Daha fazla minör akor sesi keşfet";
+"et_level_seventh" = "7'li Akorlar";
+"et_level_seventh_subtitle" = "Jazzy yedili sesi tanı";
+"et_level_sharp_territory" = "Diyez Bölgesi";
+"et_level_sharp_territory_subtitle" = "Diyez ve bemoller kulağını zorlar";
+"et_level_final" = "Final Sınavı";
+"et_level_final_subtitle" = "Öğrendiğin her şeyi test et";
+
+// Fretboard Training - Level System
+"fb_title" = "Klavye Eğitimi";
+"fb_subtitle" = "Nota egzersizleriyle klavyeye hâkim ol";
+"instrument" = "Enstrüman";
+"frets" = "Perdeler";
+"fret" = "Perde";
+"string" = "Tel";
+"study_this_note" = "Bu notayı çalış";
+"play_this_note" = "Bu notayı çal";
+"you_are_playing" = "Çaldığın nota";
+"listening" = "Dinleniyor...";
+"fb_level_open_strings" = "Açık Teller";
+"fb_level_open_strings_subtitle" = "Açık tel notalarını öğren";
+"fb_level_first_position" = "Birinci Pozisyon";
+"fb_level_first_position_subtitle" = "Perde 0-3 notaları";
+"fb_level_fifth_position" = "Beşinci Pozisyon";
+"fb_level_fifth_position_subtitle" = "Perde 0-5 notaları";
+"fb_level_upper_frets" = "Üst Perdeler";
+"fb_level_upper_frets_subtitle" = "Perde 0-7 notaları";
+"fb_level_full_fretboard" = "Tüm Klavye";
+"fb_level_full_fretboard_subtitle" = "Klavyedeki tüm notalar";
+
+// Abonelik
+"iap_purchases" = "Abonelik";
+"iap_premium_status" = "Premium Durum";
+"iap_ads_removed" = "Premium aktif";
+"iap_free_version" = "Ücretsiz sürüm";
+"iap_active" = "Aktif";
+"iap_subscribe" = "Premium'a Geç";
+"iap_subscribe_desc" = "Aylık abonelikle tüm reklamları kaldır";
+"iap_per_month" = "/ay";
+"iap_renews_on" = "Yenileme tarihi:";
+"iap_manage_subscription" = "Aboneliği Yönet";
+"iap_restore" = "Satın Almaları Geri Yükle";
+
+// About
+"privacy_policy" = "Gizlilik Politikası";
+
+// Ana Menü
+"app_subtitle" = "Müzik eğitim yardımcın";
+"ear_training_subtitle" = "Akor tanıma ile kulağını eğit";
+"fretboard_subtitle" = "Alıştırmalarla klavyeyi öğren";
+"chord_library_subtitle" = "İnteraktif diyagramlarla akor öğren";
+"chord_mastery_subtitle" = "Akorları adım adım öğren";
+"tempo_trainer" = "Tempo Eğitmeni";

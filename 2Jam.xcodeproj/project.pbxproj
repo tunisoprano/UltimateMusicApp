@@ -7,13 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		041037AC2F2D53DE0003FAC9 /* Guitar.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = 041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */; };
 		041EFCFD2F0E848600C65EAF /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 041EFCFC2F0E848600C65EAF /* GoogleMobileAds */; };
+		0476CB132F38AF0200D47840 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0476CB122F38AF0200D47840 /* WidgetKit.framework */; };
+		0476CB152F38AF0200D47840 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0476CB142F38AF0200D47840 /* SwiftUI.framework */; };
+		0476CB262F38AF0300D47840 /* 2JamWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0476CB102F38AF0200D47840 /* 2JamWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		04F859BF2F0D72350086C717 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859BE2F0D72350086C717 /* AudioKit */; };
 		04F859C22F0D725F0086C717 /* SoundpipeAudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859C12F0D725F0086C717 /* SoundpipeAudioKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0476CB242F38AF0300D47840 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0490AA292F0C8183008DE0D9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0476CB0F2F38AF0200D47840;
+			remoteInfo = 2JamWidgetExtension;
+		};
 		0490AA3F2F0C8184008DE0D9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0490AA292F0C8183008DE0D9 /* Project object */;
@@ -30,28 +39,61 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		0476CB2B2F38AF0300D47840 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0476CB262F38AF0300D47840 /* 2JamWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = Guitar.sf2; sourceTree = "<group>"; };
-		0490AA312F0C8183008DE0D9 /* MusicTuner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicTuner.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0490AA3E2F0C8184008DE0D9 /* MusicTunerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicTunerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0490AA482F0C8184008DE0D9 /* MusicTunerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicTunerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0476CB102F38AF0200D47840 /* 2JamWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = 2JamWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0476CB122F38AF0200D47840 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		0476CB142F38AF0200D47840 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		0476CB322F38B1E400D47840 /* 2Jam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = 2Jam.entitlements; sourceTree = "<group>"; };
+		0476CB332F38B21000D47840 /* 2JamWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = 2JamWidgetExtension.entitlements; sourceTree = "<group>"; };
+		0490AA312F0C8183008DE0D9 /* 2Jam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 2Jam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0490AA3E2F0C8184008DE0D9 /* 2JamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 2JamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0490AA482F0C8184008DE0D9 /* 2JamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 2JamUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		0490AA7F2F0C8453008DE0D9 /* Exceptions for "MusicTuner" folder in "MusicTuner" target */ = {
+		0476CB2A2F38AF0300D47840 /* Exceptions for "2JamWidget" folder in "2JamWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0476CB0F2F38AF0200D47840 /* 2JamWidgetExtension */;
+		};
+		0490AA7F2F0C8453008DE0D9 /* Exceptions for "MusicTuner" folder in "2Jam" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Resources/Info.plist,
 			);
-			target = 0490AA302F0C8183008DE0D9 /* MusicTuner */;
+			target = 0490AA302F0C8183008DE0D9 /* 2Jam */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		0476CB162F38AF0200D47840 /* 2JamWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0476CB2A2F38AF0300D47840 /* Exceptions for "2JamWidget" folder in "2JamWidgetExtension" target */,
+			);
+			path = 2JamWidget;
+			sourceTree = "<group>";
+		};
 		0490AA332F0C8183008DE0D9 /* MusicTuner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				0490AA7F2F0C8453008DE0D9 /* Exceptions for "MusicTuner" folder in "MusicTuner" target */,
+				0490AA7F2F0C8453008DE0D9 /* Exceptions for "MusicTuner" folder in "2Jam" target */,
 			);
 			path = MusicTuner;
 			sourceTree = "<group>";
@@ -69,6 +111,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0476CB0D2F38AF0200D47840 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0476CB152F38AF0200D47840 /* SwiftUI.framework in Frameworks */,
+				0476CB132F38AF0200D47840 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0490AA2E2F0C8183008DE0D9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -96,13 +147,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0476CB112F38AF0200D47840 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0476CB122F38AF0200D47840 /* WidgetKit.framework */,
+				0476CB142F38AF0200D47840 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		0490AA282F0C8183008DE0D9 = {
 			isa = PBXGroup;
 			children = (
-				041037AB2F2D53DE0003FAC9 /* Guitar.sf2 */,
+				0476CB332F38B21000D47840 /* 2JamWidgetExtension.entitlements */,
+				0476CB322F38B1E400D47840 /* 2Jam.entitlements */,
 				0490AA332F0C8183008DE0D9 /* MusicTuner */,
 				0490AA412F0C8184008DE0D9 /* MusicTunerTests */,
 				0490AA4B2F0C8184008DE0D9 /* MusicTunerUITests */,
+				0476CB162F38AF0200D47840 /* 2JamWidget */,
+				0476CB112F38AF0200D47840 /* Frameworks */,
 				0490AA322F0C8183008DE0D9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -110,9 +173,10 @@
 		0490AA322F0C8183008DE0D9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0490AA312F0C8183008DE0D9 /* MusicTuner.app */,
-				0490AA3E2F0C8184008DE0D9 /* MusicTunerTests.xctest */,
-				0490AA482F0C8184008DE0D9 /* MusicTunerUITests.xctest */,
+				0490AA312F0C8183008DE0D9 /* 2Jam.app */,
+				0490AA3E2F0C8184008DE0D9 /* 2JamTests.xctest */,
+				0490AA482F0C8184008DE0D9 /* 2JamUITests.xctest */,
+				0476CB102F38AF0200D47840 /* 2JamWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,34 +184,58 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0490AA302F0C8183008DE0D9 /* MusicTuner */ = {
+		0476CB0F2F38AF0200D47840 /* 2JamWidgetExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0490AA522F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTuner" */;
+			buildConfigurationList = 0476CB272F38AF0300D47840 /* Build configuration list for PBXNativeTarget "2JamWidgetExtension" */;
 			buildPhases = (
-				0490AA2D2F0C8183008DE0D9 /* Sources */,
-				0490AA2E2F0C8183008DE0D9 /* Frameworks */,
-				0490AA2F2F0C8183008DE0D9 /* Resources */,
+				0476CB0C2F38AF0200D47840 /* Sources */,
+				0476CB0D2F38AF0200D47840 /* Frameworks */,
+				0476CB0E2F38AF0200D47840 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				0476CB162F38AF0200D47840 /* 2JamWidget */,
+			);
+			name = 2JamWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = 2JamWidgetExtension;
+			productReference = 0476CB102F38AF0200D47840 /* 2JamWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		0490AA302F0C8183008DE0D9 /* 2Jam */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0490AA522F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2Jam" */;
+			buildPhases = (
+				0490AA2D2F0C8183008DE0D9 /* Sources */,
+				0490AA2E2F0C8183008DE0D9 /* Frameworks */,
+				0490AA2F2F0C8183008DE0D9 /* Resources */,
+				0476CB2B2F38AF0300D47840 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0476CB252F38AF0300D47840 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
 				0490AA332F0C8183008DE0D9 /* MusicTuner */,
 			);
-			name = MusicTuner;
+			name = 2Jam;
 			packageProductDependencies = (
 				04F859BE2F0D72350086C717 /* AudioKit */,
 				04F859C12F0D725F0086C717 /* SoundpipeAudioKit */,
 				041EFCFC2F0E848600C65EAF /* GoogleMobileAds */,
 			);
 			productName = MusicTuner;
-			productReference = 0490AA312F0C8183008DE0D9 /* MusicTuner.app */;
+			productReference = 0490AA312F0C8183008DE0D9 /* 2Jam.app */;
 			productType = "com.apple.product-type.application";
 		};
-		0490AA3D2F0C8184008DE0D9 /* MusicTunerTests */ = {
+		0490AA3D2F0C8184008DE0D9 /* 2JamTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0490AA552F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTunerTests" */;
+			buildConfigurationList = 0490AA552F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2JamTests" */;
 			buildPhases = (
 				0490AA3A2F0C8184008DE0D9 /* Sources */,
 				0490AA3B2F0C8184008DE0D9 /* Frameworks */,
@@ -161,16 +249,16 @@
 			fileSystemSynchronizedGroups = (
 				0490AA412F0C8184008DE0D9 /* MusicTunerTests */,
 			);
-			name = MusicTunerTests;
+			name = 2JamTests;
 			packageProductDependencies = (
 			);
 			productName = MusicTunerTests;
-			productReference = 0490AA3E2F0C8184008DE0D9 /* MusicTunerTests.xctest */;
+			productReference = 0490AA3E2F0C8184008DE0D9 /* 2JamTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		0490AA472F0C8184008DE0D9 /* MusicTunerUITests */ = {
+		0490AA472F0C8184008DE0D9 /* 2JamUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0490AA582F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTunerUITests" */;
+			buildConfigurationList = 0490AA582F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2JamUITests" */;
 			buildPhases = (
 				0490AA442F0C8184008DE0D9 /* Sources */,
 				0490AA452F0C8184008DE0D9 /* Frameworks */,
@@ -184,11 +272,11 @@
 			fileSystemSynchronizedGroups = (
 				0490AA4B2F0C8184008DE0D9 /* MusicTunerUITests */,
 			);
-			name = MusicTunerUITests;
+			name = 2JamUITests;
 			packageProductDependencies = (
 			);
 			productName = MusicTunerUITests;
-			productReference = 0490AA482F0C8184008DE0D9 /* MusicTunerUITests.xctest */;
+			productReference = 0490AA482F0C8184008DE0D9 /* 2JamUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -201,6 +289,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					0476CB0F2F38AF0200D47840 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					0490AA302F0C8183008DE0D9 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -214,7 +305,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0490AA2C2F0C8183008DE0D9 /* Build configuration list for PBXProject "MusicTuner" */;
+			buildConfigurationList = 0490AA2C2F0C8183008DE0D9 /* Build configuration list for PBXProject "2Jam" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -234,19 +325,26 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0490AA302F0C8183008DE0D9 /* MusicTuner */,
-				0490AA3D2F0C8184008DE0D9 /* MusicTunerTests */,
-				0490AA472F0C8184008DE0D9 /* MusicTunerUITests */,
+				0490AA302F0C8183008DE0D9 /* 2Jam */,
+				0490AA3D2F0C8184008DE0D9 /* 2JamTests */,
+				0490AA472F0C8184008DE0D9 /* 2JamUITests */,
+				0476CB0F2F38AF0200D47840 /* 2JamWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0476CB0E2F38AF0200D47840 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0490AA2F2F0C8183008DE0D9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				041037AC2F2D53DE0003FAC9 /* Guitar.sf2 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +365,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0476CB0C2F38AF0200D47840 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0490AA2D2F0C8183008DE0D9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -291,24 +396,86 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		0476CB252F38AF0300D47840 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0476CB0F2F38AF0200D47840 /* 2JamWidgetExtension */;
+			targetProxy = 0476CB242F38AF0300D47840 /* PBXContainerItemProxy */;
+		};
 		0490AA402F0C8184008DE0D9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0490AA302F0C8183008DE0D9 /* MusicTuner */;
+			target = 0490AA302F0C8183008DE0D9 /* 2Jam */;
 			targetProxy = 0490AA3F2F0C8184008DE0D9 /* PBXContainerItemProxy */;
 		};
 		0490AA4A2F0C8184008DE0D9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0490AA302F0C8183008DE0D9 /* MusicTuner */;
+			target = 0490AA302F0C8183008DE0D9 /* 2Jam */;
 			targetProxy = 0490AA492F0C8184008DE0D9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		0476CB282F38AF0300D47840 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = 2JamWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F3V9L8ZFD5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = 2JamWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = 2JamWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuni.2Jam.JamWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0476CB292F38AF0300D47840 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = 2JamWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F3V9L8ZFD5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = 2JamWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = 2JamWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuni.2Jam.JamWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		0490AA502F0C8184008DE0D9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -373,6 +540,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -430,13 +598,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = 2Jam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MusicTuner/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Music Tuner";
+				INFOPLIST_KEY_CFBundleDisplayName = 2Jam;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to detect the pitch of your instrument for tuning and exercises.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -446,7 +615,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.2;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = tuni.2Jam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -460,13 +629,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = 2Jam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MusicTuner/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Music Tuner";
+				INFOPLIST_KEY_CFBundleDisplayName = 2Jam;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to detect the pitch of your instrument for tuning and exercises.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -476,7 +646,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.2;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = tuni.2Jam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -500,7 +670,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MusicTuner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MusicTuner";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/2Jam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/2Jam";
 			};
 			name = Debug;
 		};
@@ -519,7 +689,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MusicTuner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MusicTuner";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/2Jam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/2Jam";
 			};
 			name = Release;
 		};
@@ -560,7 +730,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0490AA2C2F0C8183008DE0D9 /* Build configuration list for PBXProject "MusicTuner" */ = {
+		0476CB272F38AF0300D47840 /* Build configuration list for PBXNativeTarget "2JamWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0476CB282F38AF0300D47840 /* Debug */,
+				0476CB292F38AF0300D47840 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0490AA2C2F0C8183008DE0D9 /* Build configuration list for PBXProject "2Jam" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0490AA502F0C8184008DE0D9 /* Debug */,
@@ -569,7 +748,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0490AA522F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTuner" */ = {
+		0490AA522F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2Jam" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0490AA532F0C8184008DE0D9 /* Debug */,
@@ -578,7 +757,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0490AA552F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTunerTests" */ = {
+		0490AA552F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2JamTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0490AA562F0C8184008DE0D9 /* Debug */,
@@ -587,7 +766,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0490AA582F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "MusicTunerUITests" */ = {
+		0490AA582F0C8184008DE0D9 /* Build configuration list for PBXNativeTarget "2JamUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0490AA592F0C8184008DE0D9 /* Debug */,

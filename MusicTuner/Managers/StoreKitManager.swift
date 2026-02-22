@@ -2,13 +2,13 @@
 //  StoreKitManager.swift
 //  MusicTuner
 //
-//  Manages In-App Purchases using StoreKit 2
+//  Manages monthly Premium subscription using StoreKit 2
 //
 
 import Foundation
 import StoreKit
 
-/// Manages "Remove Ads" purchase using StoreKit 2
+/// Manages Premium subscription (auto-renewable monthly)
 @MainActor
 final class StoreKitManager: ObservableObject {
     
@@ -16,13 +16,19 @@ final class StoreKitManager: ObservableObject {
     static let shared = StoreKitManager()
     
     // MARK: - Product ID
-    private let removeAdsProductID = "com.musictuner.removeads"
+    /// Monthly subscription product ID — must match App Store Connect
+    private let premiumMonthlyID = "com.2jam.premium.monthly"
     
     // MARK: - Published Properties
     @Published private(set) var isPremium = false
-    @Published private(set) var removeAdsProduct: Product?
+    @Published private(set) var subscriptionProduct: Product?
     @Published private(set) var isPurchasing = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var expirationDate: Date?
+    @Published private(set) var isSubscriptionActive = false
+    
+    /// Convenience for views that used the old name
+    var removeAdsProduct: Product? { subscriptionProduct }
     
     // MARK: - Transaction Listener
     private var transactionListener: Task<Void, Error>?
@@ -34,7 +40,7 @@ final class StoreKitManager: ObservableObject {
         
         Task {
             await loadProducts()
-            await checkPurchaseStatus()
+            await checkSubscriptionStatus()
         }
     }
     
@@ -46,11 +52,11 @@ final class StoreKitManager: ObservableObject {
     
     func loadProducts() async {
         do {
-            let products = try await Product.products(for: [removeAdsProductID])
+            let products = try await Product.products(for: [premiumMonthlyID])
             
             if let product = products.first {
-                removeAdsProduct = product
-                print("✅ Product loaded: \(product.displayName) - \(product.displayPrice)")
+                subscriptionProduct = product
+                print("✅ Subscription product loaded: \(product.displayName) - \(product.displayPrice)")
             }
         } catch {
             print("⚠️ Failed to load products: \(error)")
@@ -58,10 +64,10 @@ final class StoreKitManager: ObservableObject {
         }
     }
     
-    // MARK: - Purchase
+    // MARK: - Purchase Subscription
     
-    func purchaseRemoveAds() async {
-        guard let product = removeAdsProduct else {
+    func purchaseSubscription() async {
+        guard let product = subscriptionProduct else {
             errorMessage = "Product not available"
             return
         }
@@ -75,9 +81,9 @@ final class StoreKitManager: ObservableObject {
             switch result {
             case .success(let verification):
                 let transaction = try checkVerified(verification)
-                await updatePurchaseStatus(transaction)
+                await updateSubscriptionStatus(transaction)
                 await transaction.finish()
-                print("✅ Purchase successful!")
+                print("✅ Subscription successful!")
                 
             case .userCancelled:
                 print("ℹ️ User cancelled purchase")
@@ -96,32 +102,46 @@ final class StoreKitManager: ObservableObject {
         isPurchasing = false
     }
     
+    /// Backward compatibility
+    func purchaseRemoveAds() async {
+        await purchaseSubscription()
+    }
+    
     // MARK: - Restore Purchases
     
     func restorePurchases() async {
         do {
             try await AppStore.sync()
-            await checkPurchaseStatus()
+            await checkSubscriptionStatus()
         } catch {
             print("⚠️ Restore failed: \(error)")
             errorMessage = "Restore failed"
         }
     }
     
-    // MARK: - Check Purchase Status
+    // MARK: - Check Subscription Status
     
-    private func checkPurchaseStatus() async {
+    private func checkSubscriptionStatus() async {
+        // Check current entitlements for active subscription
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result {
-                if transaction.productID == removeAdsProductID {
-                    isPremium = true
-                    print("✅ User is premium (Remove Ads purchased)")
-                    return
+                if transaction.productID == premiumMonthlyID {
+                    // Check if subscription is still valid (not expired, not revoked)
+                    if transaction.revocationDate == nil {
+                        isPremium = true
+                        isSubscriptionActive = true
+                        expirationDate = transaction.expirationDate
+                        print("✅ Active subscription — expires: \(transaction.expirationDate?.formatted() ?? "unknown")")
+                        return
+                    }
                 }
             }
         }
         
+        // No active subscription found
         isPremium = false
+        isSubscriptionActive = false
+        expirationDate = nil
     }
     
     // MARK: - Transaction Listener
@@ -130,16 +150,30 @@ final class StoreKitManager: ObservableObject {
         Task.detached {
             for await result in Transaction.updates {
                 if case .verified(let transaction) = result {
-                    await self.updatePurchaseStatus(transaction)
+                    await self.updateSubscriptionStatus(transaction)
                     await transaction.finish()
                 }
             }
         }
     }
     
-    private func updatePurchaseStatus(_ transaction: StoreKit.Transaction) async {
-        if transaction.productID == removeAdsProductID {
-            isPremium = transaction.revocationDate == nil
+    private func updateSubscriptionStatus(_ transaction: StoreKit.Transaction) async {
+        if transaction.productID == premiumMonthlyID {
+            let isActive = transaction.revocationDate == nil
+            isPremium = isActive
+            isSubscriptionActive = isActive
+            expirationDate = transaction.expirationDate
+        }
+    }
+    
+    // MARK: - Manage Subscription (opens system subscription management)
+    
+    func manageSubscription() async {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        do {
+            try await AppStore.showManageSubscriptions(in: windowScene)
+        } catch {
+            print("⚠️ Could not open subscription management: \(error)")
         }
     }
     

@@ -2,12 +2,13 @@
 //  HeadstockView.swift
 //  MusicTuner
 //
-//  Vector-based instrument headstock with tuning pegs
+//  Guitar: Real headstock photo with floating note labels at peg positions
+//  Bass & Ukulele: Vector-based shapes (unchanged, awaiting real photos)
 //
 
 import SwiftUI
 
-/// Headstock view with vector graphics for Guitar, Bass, and Ukulele
+/// Headstock view — real photo for Guitar, vector shapes for Bass & Ukulele
 struct HeadstockView: View {
     let instrument: Instrument
     let strings: [InstrumentString]
@@ -18,74 +19,295 @@ struct HeadstockView: View {
     @ObservedObject var theme = ThemeManager.shared
     
     var body: some View {
+        switch instrument {
+        case .guitar:
+            guitarPhotoHeadstock
+        case .bass:
+            bassPhotoHeadstock
+        case .ukulele:
+            ukulelePhotoHeadstock
+        case .free:
+            EmptyView()
+        }
+    }
+    
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MARK: - Guitar: Real Photo Headstock
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    /// Headstock photo aspect ratio (width / height of the PNG)
+    /// Measure your actual image and set this. ~500x830 ≈ 0.602
+    private let headstockImageAspect: CGFloat = 0.602
+    
+    private var guitarPhotoHeadstock: some View {
         GeometryReader { geo in
-            ZStack {
-                // Draw headstock shape
-                scaledHeadstock(in: geo.size)
+            let viewW = geo.size.width
+            let viewH = geo.size.height
+            
+            // Calculate actual image rect (scaledToFit, bottom-aligned)
+            let imgH = viewW / headstockImageAspect
+            let actualH = min(imgH, viewH)
+            let actualW = actualH * headstockImageAspect
+            let imgX = (viewW - actualW) / 2        // centered horizontally
+            let imgY = viewH - actualH               // bottom-aligned
+            
+            ZStack(alignment: .topLeading) {
+                // Real headstock image
+                Image("guitar_headstock")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: viewW)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
                 
-                // Draw tuning pegs
-                pegsOverlay(in: geo.size)
+                // Peg buttons positioned relative to the actual image rect
+                guitarNotePegs(imgRect: CGRect(x: imgX, y: imgY, width: actualW, height: actualH))
             }
         }
-        .aspectRatio(headstockAspect, contentMode: .fit)
     }
     
-    // MARK: - Headstock Shape
-    
-    private var headstockPath: Path {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 100)
-        switch instrument {
-        case .guitar, .free:
-            return GuitarHeadstockShape().path(in: rect)
-        case .bass:
-            return BassHeadstockShape().path(in: rect)
-        case .ukulele:
-            return UkuleleHeadstockShape().path(in: rect)
-        }
-    }
-    
-    private func scaledHeadstock(in size: CGSize) -> some View {
-        let shape: any Shape
-        switch instrument {
-        case .guitar, .free:
-            shape = GuitarHeadstockShape()
-        case .bass:
-            shape = BassHeadstockShape()
-        case .ukulele:
-            shape = UkuleleHeadstockShape()
-        }
+    /// 6 floating note labels at tuning peg positions
+    /// Left (top→bottom): D A E — Right (top→bottom): G B E(high)
+    /// Coordinates are proportional to the headstock IMAGE, not the container
+    private func guitarNotePegs(imgRect: CGRect) -> some View {
+        // Peg positions as fractions of the headstock IMAGE dimensions
+        // Left side: D(top), A(mid), E-low(bottom) — reversed order
+        // Right side: G(top), B(mid), E-high(bottom)
         
-        return AnyShape(shape)
-            .fill(headstockGradient)
-            .overlay(
-                AnyShape(shape)
-                    .stroke(theme.textSecondary.opacity(0.3), lineWidth: 2)
-            )
-            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+        // Left peg positions (top to bottom) — all same X
+        let leftPositions: [(CGFloat, CGFloat)] = [
+            (0.01, 0.16),   // D — top left peg (up a bit)
+            (0.01, 0.31),   // A — middle left peg
+            (0.01, 0.46),   // E — bottom left peg (down a bit)
+        ]
+        // Left strings: top=D(index 2), mid=A(index 1), bottom=E-low(index 0)
+        let leftStringIndices = [2, 1, 0]
+        
+        // Right peg positions (top to bottom) — all same X
+        let rightPositions: [(CGFloat, CGFloat)] = [
+            (0.96, 0.16),   // G — top right peg
+            (0.96, 0.31),   // B — middle right peg
+            (0.96, 0.46),   // E high — bottom right peg
+        ]
+        // Right strings: top=G(index 3), mid=B(index 4), bottom=E-high(index 5)
+        let rightStringIndices = [3, 4, 5]
+        
+        return ZStack {
+            // Left pegs (D, A, E)
+            ForEach(0..<3, id: \.self) { i in
+                let si = leftStringIndices[i]
+                guard si < strings.count else { return AnyView(EmptyView()) }
+                return AnyView(
+                    StringPegButton(
+                        string: strings[si],
+                        isSelected: selectedString?.id == strings[si].id,
+                        isTuned: tunedString?.id == strings[si].id,
+                        onTap: { onPegTap(strings[si]) }
+                    )
+                    .position(
+                        x: imgRect.minX + imgRect.width * leftPositions[i].0,
+                        y: imgRect.minY + imgRect.height * leftPositions[i].1
+                    )
+                )
+            }
+            
+            // Right pegs (G, B, E)
+            ForEach(0..<3, id: \.self) { i in
+                let si = rightStringIndices[i]
+                guard si < strings.count else { return AnyView(EmptyView()) }
+                return AnyView(
+                    StringPegButton(
+                        string: strings[si],
+                        isSelected: selectedString?.id == strings[si].id,
+                        isTuned: tunedString?.id == strings[si].id,
+                        onTap: { onPegTap(strings[si]) }
+                    )
+                    .position(
+                        x: imgRect.minX + imgRect.width * rightPositions[i].0,
+                        y: imgRect.minY + imgRect.height * rightPositions[i].1
+                    )
+                )
+            }
+        }
     }
     
-    private var headstockAspect: CGFloat {
-        switch instrument {
-        case .guitar: return 0.55
-        case .bass: return 0.45
-        case .ukulele: return 0.65
-        case .free: return 0.55
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MARK: - Bass: Real Photo Headstock
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    /// Bass headstock photo aspect ratio (width / height)
+    private let bassImageAspect: CGFloat = 0.644
+    
+    private var bassPhotoHeadstock: some View {
+        GeometryReader { geo in
+            let viewW = geo.size.width
+            let viewH = geo.size.height
+            
+            let imgH = viewW / bassImageAspect
+            let actualH = min(imgH, viewH)
+            let actualW = actualH * bassImageAspect
+            let imgX = (viewW - actualW) / 2
+            let imgY = viewH - actualH
+            
+            ZStack(alignment: .topLeading) {
+                Image("bass_headstock")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: viewW)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                
+                bassNotePegs(imgRect: CGRect(x: imgX, y: imgY, width: actualW, height: actualH))
+            }
         }
+    }
+    
+    /// 4 floating note labels — all pegs on the left side (Fender-style)
+    /// Top to bottom: G(thinnest), D, A, E(thickest)
+    private func bassNotePegs(imgRect: CGRect) -> some View {
+        // Peg positions — to the left of each peg, fanning out leftward
+        let pegPositions: [(CGFloat, CGFloat)] = [
+            (0.12, 0.13),   // G
+            (0.05, 0.30),   // D
+            (0.00, 0.47),   // A
+            (-0.05, 0.67),  // E
+        ]
+        // String order: G(index 3), D(index 2), A(index 1), E(index 0)
+        let stringIndices = [3, 2, 1, 0]
+        
+        return ZStack {
+            ForEach(0..<4, id: \.self) { i in
+                let si = stringIndices[i]
+                guard si < strings.count else { return AnyView(EmptyView()) }
+                return AnyView(
+                    StringPegButton(
+                        string: strings[si],
+                        isSelected: selectedString?.id == strings[si].id,
+                        isTuned: tunedString?.id == strings[si].id,
+                        onTap: { onPegTap(strings[si]) }
+                    )
+                    .position(
+                        x: imgRect.minX + imgRect.width * pegPositions[i].0,
+                        y: imgRect.minY + imgRect.height * pegPositions[i].1
+                    )
+                )
+            }
+        }
+    }
+    
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MARK: - Ukulele: Real Photo Headstock
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    /// Ukulele headstock photo aspect ratio (width / height)
+    private let ukuleleImageAspect: CGFloat = 0.58
+    
+    private var ukulelePhotoHeadstock: some View {
+        GeometryReader { geo in
+            let viewW = geo.size.width
+            let viewH = geo.size.height
+            
+            let imgH = viewW / ukuleleImageAspect
+            let actualH = min(imgH, viewH)
+            let actualW = actualH * ukuleleImageAspect
+            let imgX = (viewW - actualW) / 2
+            let imgY = viewH - actualH
+            
+            ZStack(alignment: .topLeading) {
+                Image("ukulele_headstock")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: viewW)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                
+                ukuleleNotePegs(imgRect: CGRect(x: imgX, y: imgY, width: actualW, height: actualH))
+            }
+        }
+    }
+    
+    /// 4 floating note labels — 2 left (G, C) + 2 right (E, A)
+    private func ukuleleNotePegs(imgRect: CGRect) -> some View {
+        // Left pegs: G(top), C(bottom)
+        let leftPositions: [(CGFloat, CGFloat)] = [
+            (0.08, 0.20),   // G — top left
+            (0.04, 0.33),   // C — bottom left
+        ]
+        let leftStringIndices = [0, 1] // G=0, C=1
+        
+        // Right pegs: E(top), A(bottom)
+        let rightPositions: [(CGFloat, CGFloat)] = [
+            (0.92, 0.20),   // E — top right
+            (0.96, 0.33),   // A — bottom right
+        ]
+        let rightStringIndices = [2, 3] // E=2, A=3
+        
+        return ZStack {
+            // Left pegs (G, C)
+            ForEach(0..<2, id: \.self) { i in
+                let si = leftStringIndices[i]
+                guard si < strings.count else { return AnyView(EmptyView()) }
+                return AnyView(
+                    StringPegButton(
+                        string: strings[si],
+                        isSelected: selectedString?.id == strings[si].id,
+                        isTuned: tunedString?.id == strings[si].id,
+                        onTap: { onPegTap(strings[si]) }
+                    )
+                    .position(
+                        x: imgRect.minX + imgRect.width * leftPositions[i].0,
+                        y: imgRect.minY + imgRect.height * leftPositions[i].1
+                    )
+                )
+            }
+            
+            // Right pegs (E, A)
+            ForEach(0..<2, id: \.self) { i in
+                let si = rightStringIndices[i]
+                guard si < strings.count else { return AnyView(EmptyView()) }
+                return AnyView(
+                    StringPegButton(
+                        string: strings[si],
+                        isSelected: selectedString?.id == strings[si].id,
+                        isTuned: tunedString?.id == strings[si].id,
+                        onTap: { onPegTap(strings[si]) }
+                    )
+                    .position(
+                        x: imgRect.minX + imgRect.width * rightPositions[i].0,
+                        y: imgRect.minY + imgRect.height * rightPositions[i].1
+                    )
+                )
+            }
+        }
+    }
+    
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MARK: - Vector Headstock (legacy, kept for reference)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    private func vectorHeadstock<S: Shape>(shape: S, aspect: CGFloat) -> some View {
+        GeometryReader { geo in
+            ZStack {
+                shape
+                    .fill(headstockGradient)
+                    .overlay(
+                        shape.stroke(theme.textSecondary.opacity(0.3), lineWidth: 2)
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                
+                vectorPegs(in: geo.size)
+            }
+        }
+        .aspectRatio(aspect, contentMode: .fit)
     }
     
     private var headstockGradient: LinearGradient {
         let baseColor: Color
         switch instrument {
-        case .guitar:
-            baseColor = Color(red: 0.45, green: 0.28, blue: 0.15)
         case .bass:
             baseColor = Color(red: 0.25, green: 0.15, blue: 0.08)
         case .ukulele:
             baseColor = Color(red: 0.55, green: 0.38, blue: 0.20)
-        case .free:
-            baseColor = Color(red: 0.40, green: 0.25, blue: 0.12)
+        default:
+            baseColor = Color(red: 0.45, green: 0.28, blue: 0.15)
         }
-        
         return LinearGradient(
             colors: [baseColor.opacity(0.9), baseColor, baseColor.opacity(0.8)],
             startPoint: .topLeading,
@@ -93,11 +315,8 @@ struct HeadstockView: View {
         )
     }
     
-    // MARK: - Tuning Pegs
-    
-    private func pegsOverlay(in size: CGSize) -> some View {
-        let positions = pegPositions(for: size)
-        
+    private func vectorPegs(in size: CGSize) -> some View {
+        let positions = vectorPegPositions(for: size)
         return ZStack {
             ForEach(Array(zip(strings.indices, strings)), id: \.0) { index, string in
                 if index < positions.count {
@@ -113,44 +332,86 @@ struct HeadstockView: View {
         }
     }
     
-    private func pegPositions(for size: CGSize) -> [CGPoint] {
+    private func vectorPegPositions(for size: CGSize) -> [CGPoint] {
         let w = size.width
         let h = size.height
-        
         switch instrument {
-        case .guitar:
-            // 6 strings: 3 left, 3 right (E-A-D left, G-B-E right)
-            return [
-                CGPoint(x: w * 0.18, y: h * 0.25), // E (low)
-                CGPoint(x: w * 0.15, y: h * 0.45), // A
-                CGPoint(x: w * 0.18, y: h * 0.65), // D
-                CGPoint(x: w * 0.82, y: h * 0.25), // G
-                CGPoint(x: w * 0.85, y: h * 0.45), // B
-                CGPoint(x: w * 0.82, y: h * 0.65), // E (high)
-            ]
         case .bass:
-            // 4 strings: inline on left side
             return [
-                CGPoint(x: w * 0.22, y: h * 0.20), // E
-                CGPoint(x: w * 0.22, y: h * 0.40), // A
-                CGPoint(x: w * 0.22, y: h * 0.60), // D
-                CGPoint(x: w * 0.22, y: h * 0.80), // G
+                CGPoint(x: w * 0.22, y: h * 0.20),
+                CGPoint(x: w * 0.22, y: h * 0.40),
+                CGPoint(x: w * 0.22, y: h * 0.60),
+                CGPoint(x: w * 0.22, y: h * 0.80),
             ]
         case .ukulele:
-            // 4 strings: 2 left, 2 right
             return [
-                CGPoint(x: w * 0.20, y: h * 0.30), // G
-                CGPoint(x: w * 0.20, y: h * 0.55), // C
-                CGPoint(x: w * 0.80, y: h * 0.30), // E
-                CGPoint(x: w * 0.80, y: h * 0.55), // A
+                CGPoint(x: w * 0.20, y: h * 0.30),
+                CGPoint(x: w * 0.20, y: h * 0.55),
+                CGPoint(x: w * 0.80, y: h * 0.30),
+                CGPoint(x: w * 0.80, y: h * 0.55),
             ]
-        case .free:
-            return []
+        default: return []
         }
     }
 }
 
-// MARK: - Tuning Peg Button
+// MARK: - String Peg Button (floating label for photo headstock)
+
+/// Circular floating note label — used for Guitar photo headstock
+struct StringPegButton: View {
+    let string: InstrumentString
+    let isSelected: Bool
+    let isTuned: Bool
+    let onTap: () -> Void
+    
+    @ObservedObject var theme = ThemeManager.shared
+    
+    private var bgColor: Color {
+        if isTuned { return theme.success }
+        if isSelected { return theme.accent }
+        return Color(white: 0.22)
+    }
+    
+    private var glowColor: Color {
+        if isTuned { return theme.success }
+        if isSelected { return theme.accent }
+        return .clear
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                // Glow
+                if isSelected || isTuned {
+                    Circle()
+                        .fill(glowColor.opacity(0.5))
+                        .frame(width: 50, height: 50)
+                        .blur(radius: 10)
+                }
+                
+                // Glass background circle
+                Circle()
+                    .fill(bgColor.opacity(0.85))
+                    .frame(width: 38, height: 38)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(isTuned ? 0.5 : 0.15), lineWidth: 1.5)
+                    )
+                    .shadow(color: .black.opacity(0.4), radius: 4, x: 0, y: 2)
+                
+                // Note letter
+                Text(NoteFormatter.formatLetter(string.name))
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+        }
+        .buttonStyle(PegTapStyle())
+        .scaleEffect(isTuned ? 1.1 : 1.0)
+        .animation(.spring(response: 0.3), value: isTuned)
+    }
+}
+
+// MARK: - Tuning Peg View (vector headstock — Bass & Ukulele)
 
 struct TuningPegView: View {
     let string: InstrumentString
@@ -161,29 +422,20 @@ struct TuningPegView: View {
     @ObservedObject var theme = ThemeManager.shared
     
     private var pegColor: Color {
-        if isTuned {
-            return theme.success
-        } else if isSelected {
-            return theme.accent
-        } else {
-            return Color(white: 0.85)
-        }
+        if isTuned { return theme.success }
+        if isSelected { return theme.accent }
+        return Color(white: 0.85)
     }
     
     private var glowColor: Color {
-        if isTuned {
-            return theme.success
-        } else if isSelected {
-            return theme.accent
-        } else {
-            return .clear
-        }
+        if isTuned { return theme.success }
+        if isSelected { return theme.accent }
+        return .clear
     }
     
     var body: some View {
         Button(action: onTap) {
             ZStack {
-                // Glow effect
                 if isSelected || isTuned {
                     Circle()
                         .fill(glowColor.opacity(0.4))
@@ -191,7 +443,6 @@ struct TuningPegView: View {
                         .blur(radius: 8)
                 }
                 
-                // Peg base (metallic look)
                 Circle()
                     .fill(
                         RadialGradient(
@@ -208,63 +459,22 @@ struct TuningPegView: View {
                     )
                     .shadow(color: .black.opacity(0.4), radius: 3, x: 1, y: 2)
                 
-                // String label
                 Text(NoteFormatter.formatLetter(string.name))
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(isTuned || isSelected ? .white : theme.textPrimary)
             }
         }
-        .buttonStyle(PegButtonStyle())
+        .buttonStyle(PegTapStyle())
     }
 }
 
-struct PegButtonStyle: ButtonStyle {
+// MARK: - Button Style
+
+struct PegTapStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.88 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
-
-// MARK: - Guitar Headstock Shape
-
-struct GuitarHeadstockShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let w = rect.width
-        let h = rect.height
-        
-        // Classic guitar headstock shape
-        path.move(to: CGPoint(x: w * 0.35, y: h))
-        
-        // Left curve up
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.10, y: h * 0.15),
-            control: CGPoint(x: w * 0.05, y: h * 0.60)
-        )
-        
-        // Top curve
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.50, y: 0),
-            control: CGPoint(x: w * 0.25, y: 0)
-        )
-        
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.90, y: h * 0.15),
-            control: CGPoint(x: w * 0.75, y: 0)
-        )
-        
-        // Right curve down
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.65, y: h),
-            control: CGPoint(x: w * 0.95, y: h * 0.60)
-        )
-        
-        // Neck
-        path.addLine(to: CGPoint(x: w * 0.35, y: h))
-        path.closeSubpath()
-        
-        return path
     }
 }
 
@@ -276,34 +486,24 @@ struct BassHeadstockShape: Shape {
         let w = rect.width
         let h = rect.height
         
-        // Elongated bass headstock (Fender style)
         path.move(to: CGPoint(x: w * 0.40, y: h))
-        
-        // Left side - straighter
         path.addLine(to: CGPoint(x: w * 0.15, y: h * 0.85))
         path.addQuadCurve(
             to: CGPoint(x: w * 0.08, y: h * 0.10),
             control: CGPoint(x: w * 0.03, y: h * 0.50)
         )
-        
-        // Top
         path.addQuadCurve(
             to: CGPoint(x: w * 0.35, y: 0),
             control: CGPoint(x: w * 0.15, y: 0)
         )
-        
         path.addLine(to: CGPoint(x: w * 0.55, y: 0))
-        
         path.addQuadCurve(
             to: CGPoint(x: w * 0.60, y: h * 0.10),
             control: CGPoint(x: w * 0.60, y: 0)
         )
-        
-        // Right side
         path.addLine(to: CGPoint(x: w * 0.60, y: h))
         path.addLine(to: CGPoint(x: w * 0.40, y: h))
         path.closeSubpath()
-        
         return path
     }
 }
@@ -316,68 +516,42 @@ struct UkuleleHeadstockShape: Shape {
         let w = rect.width
         let h = rect.height
         
-        // Compact ukulele headstock
         path.move(to: CGPoint(x: w * 0.35, y: h))
-        
-        // Left curve
         path.addQuadCurve(
             to: CGPoint(x: w * 0.15, y: h * 0.20),
             control: CGPoint(x: w * 0.10, y: h * 0.55)
         )
-        
-        // Top - more rounded
         path.addQuadCurve(
             to: CGPoint(x: w * 0.50, y: h * 0.05),
             control: CGPoint(x: w * 0.30, y: 0)
         )
-        
         path.addQuadCurve(
             to: CGPoint(x: w * 0.85, y: h * 0.20),
             control: CGPoint(x: w * 0.70, y: 0)
         )
-        
-        // Right curve
         path.addQuadCurve(
             to: CGPoint(x: w * 0.65, y: h),
             control: CGPoint(x: w * 0.90, y: h * 0.55)
         )
-        
         path.addLine(to: CGPoint(x: w * 0.35, y: h))
         path.closeSubpath()
-        
         return path
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     VStack(spacing: 30) {
         HeadstockView(
             instrument: .guitar,
             strings: Instrument.guitar.strings,
-            selectedString: nil,
+            selectedString: Instrument.guitar.strings[1],
             tunedString: Instrument.guitar.strings.first,
             onPegTap: { _ in }
         )
-        .frame(height: 200)
-        
-        HeadstockView(
-            instrument: .bass,
-            strings: Instrument.bass.strings,
-            selectedString: Instrument.bass.strings[1],
-            tunedString: nil,
-            onPegTap: { _ in }
-        )
-        .frame(height: 220)
-        
-        HeadstockView(
-            instrument: .ukulele,
-            strings: Instrument.ukulele.strings,
-            selectedString: nil,
-            tunedString: nil,
-            onPegTap: { _ in }
-        )
-        .frame(height: 160)
+        .frame(height: 280)
     }
-    .padding()
+    .padding(20)
     .background(Color.black)
 }

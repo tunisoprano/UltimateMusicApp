@@ -99,14 +99,31 @@ struct ChordCurriculum {
             ]
         ),
         
-        // Level 3: Power Chords
+        // Level 3: Minor Chords
         LevelDefinition(
             id: 3,
+            title: "Minor Chords",
+            localizedTitleKey: "level_minor_chords",
+            subtitle: "Explore emotional minor sounds",
+            localizedSubtitleKey: "level_minor_chords_subtitle",
+            icon: "3.circle.fill",
+            gradientColors: [.indigo, .blue],
+            chordIdentifiers: [
+                (.C, .minor),
+                (.G, .minor),
+                (.F, .minor),
+                (.B, .minor)
+            ]
+        ),
+        
+        // Level 4: Power Chords
+        LevelDefinition(
+            id: 4,
             title: "Power Chords",
             localizedTitleKey: "level_power_chords",
             subtitle: "Rock and punk essentials",
             localizedSubtitleKey: "level_power_chords_subtitle",
-            icon: "3.circle.fill",
+            icon: "4.circle.fill",
             gradientColors: [.orange, .red],
             chordIdentifiers: [
                 (.E, .power),
@@ -116,20 +133,238 @@ struct ChordCurriculum {
             ]
         ),
         
-        // Level 4: 7th Chords
+        // Level 5: 7th Chords
         LevelDefinition(
-            id: 4,
+            id: 5,
             title: "7th Chords",
             localizedTitleKey: "level_seventh_chords",
             subtitle: "Add color to your playing",
             localizedSubtitleKey: "level_seventh_chords_subtitle",
-            icon: "4.circle.fill",
+            icon: "5.circle.fill",
             gradientColors: [.pink, .purple],
             chordIdentifiers: [
                 (.G, .seventh),
                 (.C, .seventh),
                 (.D, .seventh),
                 (.A, .seventh)
+            ]
+        ),
+        
+        // Level 6: Barre Chords
+        LevelDefinition(
+            id: 6,
+            title: "Barre Chords",
+            localizedTitleKey: "level_barre_chords",
+            subtitle: "Unlock the entire fretboard",
+            localizedSubtitleKey: "level_barre_chords_subtitle",
+            icon: "6.circle.fill",
+            gradientColors: [.red, .orange],
+            chordIdentifiers: [
+                (.F, .major),
+                (.B, .major),
+                (.Fsharp, .minor),
+                (.Asharp, .major),
+                (.Gsharp, .minor)
+            ]
+        ),
+        
+        // Level 7: Sharp & Flat Chords
+        LevelDefinition(
+            id: 7,
+            title: "Sharp Chords",
+            localizedTitleKey: "level_sharp_chords",
+            subtitle: "Master the in-between notes",
+            localizedSubtitleKey: "level_sharp_chords_subtitle",
+            icon: "7.circle.fill",
+            gradientColors: [.teal, .mint],
+            chordIdentifiers: [
+                (.Csharp, .major),
+                (.Fsharp, .major),
+                (.Dsharp, .minor),
+                (.Csharp, .seventh),
+                (.B, .seventh)
+            ]
+        ),
+        
+        // Level 8: Mixed Review
+        LevelDefinition(
+            id: 8,
+            title: "Final Challenge",
+            localizedTitleKey: "level_final_challenge",
+            subtitle: "Test everything you've learned",
+            localizedSubtitleKey: "level_final_challenge_subtitle",
+            icon: "star.circle.fill",
+            gradientColors: [.yellow, .orange],
+            chordIdentifiers: [
+                (.G, .major),
+                (.A, .minor),
+                (.E, .seventh),
+                (.D, .power),
+                (.F, .major),
+                (.B, .minor)
+            ]
+        )
+    ]
+    
+    // MARK: - Helper Methods
+    
+    /// Get a specific level by ID
+    static func level(id: Int) -> LevelDefinition? {
+        levels.first { $0.id == id }
+    }
+    
+    /// Get the next level after the given level
+    static func nextLevel(after level: LevelDefinition) -> LevelDefinition? {
+        levels.first { $0.id == level.id + 1 }
+    }
+    
+    /// Total number of levels
+    static var totalLevels: Int {
+        levels.count
+    }
+}
+
+// MARK: - Ear Training Curriculum
+
+/// The complete Ear Training curriculum with 8 progressive levels
+struct EarTrainingCurriculum {
+    
+    // MARK: - All Levels
+    
+    static let levels: [LevelDefinition] = [
+        // Level 1: Major Basics
+        LevelDefinition(
+            id: 1,
+            title: "Major Basics",
+            localizedTitleKey: "et_level_major_basics",
+            subtitle: "Learn to recognize basic major chords",
+            localizedSubtitleKey: "et_level_major_basics_subtitle",
+            icon: "1.circle.fill",
+            gradientColors: [.green, .teal],
+            chordIdentifiers: [
+                (.C, .major),
+                (.G, .major),
+                (.D, .major)
+            ]
+        ),
+        
+        // Level 2: Minor Intro
+        LevelDefinition(
+            id: 2,
+            title: "Minor Intro",
+            localizedTitleKey: "et_level_minor_intro",
+            subtitle: "Discover the sound of minor chords",
+            localizedSubtitleKey: "et_level_minor_intro_subtitle",
+            icon: "2.circle.fill",
+            gradientColors: [.blue, .purple],
+            chordIdentifiers: [
+                (.E, .minor),
+                (.A, .minor),
+                (.D, .minor)
+            ]
+        ),
+        
+        // Level 3: Mixed Open
+        LevelDefinition(
+            id: 3,
+            title: "Mixed Open",
+            localizedTitleKey: "et_level_mixed_open",
+            subtitle: "Distinguish major from minor by ear",
+            localizedSubtitleKey: "et_level_mixed_open_subtitle",
+            icon: "3.circle.fill",
+            gradientColors: [.cyan, .blue],
+            chordIdentifiers: [
+                (.C, .major),
+                (.G, .major),
+                (.E, .minor),
+                (.A, .minor)
+            ]
+        ),
+        
+        // Level 4: Extended Open
+        LevelDefinition(
+            id: 4,
+            title: "Extended Open",
+            localizedTitleKey: "et_level_extended_open",
+            subtitle: "More major chords to identify",
+            localizedSubtitleKey: "et_level_extended_open_subtitle",
+            icon: "4.circle.fill",
+            gradientColors: [.indigo, .blue],
+            chordIdentifiers: [
+                (.A, .major),
+                (.E, .major),
+                (.D, .major),
+                (.F, .major)
+            ]
+        ),
+        
+        // Level 5: Minor Expansion
+        LevelDefinition(
+            id: 5,
+            title: "Minor Expansion",
+            localizedTitleKey: "et_level_minor_expansion",
+            subtitle: "Explore more minor chord sounds",
+            localizedSubtitleKey: "et_level_minor_expansion_subtitle",
+            icon: "5.circle.fill",
+            gradientColors: [.purple, .pink],
+            chordIdentifiers: [
+                (.C, .minor),
+                (.G, .minor),
+                (.F, .minor),
+                (.B, .minor)
+            ]
+        ),
+        
+        // Level 6: 7th Chords
+        LevelDefinition(
+            id: 6,
+            title: "7th Chords",
+            localizedTitleKey: "et_level_seventh",
+            subtitle: "Recognize the jazzy seventh sound",
+            localizedSubtitleKey: "et_level_seventh_subtitle",
+            icon: "6.circle.fill",
+            gradientColors: [.orange, .red],
+            chordIdentifiers: [
+                (.G, .seventh),
+                (.C, .seventh),
+                (.D, .seventh),
+                (.A, .seventh)
+            ]
+        ),
+        
+        // Level 7: Sharp Territory
+        LevelDefinition(
+            id: 7,
+            title: "Sharp Territory",
+            localizedTitleKey: "et_level_sharp_territory",
+            subtitle: "Sharps and flats challenge your ear",
+            localizedSubtitleKey: "et_level_sharp_territory_subtitle",
+            icon: "7.circle.fill",
+            gradientColors: [.teal, .mint],
+            chordIdentifiers: [
+                (.Csharp, .major),
+                (.Fsharp, .major),
+                (.Asharp, .major),
+                (.Gsharp, .major)
+            ]
+        ),
+        
+        // Level 8: Final Challenge
+        LevelDefinition(
+            id: 8,
+            title: "Final Challenge",
+            localizedTitleKey: "et_level_final",
+            subtitle: "Test everything you've learned",
+            localizedSubtitleKey: "et_level_final_subtitle",
+            icon: "star.circle.fill",
+            gradientColors: [.yellow, .orange],
+            chordIdentifiers: [
+                (.G, .major),
+                (.A, .minor),
+                (.E, .seventh),
+                (.D, .minor),
+                (.F, .major),
+                (.B, .minor)
             ]
         )
     ]

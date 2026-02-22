@@ -90,10 +90,18 @@
 "level_basics_subtitle" = "First chords every guitarist learns";
 "level_open_chords" = "Open Chords";
 "level_open_chords_subtitle" = "Expand your chord vocabulary";
+"level_minor_chords" = "Minor Chords";
+"level_minor_chords_subtitle" = "Explore emotional minor sounds";
 "level_power_chords" = "Power Chords";
 "level_power_chords_subtitle" = "Rock and punk essentials";
 "level_seventh_chords" = "7th Chords";
 "level_seventh_chords_subtitle" = "Add color to your playing";
+"level_barre_chords" = "Barre Chords";
+"level_barre_chords_subtitle" = "Unlock the entire fretboard";
+"level_sharp_chords" = "Sharp Chords";
+"level_sharp_chords_subtitle" = "Master the in-between notes";
+"level_final_challenge" = "Final Challenge";
+"level_final_challenge_subtitle" = "Test everything you've learned";
 
 // Learning Session
 "study_this_chord" = "Study this chord";
@@ -115,3 +123,72 @@
 "next_level_unlocked" = "%@ Unlocked!";
 "done" = "Done";
 "back_to_levels" = "Back to Levels";
+
+// Ear Training - New Level System
+"et_title" = "Ear Training";
+"et_subtitle" = "Train your ear to recognize chords by sound";
+"listen_to_chord" = "Listen to this chord";
+"what_chord_sounds" = "What chord is this?";
+"play_again" = "Play Again";
+"et_level_major_basics" = "Major Basics";
+"et_level_major_basics_subtitle" = "Learn to recognize basic major chords";
+"et_level_minor_intro" = "Minor Intro";
+"et_level_minor_intro_subtitle" = "Discover the sound of minor chords";
+"et_level_mixed_open" = "Mixed Open";
+"et_level_mixed_open_subtitle" = "Distinguish major from minor by ear";
+"et_level_extended_open" = "Extended Open";
+"et_level_extended_open_subtitle" = "More major chords to identify";
+"et_level_minor_expansion" = "Minor Expansion";
+"et_level_minor_expansion_subtitle" = "Explore more minor chord sounds";
+"et_level_seventh" = "7th Chords";
+"et_level_seventh_subtitle" = "Recognize the jazzy seventh sound";
+"et_level_sharp_territory" = "Sharp Territory";
+"et_level_sharp_territory_subtitle" = "Sharps and flats challenge your ear";
+"et_level_final" = "Final Challenge";
+"et_level_final_subtitle" = "Test everything you've learned";
+
+// Fretboard Training - Level System
+"fb_title" = "Fretboard Training";
+"fb_subtitle" = "Master the fretboard with note exercises";
+"instrument" = "Instrument";
+"frets" = "Frets";
+"fret" = "Fret";
+"string" = "String";
+"study_this_note" = "Study this note";
+"play_this_note" = "Play this note";
+"you_are_playing" = "You're playing";
+"listening" = "Listening...";
+"fb_level_open_strings" = "Open Strings";
+"fb_level_open_strings_subtitle" = "Learn open string notes";
+"fb_level_first_position" = "First Position";
+"fb_level_first_position_subtitle" = "Notes on frets 0-3";
+"fb_level_fifth_position" = "Fifth Position";
+"fb_level_fifth_position_subtitle" = "Notes on frets 0-5";
+"fb_level_upper_frets" = "Upper Frets";
+"fb_level_upper_frets_subtitle" = "Notes on frets 0-7";
+"fb_level_full_fretboard" = "Full Fretboard";
+"fb_level_full_fretboard_subtitle" = "All notes across the fretboard";
+
+// In-App Purchase / Subscription
+"iap_purchases" = "Subscription";
+"iap_premium_status" = "Premium Status";
+"iap_ads_removed" = "Premium active";
+"iap_free_version" = "Free version";
+"iap_active" = "Active";
+"iap_subscribe" = "Go Premium";
+"iap_subscribe_desc" = "Remove all ads with monthly subscription";
+"iap_per_month" = "/month";
+"iap_renews_on" = "Renews on";
+"iap_manage_subscription" = "Manage Subscription";
+"iap_restore" = "Restore Purchases";
+
+// About
+"privacy_policy" = "Privacy Policy";
+
+// Main Menu
+"app_subtitle" = "Your music education companion";
+"ear_training_subtitle" = "Train your ear with chord recognition";
+"fretboard_subtitle" = "Master the fretboard with exercises";
+"chord_library_subtitle" = "Learn chords with interactive diagrams";
+"chord_mastery_subtitle" = "Master chords step by step";
+"tempo_trainer" = "Tempo Trainer";

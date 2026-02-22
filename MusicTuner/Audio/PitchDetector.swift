@@ -2,7 +2,7 @@
 //  PitchDetector.swift
 //  MusicTuner
 //
-//  Created by MusicTuner
+//  Optimized YIN pitch detection with thread safety
 //
 
 import Foundation
@@ -17,22 +17,42 @@ struct PitchResult {
 }
 
 /// Optimized YIN Algorithm implementation for pitch detection
+/// Thread-safe: all mutable configuration is protected by NSLock
 final class PitchDetector {
     
-    // MARK: - Configuration
+    // MARK: - Thread Safety
+    private let lock = NSLock()
+    
+    // MARK: - Configuration (protected by lock)
     
     /// Minimum detectable frequency (Hz)
-    var minF0: Double = 30.0
+    private var _minF0: Double = 30.0
+    var minF0: Double {
+        get { lock.withLock { _minF0 } }
+        set { lock.withLock { _minF0 = newValue } }
+    }
     
     /// Maximum detectable frequency (Hz)
-    var maxF0: Double = 1400.0
+    private var _maxF0: Double = 1400.0
+    var maxF0: Double {
+        get { lock.withLock { _maxF0 } }
+        set { lock.withLock { _maxF0 = newValue } }
+    }
+    
+    /// User-adjustable calibration offset in cents
+    /// Positive = reading shifts sharp, Negative = reading shifts flat
+    private var _calibrationOffsetCents: Double = 0.0
+    var calibrationOffsetCents: Double {
+        get { lock.withLock { _calibrationOffsetCents } }
+        set { lock.withLock { _calibrationOffsetCents = newValue } }
+    }
     
     /// Threshold for peak detection in CMND
     private let threshold: Double = 0.15
     
-    /// CALIBRATION: Offset correction in cents (negative = lower the reading)
-    /// User reported +10 cents sharp, so we subtract 10
-    let calibrationOffsetCents: Double = -10.0
+    /// Minimum confidence to accept a detection (0.0 - 1.0)
+    /// Higher = fewer false positives, Lower = more sensitive
+    private let confidenceThreshold: Double = 0.50
     
     // MARK: - Pitch Detection
     
@@ -40,10 +60,15 @@ final class PitchDetector {
     func detectPitch(buffer: [Float], sampleRate: Double) -> PitchResult {
         let bufferSize = buffer.count
         
+        // Read config under lock
+        let (currentMinF0, currentMaxF0, calOffset) = lock.withLock {
+            (_minF0, _maxF0, _calibrationOffsetCents)
+        }
+        
         // Calculate lag range based on frequency limits
         // For low bass E (~41Hz), need large maxLag: 44100/41 ≈ 1075
-        let minLag = max(2, Int(sampleRate / maxF0))
-        let maxLag = min(Int(sampleRate / minF0), bufferSize / 2)
+        let minLag = max(2, Int(sampleRate / currentMaxF0))
+        let maxLag = min(Int(sampleRate / currentMinF0), bufferSize / 2)
         
         guard maxLag > minLag, bufferSize > maxLag else {
             return .noDetection
@@ -61,10 +86,15 @@ final class PitchDetector {
         let refinedLag = parabolicInterpolation(cmnd: cmnd, lag: lag, maxLag: maxLag)
         
         // Convert lag to frequency
-        let frequency = sampleRate / refinedLag
+        var frequency = sampleRate / refinedLag
+        
+        // Apply calibration offset: shift frequency by cents
+        if calOffset != 0.0 {
+            frequency = frequency * pow(2.0, calOffset / 1200.0)
+        }
         
         // Validate frequency range
-        guard frequency >= minF0 && frequency <= maxF0 else {
+        guard frequency >= currentMinF0 && frequency <= currentMaxF0 else {
             return .noDetection
         }
         
@@ -133,8 +163,8 @@ final class PitchDetector {
         
         let confidence = Double(1.0 - min(bestValue, 1.0))
         
-        // Lower confidence threshold for better detection
-        guard confidence > 0.35 else { return nil }
+        // Reject low-confidence detections to avoid false positives
+        guard confidence > confidenceThreshold else { return nil }
         
         return (lag, confidence)
     }

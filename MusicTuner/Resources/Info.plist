@@ -2,8 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>2Jam</string>
+			</array>
+		</dict>
+	</array>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-1674562447830288~7955258392</string>
+	<string>ca-app-pub-1674562447830288~2119144561</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

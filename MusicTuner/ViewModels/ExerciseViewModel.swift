@@ -2,7 +2,9 @@
 //  ExerciseViewModel.swift
 //  MusicTuner
 //
-//  Created by MusicTuner
+//  ViewModel for Fretboard Training
+//  State machine: idle → teaching → quizzing → completed
+//  Uses AudioManager for microphone pitch detection
 //
 
 import Foundation
@@ -11,46 +13,90 @@ import AVFoundation
 import UIKit
 import AudioToolbox
 
-/// ViewModel for the Exercise view (gamified fretboard training)
+// MARK: - Fretboard State
+
+enum FretboardState: Equatable {
+    case idle
+    case teaching(level: FretboardLevel, noteIndex: Int)
+    case quizzing(level: FretboardLevel, questionIndex: Int, question: ExerciseQuestion)
+    case completed(level: FretboardLevel, score: Int, total: Int, passed: Bool)
+    
+    static func == (lhs: FretboardState, rhs: FretboardState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle):
+            return true
+        case let (.teaching(l1, i1), .teaching(l2, i2)):
+            return l1.id == l2.id && i1 == i2
+        case let (.quizzing(l1, i1, _), .quizzing(l2, i2, _)):
+            return l1.id == l2.id && i1 == i2
+        case let (.completed(l1, s1, t1, p1), .completed(l2, s2, t2, p2)):
+            return l1.id == l2.id && s1 == s2 && t1 == t2 && p1 == p2
+        default:
+            return false
+        }
+    }
+}
+
+// MARK: - ViewModel
+
 @MainActor
 final class ExerciseViewModel: ObservableObject {
     
     // MARK: - Published Properties
+    
+    @Published private(set) var state: FretboardState = .idle
+    @Published private(set) var currentUnlockedLevel: Int = 1
+    @Published private(set) var completedLevels: Set<Int> = []
+    
+    // Instrument
     @Published var selectedInstrument: Instrument = .guitar
-    @Published var selectedLevel: ExerciseLevel = .openStrings
-    @Published var currentQuestion: ExerciseQuestion?
-    @Published var isListening = false
-    @Published var isCorrect = false
-    @Published var showSuccess = false
-    @Published var score: Int = 0
-    @Published var totalQuestions: Int = 0
-    @Published var errorMessage: String?
     
-    // MARK: - Daily Streak (AppStorage)
-    @AppStorage("lastExerciseDate") private var lastExerciseDateString: String = ""
-    @AppStorage("currentStreak") private var storedStreak: Int = 0
+    // Quiz State
+    @Published private(set) var score: Int = 0
+    @Published private(set) var totalQuestions: Int = 0
+    @Published private(set) var questionNumber: Int = 0
+    @Published var isCorrect: Bool = false
+    @Published var showSuccess: Bool = false
+    @Published var isMatchingTarget: Bool = false
     
+    // Teaching State
+    @Published private(set) var currentNoteIndex: Int = 0
+    @Published private(set) var currentLevel: FretboardLevel? = nil
+    
+    // Audio
+    @Published private(set) var isListening: Bool = false
+    @Published var errorMessage: String? = nil
+    
+    // MARK: - Streak
     var streakCount: Int {
-        storedStreak
+        StreakManager.shared.currentStreak
     }
     
-    // MARK: - Private Properties
+    // MARK: - Dependencies
+    
+    private let progressService: ProgressServiceProtocol
     private let audioManager: AudioManager
-    private var correctHoldTimer: Timer?
+    
+    // Quiz tracking
+    private var questions: [ExerciseQuestion] = []
+    private var currentQuestionIndex: Int = 0
+    private var monitorTimer: Timer?
     private var correctHoldDuration: TimeInterval = 0
     private let requiredHoldDuration: TimeInterval = 0.5
-    
-    private var successSoundID: SystemSoundID = 0
+    private var successSoundID: SystemSoundID = 1057
     private var hasRecordedTodaySession = false
+    
+    // Teaching notes
+    private var teachingNotes: [ExerciseQuestion] = []
     
     // MARK: - Computed Properties
     
-    var detectedFrequency: Double {
-        audioManager.detectedFrequency
-    }
+    var detectedFrequency: Double { audioManager.detectedFrequency }
+    var detectedNote: Note? { audioManager.detectedNote }
     
-    var detectedNote: Note? {
-        audioManager.detectedNote
+    var scorePercentage: Int {
+        guard totalQuestions > 0 else { return 0 }
+        return Int((Double(score) / Double(totalQuestions)) * 100)
     }
     
     var progressPercentage: Double {
@@ -58,96 +104,125 @@ final class ExerciseViewModel: ObservableObject {
         return Double(score) / Double(totalQuestions) * 100
     }
     
-    var isMatchingTarget: Bool {
-        guard let question = currentQuestion,
-              detectedFrequency > 0 else {
-            return false
-        }
-        
-        return NoteUtility.frequencyMatches(detectedFrequency, target: question.targetFrequency, toleranceCents: 15)
-    }
-    
     // MARK: - Initialization
     
-    init(audioManager: AudioManager = .shared) {
+    init(progressService: ProgressServiceProtocol = LocalProgressService.shared,
+         audioManager: AudioManager = .shared) {
+        self.progressService = progressService
         self.audioManager = audioManager
-        setupSuccessSound()
-        checkAndUpdateStreak()
+        loadProgress()
     }
     
-    // MARK: - Sound Setup
+    // MARK: - Progress
     
-    private func setupSuccessSound() {
-        successSoundID = 1057
+    func loadProgress() {
+        currentUnlockedLevel = progressService.getFretboardUnlockedLevel()
+        completedLevels = Set(FretboardCurriculum.levels.filter {
+            progressService.isFretboardLevelCompleted($0.id)
+        }.map { $0.id })
     }
     
-    private func playSuccessSound() {
-        AudioServicesPlaySystemSound(successSoundID)
+    func isLevelUnlocked(_ level: FretboardLevel) -> Bool {
+        progressService.isFretboardLevelUnlocked(level.id)
     }
     
-    // MARK: - Streak Management
-    
-    private func checkAndUpdateStreak() {
-        let today = dateString(for: Date())
-        
-        if lastExerciseDateString.isEmpty {
-            // First time user
-            return
-        }
-        
-        let yesterday = dateString(for: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
-        
-        if lastExerciseDateString == today {
-            // Already exercised today
-            return
-        } else if lastExerciseDateString == yesterday {
-            // Consecutive day - streak continues (will increment when exercise completes)
-            return
-        } else {
-            // Missed a day - reset streak
-            storedStreak = 0
-        }
+    func isLevelCompleted(_ level: FretboardLevel) -> Bool {
+        completedLevels.contains(level.id)
     }
     
-    private func recordExerciseSession() {
-        guard !hasRecordedTodaySession else { return }
-        
-        let today = dateString(for: Date())
-        let yesterday = dateString(for: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
-        
-        if lastExerciseDateString == today {
-            // Already recorded today
-            return
-        } else if lastExerciseDateString == yesterday || lastExerciseDateString.isEmpty {
-            // Consecutive day or first exercise - increment streak
-            storedStreak += 1
-        } else {
-            // Missed days - start fresh
-            storedStreak = 1
-        }
-        
-        lastExerciseDateString = today
-        hasRecordedTodaySession = true
+    // MARK: - Instrument Selection
+    
+    func selectInstrument(_ instrument: Instrument) {
+        selectedInstrument = instrument
+        audioManager.configureForInstrument(instrument)
     }
     
-    private func dateString(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
-    }
+    // MARK: - Start Level (Teaching Phase)
     
-    // MARK: - Actions
-    
-    func startExercise() async {
-        errorMessage = nil
+    func startLevel(_ level: FretboardLevel) {
+        guard isLevelUnlocked(level) else { return }
+        
+        currentLevel = level
+        currentNoteIndex = 0
         score = 0
-        totalQuestions = 0
-        hasRecordedTodaySession = false
+        questionNumber = 0
+        isCorrect = false
+        showSuccess = false
         
+        // Generate teaching notes (one per string/fret combo for this level)
+        teachingNotes = generateTeachingNotes(for: level)
+        
+        state = .teaching(level: level, noteIndex: 0)
+    }
+    
+    private func generateTeachingNotes(for level: FretboardLevel) -> [ExerciseQuestion] {
+        let strings = selectedInstrument.strings
+        var notes: [ExerciseQuestion] = []
+        
+        // Show key notes for each string in this fret range
+        for string in strings {
+            // Show 0, middle, and max fret for the range
+            let frets = Set([level.fretRange.lowerBound, level.fretRange.upperBound])
+            for fret in frets.sorted() {
+                notes.append(ExerciseQuestion(instrumentString: string, fret: fret))
+            }
+        }
+        
+        return notes
+    }
+    
+    /// Move to next note in teaching phase
+    func nextTeachingNote() {
+        guard case .teaching(let level, let index) = state else { return }
+        
+        let nextIndex = index + 1
+        if nextIndex < teachingNotes.count {
+            currentNoteIndex = nextIndex
+            state = .teaching(level: level, noteIndex: nextIndex)
+        }
+    }
+    
+    /// Move to previous note in teaching phase
+    func previousTeachingNote() {
+        guard case .teaching(let level, let index) = state else { return }
+        
+        if index > 0 {
+            currentNoteIndex = index - 1
+            state = .teaching(level: level, noteIndex: index - 1)
+        }
+    }
+    
+    /// Current teaching note
+    var currentTeachingNote: ExerciseQuestion? {
+        guard case .teaching(_, let index) = state else { return nil }
+        return teachingNotes.indices.contains(index) ? teachingNotes[index] : nil
+    }
+    
+    // MARK: - Start Quiz
+    
+    func startQuiz(for level: FretboardLevel) async {
+        // Generate quiz questions
+        questions = generateQuizQuestions(for: level)
+        totalQuestions = questions.count
+        currentQuestionIndex = 0
+        questionNumber = 1
+        score = 0
+        isCorrect = false
+        showSuccess = false
+        hasRecordedTodaySession = false
+        errorMessage = nil
+        
+        // Start audio
         do {
+            audioManager.configureForInstrument(selectedInstrument)
             try await audioManager.start()
             isListening = true
-            generateNextQuestion()
+            
+            if let first = questions.first {
+                state = .quizzing(level: level, questionIndex: 0, question: first)
+            }
+            
+            // Start pitch monitoring
             startMonitoring()
         } catch {
             errorMessage = error.localizedDescription
@@ -155,46 +230,51 @@ final class ExerciseViewModel: ObservableObject {
         }
     }
     
-    func stopExercise() {
-        audioManager.stop()
-        isListening = false
-        correctHoldTimer?.invalidate()
-        correctHoldTimer = nil
-        currentQuestion = nil
-    }
-    
-    func generateNextQuestion() {
+    private func generateQuizQuestions(for level: FretboardLevel) -> [ExerciseQuestion] {
         let strings = selectedInstrument.strings
-        let fretRange = selectedLevel.fretRange
+        var qs: [ExerciseQuestion] = []
         
-        guard let randomString = strings.randomElement() else { return }
-        let randomFret = Int.random(in: fretRange)
+        // Generate random questions covering the fret range
+        let questionCount = max(8, strings.count * 2)
         
-        currentQuestion = ExerciseQuestion(instrumentString: randomString, fret: randomFret)
-        isCorrect = false
-        showSuccess = false
-        correctHoldDuration = 0
-    }
-    
-    func skipQuestion() {
-        totalQuestions += 1
-        generateNextQuestion()
+        for _ in 0..<questionCount {
+            guard let randomString = strings.randomElement() else { continue }
+            let randomFret = Int.random(in: level.fretRange)
+            qs.append(ExerciseQuestion(instrumentString: randomString, fret: randomFret))
+        }
+        
+        return qs.shuffled()
     }
     
     // MARK: - Monitoring
     
     private func startMonitoring() {
-        correctHoldTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+        monitorTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.checkPitchMatch()
             }
         }
     }
     
+    private func stopMonitoring() {
+        monitorTimer?.invalidate()
+        monitorTimer = nil
+    }
+    
     private func checkPitchMatch() {
-        guard isListening, currentQuestion != nil else { return }
+        guard isListening,
+              case .quizzing(_, _, let question) = state else { return }
         
-        if isMatchingTarget {
+        guard detectedFrequency > 0 else {
+            isMatchingTarget = false
+            correctHoldDuration = 0
+            return
+        }
+        
+        let matches = NoteUtility.frequencyMatches(detectedFrequency, target: question.targetFrequency, toleranceCents: 15)
+        isMatchingTarget = matches
+        
+        if matches {
             correctHoldDuration += 0.05
             
             if correctHoldDuration >= requiredHoldDuration && !isCorrect {
@@ -206,40 +286,100 @@ final class ExerciseViewModel: ObservableObject {
     }
     
     private func handleCorrectAnswer() {
+        guard case .quizzing(let level, let qIndex, _) = state else { return }
+        
         isCorrect = true
         showSuccess = true
         score += 1
-        totalQuestions += 1
         
-        // Record daily streak on first correct answer
-        recordExerciseSession()
+        // Streak
+        if !hasRecordedTodaySession {
+            hasRecordedTodaySession = true
+            StreakManager.shared.markDailyActivity()
+        }
         
-        playSuccessSound()
-        
+        // Sound + haptic
+        AudioServicesPlaySystemSound(successSoundID)
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
         
+        // Next question after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.showSuccess = false
-            self?.generateNextQuestion()
+            self?.moveToNextQuestion(level: level, currentIndex: qIndex)
         }
     }
     
-    // MARK: - Level Selection
+    func skipQuestion() {
+        guard case .quizzing(let level, let qIndex, _) = state else { return }
+        moveToNextQuestion(level: level, currentIndex: qIndex)
+    }
     
-    func selectLevel(_ level: ExerciseLevel) {
-        selectedLevel = level
-        if isListening {
-            generateNextQuestion()
+    private func moveToNextQuestion(level: FretboardLevel, currentIndex: Int) {
+        isCorrect = false
+        showSuccess = false
+        isMatchingTarget = false
+        correctHoldDuration = 0
+        
+        let nextIndex = currentIndex + 1
+        if nextIndex < questions.count {
+            currentQuestionIndex = nextIndex
+            questionNumber = nextIndex + 1
+            state = .quizzing(level: level, questionIndex: nextIndex, question: questions[nextIndex])
+        } else {
+            finishQuiz(level: level)
         }
     }
     
-    // MARK: - Instrument Selection
-    
-    func selectInstrument(_ instrument: Instrument) {
-        selectedInstrument = instrument
-        if isListening {
-            generateNextQuestion()
+    private func finishQuiz(level: FretboardLevel) {
+        stopMonitoring()
+        audioManager.stop()
+        isListening = false
+        
+        let passed = Double(score) / Double(totalQuestions) >= level.passThreshold
+        
+        state = .completed(level: level, score: score, total: totalQuestions, passed: passed)
+        
+        if passed {
+            progressService.markFretboardLevelCompleted(level.id)
+            completedLevels.insert(level.id)
+            
+            if let next = FretboardCurriculum.nextLevel(after: level) {
+                progressService.saveFretboardUnlockedLevel(next.id)
+                currentUnlockedLevel = progressService.getFretboardUnlockedLevel()
+            }
+            
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
         }
+        
+        AdsManager.shared.showInterstitial()
+        StreakManager.shared.markDailyActivity()
+    }
+    
+    // MARK: - Reset
+    
+    func reset() {
+        stopMonitoring()
+        if isListening {
+            audioManager.stop()
+            isListening = false
+        }
+        state = .idle
+        currentLevel = nil
+        currentNoteIndex = 0
+        score = 0
+        totalQuestions = 0
+        questionNumber = 0
+        isCorrect = false
+        showSuccess = false
+        isMatchingTarget = false
+        correctHoldDuration = 0
+        questions = []
+        teachingNotes = []
+        errorMessage = nil
+    }
+    
+    func stopExercise() {
+        reset()
     }
 }

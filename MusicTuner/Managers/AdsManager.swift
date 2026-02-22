@@ -16,9 +16,9 @@ final class AdsManager: ObservableObject {
     // MARK: - Singleton
     static let shared = AdsManager()
     
-    // MARK: - Ad Unit IDs (Test IDs)
-    private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
-    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
+    // MARK: - Ad Unit IDs
+    private let bannerAdUnitID = "ca-app-pub-1674562447830288/4960930323"
+    private let interstitialAdUnitID = "ca-app-pub-1674562447830288/9879039497"
     
     // MARK: - Published Properties
     @Published private(set) var isAdMobReady = false
@@ -27,7 +27,7 @@ final class AdsManager: ObservableObject {
     // MARK: - Interstitial
     private var interstitialAd: InterstitialAd?
     private var pageTransitionCount = 0
-    private let transitionsBeforeAd = 3
+    private let transitionsBeforeAd = 4
     
     // MARK: - Premium Check
     var isPremium: Bool {

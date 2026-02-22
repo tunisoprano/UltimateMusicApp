@@ -1,17 +1,18 @@
 //
-//  QuizSessionView.swift
+//  EarTrainingQuizView.swift
 //  MusicTuner
 //
-//  Quiz phase for Chord Mastery
-//  Shows chord diagram, 4 answer buttons, feedback animations
+//  Quiz phase for Ear Training
+//  Plays chord audio, 4 answer buttons, feedback animations
+//  Matches QuizSessionView pattern
 //
 
 import SwiftUI
 
-struct QuizSessionView: View {
+struct EarTrainingQuizView: View {
     let level: LevelDefinition
     
-    @StateObject private var viewModel = ChordMasteryViewModel()
+    @StateObject private var viewModel = EarTrainingViewModel()
     @ObservedObject var theme = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
     
@@ -54,7 +55,7 @@ struct QuizSessionView: View {
             // Start quiz for this level
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 viewModel.startLevel(level)
-                // Skip to quiz
+                // Skip teaching phase and go straight to quiz
                 for _ in 0..<level.chords.count {
                     viewModel.nextChord()
                 }
@@ -85,12 +86,12 @@ struct QuizSessionView: View {
             quizProgressHeader
             
             // Question
-            Text(L("what_chord_is_this"))
+            Text(L("what_chord_sounds"))
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                 .foregroundStyle(theme.textPrimary)
             
-            // Chord Diagram (without name for quiz)
-            quizChordDiagram(chord: chord)
+            // Play Audio Button (instead of chord diagram)
+            playAudioSection(chord: chord)
             
             Spacer()
             
@@ -139,21 +140,52 @@ struct QuizSessionView: View {
         }
     }
     
-    // MARK: - Chord Diagram (Quiz mode - no name shown)
+    // MARK: - Play Audio Section (replaces chord diagram)
     
-    private func quizChordDiagram(chord: ChordDefinition) -> some View {
-        // Use a simplified diagram without the chord name
+    private func playAudioSection(chord: ChordDefinition) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
                 .fill(theme.cardBackground)
                 .shadow(color: theme.shadow, radius: 10, y: 5)
             
-            // We'll show the diagram but need to hide the name
-            ChordDiagramView(chord: chord, showName: false) {
-                // No tap action during quiz
+            VStack(spacing: 20) {
+                // Speaker Animation
+                ZStack {
+                    Circle()
+                        .fill(theme.accent.opacity(0.1))
+                        .frame(width: 120, height: 120)
+                    
+                    Circle()
+                        .fill(theme.accent.opacity(0.15))
+                        .frame(width: 90, height: 90)
+                    
+                    Image(systemName: "speaker.wave.3.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(theme.accent)
+                        .symbolEffect(.variableColor.iterative, options: .repeating)
+                }
+                
+                // Replay Button
+                Button {
+                    viewModel.replayQuizChord()
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.counterclockwise")
+                        Text(L("play_again"))
+                    }
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
+                            .fill(theme.accentGradient)
+                    )
+                }
             }
+            .padding(20)
         }
-        .frame(height: 320)
+        .frame(height: 280)
         .padding(.horizontal, 20)
         .overlay(
             feedbackOverlay
@@ -245,7 +277,7 @@ struct QuizSessionView: View {
     // MARK: - Results View
     
     private func resultsView(score: Int, total: Int, passed: Bool) -> some View {
-        let nextLevel = ChordCurriculum.nextLevel(after: level)
+        let nextLevel = EarTrainingCurriculum.nextLevel(after: level)
         let isLastLevel = nextLevel == nil
         
         return VStack(spacing: 24) {
@@ -254,7 +286,7 @@ struct QuizSessionView: View {
             // Result Icon
             ZStack {
                 Circle()
-                    .fill(passed ? 
+                    .fill(passed ?
                           LinearGradient(colors: [.green, .teal], startPoint: .topLeading, endPoint: .bottomTrailing) :
                           LinearGradient(colors: [.orange, .red], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 120, height: 120)
@@ -308,7 +340,7 @@ struct QuizSessionView: View {
             
             Spacer()
             
-            // Action Buttons - Always show all 3
+            // Action Buttons
             VStack(spacing: 12) {
                 // 1. Next Level Button (only shown when passed)
                 if passed, !isLastLevel {
@@ -349,7 +381,7 @@ struct QuizSessionView: View {
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                            .fill(passed ? 
+                            .fill(passed ?
                                   AnyShapeStyle(theme.cardBackground) :
                                   AnyShapeStyle(LinearGradient(colors: level.gradientColors, startPoint: .leading, endPoint: .trailing)))
                             .shadow(color: theme.shadow, radius: 6)
@@ -377,6 +409,6 @@ struct QuizSessionView: View {
 
 #Preview {
     NavigationStack {
-        QuizSessionView(level: ChordCurriculum.levels[0])
+        EarTrainingQuizView(level: EarTrainingCurriculum.levels[0])
     }
 }

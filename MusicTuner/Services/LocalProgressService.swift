@@ -15,6 +15,10 @@ final class LocalProgressService: ProgressServiceProtocol {
     private enum Keys {
         static let unlockedLevel = "chordMastery_unlockedLevel"
         static let completedLevels = "chordMastery_completedLevels"
+        static let etUnlockedLevel = "earTraining_unlockedLevel"
+        static let etCompletedLevels = "earTraining_completedLevels"
+        static let fbUnlockedLevel = "fretboard_unlockedLevel"
+        static let fbCompletedLevels = "fretboard_completedLevels"
     }
     
     // MARK: - Storage
@@ -55,6 +59,68 @@ final class LocalProgressService: ProgressServiceProtocol {
         if !completedLevels.contains(level) {
             completedLevels.append(level)
             defaults.set(completedLevels, forKey: Keys.completedLevels)
+        }
+    }
+    
+    // MARK: - Ear Training Progress
+    
+    func getEarTrainingUnlockedLevel() -> Int {
+        let level = defaults.integer(forKey: Keys.etUnlockedLevel)
+        return level > 0 ? level : 1
+    }
+    
+    func saveEarTrainingUnlockedLevel(_ level: Int) {
+        let currentLevel = getEarTrainingUnlockedLevel()
+        if level > currentLevel {
+            defaults.set(level, forKey: Keys.etUnlockedLevel)
+        }
+    }
+    
+    func isEarTrainingLevelUnlocked(_ level: Int) -> Bool {
+        return level <= getEarTrainingUnlockedLevel()
+    }
+    
+    func isEarTrainingLevelCompleted(_ level: Int) -> Bool {
+        let completed = defaults.array(forKey: Keys.etCompletedLevels) as? [Int] ?? []
+        return completed.contains(level)
+    }
+    
+    func markEarTrainingLevelCompleted(_ level: Int) {
+        var completed = defaults.array(forKey: Keys.etCompletedLevels) as? [Int] ?? []
+        if !completed.contains(level) {
+            completed.append(level)
+            defaults.set(completed, forKey: Keys.etCompletedLevels)
+        }
+    }
+    
+    // MARK: - Fretboard Progress
+    
+    func getFretboardUnlockedLevel() -> Int {
+        let level = defaults.integer(forKey: Keys.fbUnlockedLevel)
+        return level > 0 ? level : 1
+    }
+    
+    func saveFretboardUnlockedLevel(_ level: Int) {
+        let currentLevel = getFretboardUnlockedLevel()
+        if level > currentLevel {
+            defaults.set(level, forKey: Keys.fbUnlockedLevel)
+        }
+    }
+    
+    func isFretboardLevelUnlocked(_ level: Int) -> Bool {
+        return level <= getFretboardUnlockedLevel()
+    }
+    
+    func isFretboardLevelCompleted(_ level: Int) -> Bool {
+        let completed = defaults.array(forKey: Keys.fbCompletedLevels) as? [Int] ?? []
+        return completed.contains(level)
+    }
+    
+    func markFretboardLevelCompleted(_ level: Int) {
+        var completed = defaults.array(forKey: Keys.fbCompletedLevels) as? [Int] ?? []
+        if !completed.contains(level) {
+            completed.append(level)
+            defaults.set(completed, forKey: Keys.fbCompletedLevels)
         }
     }
     

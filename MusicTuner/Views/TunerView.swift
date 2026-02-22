@@ -2,12 +2,13 @@
 //  TunerView.swift
 //  MusicTuner
 //
-//  Premium tuner interface with auto-start microphone
+//  Premium GuitarTuna-style tuner interface
+//  Layout: Tuning indicator (top) → Note display → Headstock with pegs (bottom)
 //
 
 import SwiftUI
 
-/// Main tuner interface with headstock and smooth needle
+/// Main tuner interface — GuitarTuna-inspired premium design
 struct TunerView: View {
     @StateObject private var viewModel = TunerViewModel()
     @ObservedObject var theme = ThemeManager.shared
@@ -16,40 +17,51 @@ struct TunerView: View {
     
     var body: some View {
         ZStack {
+            // Dark background
             theme.backgroundGradient.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        instrumentPicker
-                        
-                        if viewModel.selectedInstrument.hasStringTargeting {
-                            headstockSection
-                        }
-                        
-                        tunerDisplay
-                        errorView
+                // Main content
+                VStack(spacing: 0) {
+                    // Instrument picker at top
+                    instrumentPicker
+                        .padding(.top, 8)
+                    
+                    Spacer(minLength: 12)
+                    
+                    // Tuning section: indicator + note
+                    tuningSection
+                    
+                    // Headstock fills remaining space
+                    if viewModel.selectedInstrument.hasStringTargeting {
+                        headstockSection
                     }
-                    .padding(.vertical, 16)
+                    
+                    Spacer(minLength: 0)
                 }
                 
+                // Ad banner at very bottom
                 AdBannerContainer()
             }
             
-            // Mini mic button (bottom right)
+            // Floating mic button (bottom right)
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
                     miniMicButton
                         .padding(.trailing, 24)
-                        .padding(.bottom, 70) // Above banner
+                        .padding(.bottom, 70)
                 }
             }
             
+            // Debug overlay
             if showDebug && viewModel.isListening {
                 debugOverlay
             }
+            
+            // Error overlay
+            errorView
         }
         .navigationTitle("Tuner")
         .navigationBarTitleDisplayMode(.inline)
@@ -65,117 +77,39 @@ struct TunerView: View {
             }
         }
         .onAppear {
-            // Auto-start microphone when entering tuner
-            Task {
-                await viewModel.startListening()
-            }
+            Task { await viewModel.startListening() }
         }
         .onDisappear {
             viewModel.stopListening()
         }
     }
     
-    // MARK: - Mini Mic Button
-    
-    private var miniMicButton: some View {
-        Button {
-            Task { await viewModel.toggleListening() }
-        } label: {
-            Image(systemName: viewModel.isListening ? "mic.fill" : "mic.slash.fill")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(
-                    Circle()
-                        .fill(viewModel.isListening ? theme.success : theme.error)
-                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-                )
-        }
-    }
-    
     // MARK: - Instrument Picker
     
     private var instrumentPicker: some View {
-        VStack(spacing: 10) {
-            Picker("Instrument", selection: $viewModel.selectedInstrument) {
-                ForEach(Instrument.allCases) { inst in
-                    Text(inst.rawValue).tag(inst)
-                }
+        Picker("Instrument", selection: $viewModel.selectedInstrument) {
+            ForEach(Instrument.allCases) { inst in
+                Text(inst.rawValue).tag(inst)
             }
-            .pickerStyle(.segmented)
         }
+        .pickerStyle(.segmented)
         .padding(.horizontal, 20)
     }
     
-    // MARK: - Headstock Section
+    // MARK: - Tuning Section (Indicator + Note)
     
-    private var headstockSection: some View {
-        VStack(spacing: 12) {
-            Text(viewModel.isAutoMode ? "Tap a peg for manual mode" : "Manual: \(viewModel.selectedTargetString?.name ?? "")")
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
-            
-            HeadstockView(
-                instrument: viewModel.selectedInstrument,
-                strings: viewModel.instrumentStrings,
-                selectedString: viewModel.selectedTargetString,
-                tunedString: viewModel.tunedString,
-                onPegTap: { string in
-                    viewModel.toggleStringSelection(string)
-                }
-            )
-            .frame(height: headstockHeight)
-            .padding(.horizontal, 40)
-            
-            // Auto mode button
-            if !viewModel.isAutoMode {
-                Button {
-                    viewModel.selectString(nil)
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 12))
-                        Text("Auto Detect")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                    }
-                    .foregroundStyle(theme.accent)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        Capsule()
-                            .fill(theme.accent.opacity(0.15))
-                    )
-                }
-            }
-        }
-        .padding(16)
-        .themeCard()
-        .padding(.horizontal, 20)
-    }
-    
-    private var headstockHeight: CGFloat {
-        switch viewModel.selectedInstrument {
-        case .guitar: return 180
-        case .bass: return 200
-        case .ukulele: return 140
-        case .free: return 0
-        }
-    }
-    
-    // MARK: - Tuner Display
-    
-    private var tunerDisplay: some View {
+    private var tuningSection: some View {
         VStack(spacing: 16) {
-            noteDisplay
+            // Tuning needle/gauge
             tunerNeedle
-            frequencyAndStatus
+            
+            // Note display circle
+            noteDisplay
         }
-        .frame(minHeight: 280)
-        .padding(20)
-        .themeCard()
         .padding(.horizontal, 20)
-        .animation(nil, value: viewModel.tuningState)
     }
+    
+    // MARK: - Note Display
     
     private var noteDisplay: some View {
         ZStack {
@@ -183,41 +117,48 @@ struct TunerView: View {
             if viewModel.tuningState == .inTune {
                 Circle()
                     .fill(theme.success.opacity(0.2))
-                    .frame(width: 130, height: 130)
-                    .blur(radius: 10)
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 12)
             }
             
+            // Note circle
             Circle()
                 .fill(theme.cardBackground)
-                .frame(width: 110, height: 110)
-                .shadow(color: viewModel.tuningState == .inTune ? theme.success.opacity(0.4) : theme.shadow, radius: 10)
+                .frame(width: 100, height: 100)
+                .shadow(
+                    color: viewModel.tuningState == .inTune
+                        ? theme.success.opacity(0.4) : theme.shadow,
+                    radius: 10
+                )
                 .overlay(
                     Circle()
                         .stroke(
-                            viewModel.tuningState == .inTune ? theme.success : theme.inactive.opacity(0.3),
+                            viewModel.tuningState == .inTune
+                                ? theme.success : theme.inactive.opacity(0.3),
                             lineWidth: 3
                         )
                 )
             
+            // Note text
             if let note = viewModel.detectedNote {
                 VStack(spacing: 2) {
                     Text(NoteFormatter.formatLetter(note.name))
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.textPrimary)
                     
                     Text("\(note.octave)")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(theme.textSecondary)
                 }
             } else {
                 Text("--")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.inactive)
             }
         }
     }
     
-    // MARK: - Smooth Needle
+    // MARK: - Tuning Needle
     
     private var tunerNeedle: some View {
         GeometryReader { geo in
@@ -225,10 +166,10 @@ struct TunerView: View {
             let needleOffset = CGFloat(viewModel.needlePosition) * (centerX - 20)
             
             ZStack {
-                // Background track
+                // Gradient track
                 tunerTrack
                 
-                // Center marker
+                // Center marker (green)
                 Rectangle()
                     .fill(theme.success)
                     .frame(width: 3, height: 20)
@@ -242,6 +183,17 @@ struct TunerView: View {
                         .position(x: centerX + CGFloat(tick) * (centerX / 2.5), y: 14)
                 }
                 
+                // Flat/Sharp labels
+                Text("♭")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(theme.textSecondary.opacity(0.6))
+                    .position(x: 14, y: 14)
+                
+                Text("♯")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(theme.textSecondary.opacity(0.6))
+                    .position(x: geo.size.width - 14, y: 14)
+                
                 // Needle indicator
                 needleIndicator
                     .position(x: centerX + needleOffset, y: 14)
@@ -249,7 +201,6 @@ struct TunerView: View {
             }
         }
         .frame(height: 28)
-        .padding(.horizontal, 16)
     }
     
     private var tunerTrack: some View {
@@ -275,7 +226,6 @@ struct TunerView: View {
     
     private var needleIndicator: some View {
         ZStack {
-            // Glow
             if viewModel.tuningState == .inTune {
                 Circle()
                     .fill(theme.success.opacity(0.5))
@@ -294,23 +244,68 @@ struct TunerView: View {
         }
     }
     
-    private var frequencyAndStatus: some View {
-        VStack(spacing: 8) {
-            if viewModel.detectedFrequency > 0 {
-                Text(String(format: "%.1f Hz", viewModel.detectedFrequency))
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+    // MARK: - Headstock Section (Bottom)
+    
+    private var headstockSection: some View {
+        VStack(spacing: 4) {
+            // Mode label
+            HStack {
+                Text(viewModel.isAutoMode ? "Tap a peg for manual mode" : "Manual: \(viewModel.selectedTargetString?.name ?? "")")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(theme.textSecondary)
-            } else {
-                Text("-- Hz")
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundStyle(theme.inactive)
+                
+                if !viewModel.isAutoMode {
+                    Button {
+                        viewModel.selectString(nil)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 10))
+                            Text("Auto")
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                        }
+                        .foregroundStyle(theme.accent)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(theme.accent.opacity(0.15))
+                        )
+                    }
+                }
             }
             
-            Text(viewModel.tuningState.description)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(stateColor)
+            // Headstock — fills available space, flush to bottom
+            HeadstockView(
+                instrument: viewModel.selectedInstrument,
+                strings: viewModel.instrumentStrings,
+                selectedString: viewModel.selectedTargetString,
+                tunedString: viewModel.tunedString,
+                onPegTap: { string in
+                    viewModel.toggleStringSelection(string)
+                }
+            )
+            .frame(maxHeight: .infinity)
+            .padding(.horizontal, 0)
         }
-        .frame(height: 60) // Fixed height to prevent jumping
+    }
+    
+    // MARK: - Mini Mic Button
+    
+    private var miniMicButton: some View {
+        Button {
+            Task { await viewModel.toggleListening() }
+        } label: {
+            Image(systemName: viewModel.isListening ? "mic.fill" : "mic.slash.fill")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(viewModel.isListening ? theme.success : theme.error)
+                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                )
+        }
     }
     
     // MARK: - Error View
@@ -318,11 +313,18 @@ struct TunerView: View {
     private var errorView: some View {
         Group {
             if let error = viewModel.errorMessage {
-                Text(error)
-                    .font(.system(size: 13, design: .rounded))
-                    .foregroundStyle(theme.error)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                VStack {
+                    Spacer()
+                    Text(error)
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundStyle(theme.error)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 80)
+                }
             }
         }
     }
@@ -341,6 +343,37 @@ struct TunerView: View {
                     Text("Raw: \(String(format: "%.1f", AudioManager.shared.debugRawPitch))")
                     Text("Smooth: \(String(format: "%.1f", viewModel.smoothedCents))")
                     Text("Locked: \(viewModel.isLocked ? "YES" : "NO")")
+                    
+                    Divider().background(theme.textSecondary)
+                    
+                    Text("CALIBRATION")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(theme.accent)
+                    
+                    HStack(spacing: 4) {
+                        Text("\(String(format: "%+.0f", viewModel.calibrationCents)) ct")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .frame(width: 40, alignment: .trailing)
+                        
+                        Slider(
+                            value: Binding(
+                                get: { viewModel.calibrationCents },
+                                set: { viewModel.calibrationCents = $0 }
+                            ),
+                            in: -50...50,
+                            step: 1
+                        )
+                        .frame(width: 100)
+                        .tint(theme.accent)
+                        
+                        Button {
+                            viewModel.calibrationCents = 0
+                        } label: {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 10))
+                                .foregroundStyle(theme.accent)
+                        }
+                    }
                 }
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(theme.textSecondary)
@@ -354,6 +387,8 @@ struct TunerView: View {
             Spacer()
         }
     }
+    
+    // MARK: - Helpers
     
     private var stateColor: Color {
         switch viewModel.tuningState {

@@ -2,15 +2,14 @@
 //  AudioManager.swift
 //  MusicTuner
 //
-//  Powered by AudioKit v5+
+//  Powered by YIN pitch detection algorithm
+//  Clean, stable, and thread-safe implementation
 //
 
 import Foundation
 import AVFoundation
-import AudioKit
-import SoundpipeAudioKit
 
-/// AudioKit-based Audio Manager for pitch detection
+/// Audio Manager with YIN pitch detection
 /// Clean, stable, and thread-safe implementation
 final class AudioManager: ObservableObject {
     
@@ -25,33 +24,52 @@ final class AudioManager: ObservableObject {
     @Published private(set) var centsDeviation: Double = 0.0
     @Published private(set) var amplitude: Float = 0.0
     
+    // MARK: - User Calibration
+    /// User-adjustable calibration in cents, persisted to UserDefaults
+    @Published var calibrationCents: Double {
+        didSet {
+            UserDefaults.standard.set(calibrationCents, forKey: "tunerCalibrationCents")
+            pitchDetector.calibrationOffsetCents = calibrationCents
+        }
+    }
+    
     // MARK: - Debug
     @Published private(set) var debugRMS: Float = 0.0
     @Published private(set) var debugRawPitch: Double = 0.0
     
-    // MARK: - AudioKit Components
-    private var engine: AudioEngine?
-    private var mic: AudioEngine.InputNode?
-    private var pitchTap: PitchTap?
-    private var silenceNode: Mixer?
+    // MARK: - Audio Components
+    private var audioEngine: AVAudioEngine?
+    private let pitchDetector = PitchDetector()
+    private let bufferSize: UInt32 = 4096
+    private var sampleRate: Double = 44100.0
     
     // MARK: - Configuration
-    /// Noise gate threshold - below this amplitude, consider silence
-    /// Lower threshold for bass to catch quieter low frequencies
-    private var noiseGateThreshold: Float = 0.01
-    
     /// Minimum frequency to detect (filters out noise)
-    /// Bass E1 = 41Hz, so we need to go lower
     private var minFrequency: Double = 30.0
     
     /// Maximum frequency to detect
     private var maxFrequency: Double = 1400.0
     
+    /// Amplitude threshold (lower = more sensitive)
+    private var amplitudeThreshold: Float = 0.015
+    
+    /// Noise gate: signal must drop below this fraction of threshold to reset
+    /// Prevents flicker when signal hovers near threshold boundary
+    private let noiseGateHysteresis: Float = 0.6
+    
+    /// Tracks whether we're currently above the noise gate
+    private var isAboveNoiseGate: Bool = false
+    
     /// Current instrument for optimized detection
     private var currentInstrument: Instrument = .guitar
     
     // MARK: - Initialization
-    private init() {}
+    private init() {
+        // Load saved calibration
+        let saved = UserDefaults.standard.double(forKey: "tunerCalibrationCents")
+        calibrationCents = saved // defaults to 0.0 if never set
+        pitchDetector.calibrationOffsetCents = saved
+    }
     
     // MARK: - Configuration for Instruments
     
@@ -63,26 +81,33 @@ final class AudioManager: ObservableObject {
             // E2 (82Hz) to E5 (659Hz)
             minFrequency = 70.0
             maxFrequency = 700.0
-            noiseGateThreshold = 0.01
+            amplitudeThreshold = 0.015
+            pitchDetector.configureForGuitar()
         case .bass:
             // E1 (41Hz) to G3 (196Hz)
-            // Much lower noise gate for bass - low frequencies have less amplitude
-            // Bass strings vibrate slower and need more sensitivity
             minFrequency = 30.0
             maxFrequency = 250.0
-            noiseGateThreshold = 0.003  // Very sensitive for bass detection
+            amplitudeThreshold = 0.012
+            pitchDetector.configureForBass()
         case .ukulele:
             // G4 (392Hz) to A4 (440Hz)
             minFrequency = 200.0
             maxFrequency = 500.0
-            noiseGateThreshold = 0.01
+            amplitudeThreshold = 0.015
+            pitchDetector.minF0 = 200.0
+            pitchDetector.maxF0 = 500.0
         case .free:
             // Full range
             minFrequency = 27.5  // A0
             maxFrequency = 4000.0
-            noiseGateThreshold = 0.008
+            amplitudeThreshold = 0.015
+            pitchDetector.configureForFreeMode()
         }
-        print("🎸 Configured for \(instrument.rawValue): \(minFrequency)Hz - \(maxFrequency)Hz")
+        
+        // Reset noise gate on instrument change
+        isAboveNoiseGate = false
+        
+        print("🎸 Configured for \(instrument.rawValue): \(minFrequency)Hz - \(maxFrequency)Hz [YIN]")
     }
     
     // MARK: - Permission
@@ -119,7 +144,7 @@ final class AudioManager: ObservableObject {
         
         guard !isRunning else { return }
         
-        // CRITICAL: Configure AVAudioSession BEFORE creating AudioKit engine
+        // Configure AVAudioSession
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
@@ -130,51 +155,42 @@ final class AudioManager: ObservableObject {
             throw AudioError.engineCreationFailed
         }
         
-        // Create AudioKit engine
-        engine = AudioEngine()
-        guard let engine = engine else {
+        // Create AVAudioEngine
+        audioEngine = AVAudioEngine()
+        guard let engine = audioEngine else {
             throw AudioError.engineCreationFailed
         }
         
-        // Get microphone input
-        guard let input = engine.input else {
-            throw AudioError.inputNodeUnavailable
-        }
-        mic = input
+        // Get input node
+        let inputNode = engine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+        sampleRate = format.sampleRate
         
-        // Route to silent output (we only analyze, don't playback)
-        silenceNode = Mixer([input])
-        silenceNode?.volume = 0
-        engine.output = silenceNode
-        
-        // Create PitchTap for pitch detection
-        pitchTap = PitchTap(input) { [weak self] frequency, amplitude in
-            self?.handlePitchDetection(frequency: frequency, amplitude: amplitude)
+        // Install tap for pitch detection
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: format) { [weak self] buffer, _ in
+            self?.processAudioBuffer(buffer)
         }
-        pitchTap?.start()
         
         // Start engine
         do {
             try engine.start()
             isRunning = true
-            print("✅ AudioKit engine started")
+            isAboveNoiseGate = false
+            print("✅ YIN audio engine started (sample rate: \(sampleRate)Hz)")
         } catch {
-            print("❌ AudioKit failed to start: \(error)")
+            print("❌ Audio engine failed to start: \(error)")
             throw AudioError.engineCreationFailed
         }
     }
     
     @MainActor
     func stop() {
-        pitchTap?.stop()
-        pitchTap = nil
-        
-        engine?.stop()
-        engine = nil
-        mic = nil
-        silenceNode = nil
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine?.stop()
+        audioEngine = nil
         
         isRunning = false
+        isAboveNoiseGate = false
         
         // Reset values
         detectedFrequency = 0.0
@@ -184,32 +200,75 @@ final class AudioManager: ObservableObject {
         debugRMS = 0.0
         debugRawPitch = 0.0
         
-        print("🛑 AudioKit engine stopped")
+        print("🛑 Audio engine stopped")
     }
     
-    // MARK: - Pitch Detection Handler (Background Thread)
+    // MARK: - Audio Processing (Background Thread)
     
-    private func handlePitchDetection(frequency: [Float], amplitude: [Float]) {
-        // PitchTap provides arrays, we use first element
-        let freq = Double(frequency[0])
-        let amp = amplitude[0]
+    private func processAudioBuffer(_ buffer: AVAudioPCMBuffer) {
+        // Calculate RMS amplitude
+        guard let channelData = buffer.floatChannelData else { return }
+        let frames = buffer.frameLength
+        
+        var sum: Float = 0
+        for i in 0..<Int(frames) {
+            let sample = channelData[0][i]
+            sum += sample * sample
+        }
+        let rms = sqrt(sum / Float(frames))
+        
+        // Noise gate with hysteresis to prevent flicker
+        let currentThreshold = amplitudeThreshold
+        if isAboveNoiseGate {
+            // Already active: only deactivate if signal drops well below threshold
+            if rms < currentThreshold * noiseGateHysteresis {
+                isAboveNoiseGate = false
+            }
+        } else {
+            // Not active: only activate if signal clearly exceeds threshold
+            if rms > currentThreshold {
+                isAboveNoiseGate = true
+            }
+        }
+        
+        // Skip if below noise gate
+        guard isAboveNoiseGate else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.debugRMS = rms
+                self.amplitude = rms
+                self.debugRawPitch = 0
+                self.detectedFrequency = 0.0
+                self.detectedNote = nil
+                self.centsDeviation = 0.0
+            }
+            return
+        }
+        
+        // Convert buffer to [Float] array for YIN
+        let bufferArray = Array(UnsafeBufferPointer(start: channelData[0], count: Int(frames)))
+        
+        // Detect pitch using YIN algorithm
+        let result = pitchDetector.detectPitch(buffer: bufferArray, sampleRate: sampleRate)
         
         // Update on Main thread
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             // Update debug values
-            self.debugRMS = amp
-            self.debugRawPitch = freq
-            self.amplitude = amp
+            self.debugRMS = rms
+            self.amplitude = rms
             
-            // NOISE GATE: If amplitude is too low, treat as silence
-            guard amp > self.noiseGateThreshold else {
+            // If no pitch detected, reset
+            guard let freq = result.frequency, result.confidence > 0.5 else {
+                self.debugRawPitch = 0
                 self.detectedFrequency = 0.0
                 self.detectedNote = nil
                 self.centsDeviation = 0.0
                 return
             }
+            
+            self.debugRawPitch = freq
             
             // Validate frequency range
             guard freq >= self.minFrequency && freq <= self.maxFrequency else {
@@ -223,9 +282,9 @@ final class AudioManager: ObservableObject {
             self.detectedFrequency = freq
             
             // Convert to note
-            if let result = NoteUtility.frequencyToNote(freq) {
-                self.detectedNote = result.note
-                self.centsDeviation = result.cents
+            if let noteResult = NoteUtility.frequencyToNote(freq) {
+                self.detectedNote = noteResult.note
+                self.centsDeviation = noteResult.cents
             }
         }
     }
