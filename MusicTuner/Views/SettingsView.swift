@@ -298,6 +298,24 @@ struct SettingsView: View {
                                 }
                                 .disabled(storeManager.isPurchasing || storeManager.subscriptionProduct == nil)
                                 
+                                // Subscription legal text
+                                Text(L("iap_subscription_terms"))
+                                    .font(.system(size: 10, design: .rounded))
+                                    .foregroundStyle(theme.textSecondary.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 4)
+                                
+                                // Legal Links
+                                HStack(spacing: 16) {
+                                    Link(L("terms_of_use"), destination: URL(string: "https://tunisoprano.github.io/2jam-terms/")!)
+                                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                                        .foregroundStyle(theme.accent)
+                                    
+                                    Link(L("privacy_policy"), destination: URL(string: "https://tunisoprano.github.io/2jam-privacy/")!)
+                                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                                        .foregroundStyle(theme.accent)
+                                }
+                                
                                 // Error message
                                 if let error = storeManager.errorMessage {
                                     Text(error)
@@ -407,6 +425,29 @@ struct SettingsView: View {
                                         .frame(width: 28)
                                     
                                     Text(L("privacy_policy"))
+                                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                                        .foregroundStyle(theme.textPrimary)
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(theme.inactive)
+                                }
+                            }
+                            
+                            Divider()
+                                .background(theme.inactive.opacity(0.3))
+                            
+                            // Terms of Use
+                            Link(destination: URL(string: "https://tunisoprano.github.io/2jam-terms/")!) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "doc.text.fill")
+                                        .font(.system(size: 18))
+                                        .foregroundStyle(theme.accent)
+                                        .frame(width: 28)
+                                    
+                                    Text(L("terms_of_use"))
                                         .font(.system(size: 15, weight: .medium, design: .rounded))
                                         .foregroundStyle(theme.textPrimary)
                                     

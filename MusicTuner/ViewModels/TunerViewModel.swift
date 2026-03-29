@@ -38,32 +38,56 @@ final class TunerViewModel: ObservableObject {
     private let audioManager = AudioManager.shared
     private var cancellables = Set<AnyCancellable>()
     
-    // MARK: - ULTRA SMOOTH: Exponential Smoothing
-    // Uses exponential weighted moving average (EWMA) for buttery smooth movement
+    // MARK: - ULTRA SMOOTH: Adaptive Exponential Smoothing
+    // Uses adaptive EWMA: fast response for big changes, ultra-smooth for small changes
     private var ewmaValue: Double = 0
     
-    // Dynamic smoothing based on instrument
-    // Bass needs more smoothing (lower alpha) due to slower string vibration
-    /// Smoothing alpha - higher = faster response, lower = smoother
-    /// YIN provides stable output, so we can use higher alpha values
-    private var smoothingAlpha: Double {
+    /// Base alpha ranges per instrument (min, max)
+    /// Actual alpha is interpolated based on the magnitude of cent change
+    private var alphaRange: (min: Double, max: Double) {
         switch selectedInstrument {
         case .bass:
-            return 0.15  // Some smoothing for bass stability
+            return (min: 0.08, max: 0.60)  // Extra smooth for bass stability
         case .guitar:
-            return 0.20  // Fast response
+            return (min: 0.10, max: 0.70)  // Balanced
         case .ukulele:
-            return 0.25  // Very fast response for higher frequencies
+            return (min: 0.12, max: 0.80)  // Fast response for higher frequencies
         case .free:
-            return 0.20
+            return (min: 0.10, max: 0.70)
+        }
+    }
+    
+    /// Calculate adaptive alpha based on how much the value changed
+    /// Small delta → low alpha (smooth), big delta → high alpha (responsive)
+    private func adaptiveAlpha(for delta: Double) -> Double {
+        let range = alphaRange
+        let absDelta = abs(delta)
+        
+        // Thresholds for interpolation
+        let smallChange: Double = 3.0   // Below this: minimum alpha (ultra-smooth)
+        let bigChange: Double = 25.0    // Above this: maximum alpha (fast snap)
+        
+        if absDelta <= smallChange {
+            return range.min
+        } else if absDelta >= bigChange {
+            return range.max
+        } else {
+            // Linear interpolation between min and max alpha
+            let t = (absDelta - smallChange) / (bigChange - smallChange)
+            return range.min + t * (range.max - range.min)
         }
     }
     
     // Additional buffer for stability - larger for bass
     private var centsBuffer: [Double] = []
-    /// Buffer size per instrument - bass needs larger buffer for stability
+    /// Buffer size per instrument — larger buffers = more stable readings
     private var bufferSize: Int {
-        selectedInstrument == .bass ? 4 : 3
+        switch selectedInstrument {
+        case .bass: return 7
+        case .guitar: return 5
+        case .ukulele: return 4
+        case .free: return 5
+        }
     }
     
     // MARK: - SUCCESS LOCK: Timer-based confirmation
@@ -200,7 +224,7 @@ final class TunerViewModel: ObservableObject {
         audioManager.configureForInstrument(.guitar)
     }
     
-    // MARK: - ULTRA SMOOTH: Audio Processing with Exponential Smoothing
+    // MARK: - ULTRA SMOOTH: Audio Processing with Adaptive Exponential Smoothing
     
     private func processAudioUpdate() {
         guard detectedFrequency > 0 else {
@@ -218,12 +242,16 @@ final class TunerViewModel: ObservableObject {
             centsBuffer.removeFirst()
         }
         
-        // Step 2: Calculate buffer average
+        // Step 2: Calculate buffer average (pre-filter)
         let bufferAvg = centsBuffer.reduce(0, +) / Double(centsBuffer.count)
         
-        // Step 3: Apply EWMA (Exponential Weighted Moving Average)
-        // Formula: EWMA_new = α * value + (1 - α) * EWMA_old
-        ewmaValue = smoothingAlpha * bufferAvg + (1 - smoothingAlpha) * ewmaValue
+        // Step 3: Apply ADAPTIVE EWMA
+        // Alpha adapts based on how much the value changed:
+        //   - Small delta (fine tuning) → low alpha → ultra-smooth needle
+        //   - Big delta (new string plucked) → high alpha → snap to new value
+        let delta = bufferAvg - ewmaValue
+        let alpha = adaptiveAlpha(for: delta)
+        ewmaValue = alpha * bufferAvg + (1 - alpha) * ewmaValue
         
         // Step 4: Check for success lock
         checkLockStatus(cents: ewmaValue)

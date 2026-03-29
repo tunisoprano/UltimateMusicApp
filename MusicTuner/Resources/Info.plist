@@ -9,7 +9,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>2Jam</string>
+				<string>twojam</string>
 			</array>
 		</dict>
 	</array>
@@ -63,5 +63,9 @@
 		<key>UIColorName</key>
 		<string>LaunchScreenBackground</string>
 	</dict>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This allows us to show you relevant ads. You can change this anytime in Settings.</string>
 </dict>
 </plist>

@@ -184,6 +184,10 @@
 
 // About
 "privacy_policy" = "Gizlilik Politikası";
+"terms_of_use" = "Kullanım Koşulları";
+
+// Abonelik Yasal
+"iap_subscription_terms" = "Ödeme, satın alma onayında Apple Kimliği hesabınızdan tahsil edilir. Abonelik, mevcut dönemin bitiminden en az 24 saat önce iptal edilmediği sürece otomatik olarak yenilenir. Hesabınızdan mevcut dönemin bitiminden 24 saat önce yenileme ücreti tahsil edilir. Aboneliklerinizi Apple Kimliği hesap ayarlarınızdan yönetebilir ve iptal edebilirsiniz.";
 
 // Ana Menü
 "app_subtitle" = "Müzik eğitim yardımcın";

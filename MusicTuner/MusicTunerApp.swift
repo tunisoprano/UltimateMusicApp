@@ -33,9 +33,12 @@ struct MusicTunerApp: App {
     }
     
     private func initializeServices() {
-        // Initialize AdMob after app is fully loaded
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            AdsManager.shared.initializeAdMob()
+        // Request ATT permission, then initialize AdMob after app is fully loaded
+        // Delay ensures the view hierarchy is ready for the ATT alert
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            Task {
+                await AdsManager.shared.requestTrackingAndInitialize()
+            }
         }
         
         // Request notification permission and schedule reminders

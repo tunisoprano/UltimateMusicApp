@@ -7,6 +7,7 @@
 
 import Foundation
 import GoogleMobileAds
+import AppTrackingTransparency
 import SwiftUI
 
 /// Singleton for managing AdMob ads
@@ -37,11 +38,26 @@ final class AdsManager: ObservableObject {
     // MARK: - Initialization
     private init() {
         // Do NOT call MobileAds.shared.start() here
-        // It will be called later after app is fully loaded
+        // It will be called later after ATT permission + app is fully loaded
     }
     
-    /// Call this from App's onAppear or after a delay
-    func initializeAdMob() {
+    /// Request ATT permission first, then initialize AdMob SDK.
+    /// Call this from App's onAppear or after a delay.
+    func requestTrackingAndInitialize() async {
+        guard !isAdMobReady else { return }
+        
+        // Skip ads entirely for premium users
+        guard !isPremium else { return }
+        
+        // Request App Tracking Transparency permission
+        _ = await TrackingManager.shared.requestTrackingPermission()
+        
+        // Initialize AdMob after ATT response (regardless of user choice)
+        initializeAdMob()
+    }
+    
+    /// Initialize AdMob SDK (called after ATT permission is handled)
+    private func initializeAdMob() {
         guard !isAdMobReady else { return }
         
         MobileAds.shared.start { [weak self] status in

@@ -11,6 +11,7 @@
 		0476CB132F38AF0200D47840 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0476CB122F38AF0200D47840 /* WidgetKit.framework */; };
 		0476CB152F38AF0200D47840 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0476CB142F38AF0200D47840 /* SwiftUI.framework */; };
 		0476CB262F38AF0300D47840 /* 2JamWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0476CB102F38AF0200D47840 /* 2JamWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		04C7EA092F6EC9A80009D3C1 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04C7EA082F6EC9A80009D3C1 /* AppTrackingTransparency.framework */; };
 		04F859BF2F0D72350086C717 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859BE2F0D72350086C717 /* AudioKit */; };
 		04F859C22F0D725F0086C717 /* SoundpipeAudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04F859C12F0D725F0086C717 /* SoundpipeAudioKit */; };
 /* End PBXBuildFile section */
@@ -62,6 +63,7 @@
 		0490AA312F0C8183008DE0D9 /* 2Jam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 2Jam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490AA3E2F0C8184008DE0D9 /* 2JamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 2JamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490AA482F0C8184008DE0D9 /* 2JamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 2JamUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		04C7EA082F6EC9A80009D3C1 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -125,6 +127,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				041EFCFD2F0E848600C65EAF /* GoogleMobileAds in Frameworks */,
+				04C7EA092F6EC9A80009D3C1 /* AppTrackingTransparency.framework in Frameworks */,
 				04F859C22F0D725F0086C717 /* SoundpipeAudioKit in Frameworks */,
 				04F859BF2F0D72350086C717 /* AudioKit in Frameworks */,
 			);
@@ -150,6 +153,7 @@
 		0476CB112F38AF0200D47840 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				04C7EA082F6EC9A80009D3C1 /* AppTrackingTransparency.framework */,
 				0476CB122F38AF0200D47840 /* WidgetKit.framework */,
 				0476CB142F38AF0200D47840 /* SwiftUI.framework */,
 			);
@@ -287,7 +291,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					0476CB0F2F38AF0200D47840 = {
 						CreatedOnToolsVersion = 16.4;
@@ -421,7 +425,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = 2JamWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2JamWidget/Info.plist;
@@ -449,7 +453,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = 2JamWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2JamWidget/Info.plist;
@@ -530,6 +534,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -588,6 +593,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -600,7 +606,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2Jam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -631,7 +637,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2Jam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = F3V9L8ZFD5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

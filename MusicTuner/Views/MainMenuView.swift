@@ -212,58 +212,79 @@ struct MainMenuView: View {
     // MARK: - Premium Section
     
     private var premiumSection: some View {
-        Button {
-            Task {
-                await storeManager.purchaseSubscription()
-            }
-        } label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 40, height: 40)
-                    
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(.white)
+        VStack(spacing: 12) {
+            Button {
+                Task {
+                    await storeManager.purchaseSubscription()
                 }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(L("iap_subscribe"))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(theme.textPrimary)
+            } label: {
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 40, height: 40)
+                        
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(.white)
+                    }
                     
-                    if let product = storeManager.subscriptionProduct {
-                        Text(product.displayPrice + " " + L("iap_per_month"))
-                            .font(.system(size: 13))
-                            .foregroundStyle(theme.textSecondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("iap_subscribe"))
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(theme.textPrimary)
+                        
+                        if let product = storeManager.subscriptionProduct {
+                            Text(product.displayPrice + " " + L("iap_per_month"))
+                                .font(.system(size: 13))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    if storeManager.isPurchasing {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }
                 }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(theme.cardBackground)
+                )
+            }
+            .disabled(storeManager.isPurchasing)
+            .padding(.horizontal, 20)
+            
+            // Subscription legal text
+            VStack(spacing: 8) {
+                Text(L("iap_subscription_terms"))
+                    .font(.system(size: 9, design: .rounded))
+                    .foregroundStyle(theme.textSecondary.opacity(0.6))
+                    .multilineTextAlignment(.center)
                 
-                Spacer()
-                
-                if storeManager.isPurchasing {
-                    ProgressView()
-                } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                HStack(spacing: 16) {
+                    Link(L("terms_of_use"), destination: URL(string: "https://tunisoprano.github.io/2jam-terms/")!)
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundStyle(theme.accent)
+                    
+                    Link(L("privacy_policy"), destination: URL(string: "https://tunisoprano.github.io/2jam-privacy/")!)
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundStyle(theme.accent)
                 }
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(theme.cardBackground)
-            )
+            .padding(.horizontal, 24)
         }
-        .disabled(storeManager.isPurchasing)
-        .padding(.horizontal, 20)
     }
     
     // MARK: - Section Header

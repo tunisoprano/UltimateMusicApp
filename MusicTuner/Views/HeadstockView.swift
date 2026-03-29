@@ -65,9 +65,7 @@ struct HeadstockView: View {
         }
     }
     
-    /// 6 floating note labels at tuning peg positions
-    /// Left (top→bottom): D A E — Right (top→bottom): G B E(high)
-    /// Coordinates are proportional to the headstock IMAGE, not the container
+
     private func guitarNotePegs(imgRect: CGRect) -> some View {
         // Peg positions as fractions of the headstock IMAGE dimensions
         // Left side: D(top), A(mid), E-low(bottom) — reversed order

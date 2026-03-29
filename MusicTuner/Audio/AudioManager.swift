@@ -96,6 +96,7 @@ final class AudioManager: ObservableObject {
             amplitudeThreshold = 0.015
             pitchDetector.minF0 = 200.0
             pitchDetector.maxF0 = 500.0
+            pitchDetector.resetState()
         case .free:
             // Full range
             minFrequency = 27.5  // A0
@@ -147,9 +148,13 @@ final class AudioManager: ObservableObject {
         // Configure AVAudioSession
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
+            try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            try session.setPreferredSampleRate(44100.0)
             try session.setActive(true)
-            print("✅ Audio session configured")
+            
+            // Read ACTUAL hardware sample rate (may differ from preferred)
+            let actualRate = session.sampleRate
+            print("✅ Audio session configured (requested: 44100, actual: \(actualRate)Hz)")
         } catch {
             print("❌ Audio session failed: \(error)")
             throw AudioError.engineCreationFailed
@@ -161,10 +166,18 @@ final class AudioManager: ObservableObject {
             throw AudioError.engineCreationFailed
         }
         
-        // Get input node
+        // Get input node and read actual sample rate
         let inputNode = engine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         sampleRate = format.sampleRate
+        
+        // Verify sample rate matches session
+        let sessionRate = AVAudioSession.sharedInstance().sampleRate
+        if abs(sampleRate - sessionRate) > 1.0 {
+            print("⚠️ Sample rate mismatch: format=\(sampleRate), session=\(sessionRate)")
+            // Prefer the session rate as the source of truth
+            sampleRate = sessionRate
+        }
         
         // Install tap for pitch detection
         inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: format) { [weak self] buffer, _ in

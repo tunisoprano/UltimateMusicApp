@@ -786,7 +786,13 @@ final class ChordEngine: ObservableObject {
     private let noteDuration: TimeInterval = 4.0 // How long each note rings (increased for realism)
     
     // Playback tracking - prevents race conditions
-    private var currentPlaybackID: UUID?
+    private nonisolated(unsafe) var currentPlaybackID: UUID?
+    
+    /// Dedicated queue for strum timing — keeps main thread free
+    private let strumQueue = DispatchQueue(label: "com.2jam.chordEngine.strum", qos: .userInteractive)
+    
+    /// Track active notes so we only stop what's actually playing
+    private var activeNotes: Set<UInt8> = []
     
     private init() {}
     
@@ -797,7 +803,7 @@ final class ChordEngine: ObservableObject {
         guard !isInitialized else { return }
         
         do {
-            // Configure audio session
+            // Configure audio session for playback (ambient allows mixing with mic input)
             try await configureAudioSession()
             
             // Create engine
@@ -843,7 +849,11 @@ final class ChordEngine: ObservableObject {
     
     private func configureAudioSession() async throws {
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+        // Use .playAndRecord so playback and mic can coexist without session conflicts
+        // .mixWithOthers prevents interrupting other audio (e.g., Tuner's mic)
+        // .defaultToSpeaker ensures sound comes from speaker, not earpiece
+        try session.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
+        try session.setPreferredIOBufferDuration(0.005) // 5ms buffer for lower latency
         try session.setActive(true)
     }
     
@@ -858,16 +868,15 @@ final class ChordEngine: ObservableObject {
         // Try different methods to load the SoundFont
         var loaded = false
         
-        // Method 1: Try loadMelodicSoundFont (for melodic SF2 files)
-        // Order: 25=Steel String, 24=Nylon, 0=Default, 1=Bright - try cleaner presets first
+        // Method 1: Try loadSoundFont with URL path
         for preset in [25, 24, 0, 1] {
             do {
-                try sampler.loadMelodicSoundFont(fileName, preset: preset)
-                print("✅ Loaded with loadMelodicSoundFont, preset: \(preset)")
+                try sampler.loadSoundFont(url.path, preset: preset, bank: 0)
+                print("✅ Loaded with loadSoundFont, preset: \(preset)")
                 loaded = true
                 break
             } catch {
-                print("⚠️ loadMelodicSoundFont preset \(preset) failed: \(error.localizedDescription)")
+                print("⚠️ loadSoundFont preset \(preset) failed: \(error.localizedDescription)")
             }
         }
         
@@ -933,14 +942,21 @@ final class ChordEngine: ObservableObject {
         // Calculate total strum duration
         let totalStrumTime = Double(transposedNotes.count) * strumDelay
         
-        // Play notes with strum delay
-        for (index, midiNote) in transposedNotes.enumerated() {
-            let delay = Double(index) * strumDelay
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                // Only play if this is still the current playback
-                guard self?.currentPlaybackID == playbackID else { return }
-                self?.playNote(midiNote: midiNote, velocity: 80)
+        // Play notes with strum delay on dedicated queue for precise timing
+        let capturedPlaybackID = playbackID
+        strumQueue.async { [weak self] in
+            for (index, midiNote) in transposedNotes.enumerated() {
+                // Check if playback was cancelled
+                guard self?.currentPlaybackID == capturedPlaybackID else { return }
+                
+                if index > 0 {
+                    Thread.sleep(forTimeInterval: self?.strumDelay ?? 0.04)
+                }
+                
+                DispatchQueue.main.async {
+                    guard self?.currentPlaybackID == capturedPlaybackID else { return }
+                    self?.playNote(midiNote: midiNote, velocity: 80)
+                }
             }
         }
         
@@ -955,6 +971,7 @@ final class ChordEngine: ObservableObject {
     
     /// Play a single MIDI note
     private func playNote(midiNote: UInt8, velocity: UInt8 = 80) {
+        activeNotes.insert(midiNote)
         if usingSoundFont {
             sampler?.play(noteNumber: MIDINoteNumber(midiNote), velocity: MIDIVelocity(velocity), channel: 0)
         } else {
@@ -970,8 +987,8 @@ final class ChordEngine: ObservableObject {
     /// Stop all currently playing notes
     func stopAllNotes() {
         if usingSoundFont {
-            // Stop all MIDI notes
-            for note in 0..<128 {
+            // Only stop notes that are actually playing (not all 128!)
+            for note in activeNotes {
                 sampler?.stop(noteNumber: MIDINoteNumber(note), channel: 0)
             }
         } else {
@@ -980,6 +997,7 @@ final class ChordEngine: ObservableObject {
                 osc.amplitude = 0
             }
         }
+        activeNotes.removeAll()
     }
     
     // MARK: - Cleanup
