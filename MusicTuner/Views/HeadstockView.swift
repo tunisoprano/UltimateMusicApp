@@ -55,6 +55,8 @@ struct HeadstockView: View {
                 // Real headstock image
                 Image("guitar_headstock")
                     .resizable()
+                    .interpolation(.high)
+                    .antialiased(true)
                     .scaledToFit()
                     .frame(width: viewW)
                     .frame(maxHeight: .infinity, alignment: .bottom)
@@ -149,6 +151,8 @@ struct HeadstockView: View {
             ZStack(alignment: .topLeading) {
                 Image("bass_headstock")
                     .resizable()
+                    .interpolation(.high)
+                    .antialiased(true)
                     .scaledToFit()
                     .frame(width: viewW)
                     .frame(maxHeight: .infinity, alignment: .bottom)
@@ -163,10 +167,10 @@ struct HeadstockView: View {
     private func bassNotePegs(imgRect: CGRect) -> some View {
         // Peg positions — to the left of each peg, fanning out leftward
         let pegPositions: [(CGFloat, CGFloat)] = [
-            (0.12, 0.13),   // G
-            (0.05, 0.30),   // D
-            (0.00, 0.47),   // A
-            (-0.05, 0.67),  // E
+            (0.13, 0.135),  // G — just left of its paddle
+            (0.075, 0.30),  // D
+            (0.035, 0.50),  // A
+            (-0.005, 0.68), // E
         ]
         // String order: G(index 3), D(index 2), A(index 1), E(index 0)
         let stringIndices = [3, 2, 1, 0]
@@ -203,7 +207,9 @@ struct HeadstockView: View {
             let viewW = geo.size.width
             let viewH = geo.size.height
             
-            let imgH = viewW / ukuleleImageAspect
+            // Narrower than the view so the note labels get clean side gutters
+            let displayW = viewW * 0.72
+            let imgH = displayW / ukuleleImageAspect
             let actualH = min(imgH, viewH)
             let actualW = actualH * ukuleleImageAspect
             let imgX = (viewW - actualW) / 2
@@ -212,8 +218,11 @@ struct HeadstockView: View {
             ZStack(alignment: .topLeading) {
                 Image("ukulele_headstock")
                     .resizable()
+                    .interpolation(.high)
+                    .antialiased(true)
                     .scaledToFit()
-                    .frame(width: viewW)
+                    .frame(width: actualW)
+                    .frame(maxWidth: .infinity)
                     .frame(maxHeight: .infinity, alignment: .bottom)
                 
                 ukuleleNotePegs(imgRect: CGRect(x: imgX, y: imgY, width: actualW, height: actualH))
@@ -223,17 +232,19 @@ struct HeadstockView: View {
     
     /// 4 floating note labels — 2 left (G, C) + 2 right (E, A)
     private func ukuleleNotePegs(imgRect: CGRect) -> some View {
+        // Labels sit in the side gutters, clear of the protruding paddles,
+        // vertically centered on their paddle rows
         // Left pegs: G(top), C(bottom)
         let leftPositions: [(CGFloat, CGFloat)] = [
-            (0.08, 0.20),   // G — top left
-            (0.04, 0.33),   // C — bottom left
+            (-0.10, 0.158), // G — beside top-left paddle
+            (-0.10, 0.32),  // C — beside bottom-left paddle
         ]
         let leftStringIndices = [0, 1] // G=0, C=1
         
         // Right pegs: E(top), A(bottom)
         let rightPositions: [(CGFloat, CGFloat)] = [
-            (0.92, 0.20),   // E — top right
-            (0.96, 0.33),   // A — bottom right
+            (1.10, 0.158),  // E — beside top-right paddle
+            (1.10, 0.32),   // A — beside bottom-right paddle
         ]
         let rightStringIndices = [2, 3] // E=2, A=3
         
