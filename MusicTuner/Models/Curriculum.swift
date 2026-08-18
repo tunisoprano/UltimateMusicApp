@@ -189,7 +189,7 @@ struct ChordCurriculum {
         // Level 8: Mixed Review
         LevelDefinition(
             id: 8,
-            title: "Final Challenge",
+            title: "Mixed Review",
             localizedTitleKey: "level_final_challenge",
             subtitle: "Test everything you've learned",
             localizedSubtitleKey: "level_final_challenge_subtitle",
@@ -202,6 +202,61 @@ struct ChordCurriculum {
                 (.D, .power),
                 (.F, .major),
                 (.B, .minor)
+            ]
+        ),
+
+        // Level 9: 7th Expansion
+        LevelDefinition(
+            id: 9,
+            title: "7th Expansion",
+            localizedTitleKey: "level_seventh_expansion",
+            subtitle: "New seventh chords across the neck",
+            localizedSubtitleKey: "level_seventh_expansion_subtitle",
+            icon: "9.circle.fill",
+            gradientColors: [.purple, .indigo],
+            chordIdentifiers: [
+                (.E, .seventh),
+                (.F, .seventh),
+                (.Fsharp, .seventh),
+                (.Gsharp, .seventh),
+                (.Asharp, .seventh)
+            ]
+        ),
+
+        // Level 10: Power Master
+        LevelDefinition(
+            id: 10,
+            title: "Power Master",
+            localizedTitleKey: "level_power_master",
+            subtitle: "Power chords all over the fretboard",
+            localizedSubtitleKey: "level_power_master_subtitle",
+            icon: "bolt.circle.fill",
+            gradientColors: [.red, .pink],
+            chordIdentifiers: [
+                (.C, .power),
+                (.F, .power),
+                (.B, .power),
+                (.Csharp, .power),
+                (.Gsharp, .power)
+            ]
+        ),
+
+        // Level 11: Grand Finale
+        LevelDefinition(
+            id: 11,
+            title: "Grand Finale",
+            localizedTitleKey: "level_grand_finale",
+            subtitle: "The toughest mix of everything",
+            localizedSubtitleKey: "level_grand_finale_subtitle",
+            icon: "trophy.fill",
+            gradientColors: [.yellow, .red],
+            chordIdentifiers: [
+                (.Asharp, .major),
+                (.Dsharp, .minor),
+                (.Fsharp, .seventh),
+                (.C, .minor),
+                (.Gsharp, .power),
+                (.Csharp, .major)
             ]
         )
     ]
@@ -221,6 +276,13 @@ struct ChordCurriculum {
     /// Total number of levels
     static var totalLevels: Int {
         levels.count
+    }
+
+    /// Levels with id >= this value require premium (last 2 levels)
+    static var premiumThreshold: Int {
+        let ids = levels.map { $0.id }.sorted()
+        guard ids.count > 2 else { return ids.last.map { $0 + 1 } ?? Int.max }
+        return ids[ids.count - 2]
     }
 }
 
@@ -349,10 +411,10 @@ struct EarTrainingCurriculum {
             ]
         ),
         
-        // Level 8: Final Challenge
+        // Level 8: Mixed Review
         LevelDefinition(
             id: 8,
-            title: "Final Challenge",
+            title: "Mixed Review",
             localizedTitleKey: "et_level_final",
             subtitle: "Test everything you've learned",
             localizedSubtitleKey: "et_level_final_subtitle",
@@ -365,6 +427,59 @@ struct EarTrainingCurriculum {
                 (.D, .minor),
                 (.F, .major),
                 (.B, .minor)
+            ]
+        ),
+
+        // Level 9: Seventh Colors
+        LevelDefinition(
+            id: 9,
+            title: "Seventh Colors",
+            localizedTitleKey: "et_level_seventh_colors",
+            subtitle: "Tell new seventh sounds apart",
+            localizedSubtitleKey: "et_level_seventh_colors_subtitle",
+            icon: "9.circle.fill",
+            gradientColors: [.purple, .indigo],
+            chordIdentifiers: [
+                (.E, .seventh),
+                (.B, .seventh),
+                (.F, .seventh),
+                (.Fsharp, .seventh)
+            ]
+        ),
+
+        // Level 10: Sharp Minors
+        LevelDefinition(
+            id: 10,
+            title: "Sharp Minors",
+            localizedTitleKey: "et_level_minor_sharps",
+            subtitle: "Minor chords in sharp territory",
+            localizedSubtitleKey: "et_level_minor_sharps_subtitle",
+            icon: "10.circle.fill",
+            gradientColors: [.indigo, .purple],
+            chordIdentifiers: [
+                (.Fsharp, .minor),
+                (.Gsharp, .minor),
+                (.Csharp, .minor),
+                (.Dsharp, .minor)
+            ]
+        ),
+
+        // Level 11: Grand Finale
+        LevelDefinition(
+            id: 11,
+            title: "Grand Finale",
+            localizedTitleKey: "et_level_grand_finale",
+            subtitle: "The ultimate listening test",
+            localizedSubtitleKey: "et_level_grand_finale_subtitle",
+            icon: "trophy.fill",
+            gradientColors: [.yellow, .red],
+            chordIdentifiers: [
+                (.E, .major),
+                (.Csharp, .minor),
+                (.Fsharp, .seventh),
+                (.Asharp, .major),
+                (.G, .minor),
+                (.Dsharp, .seventh)
             ]
         )
     ]
@@ -384,5 +499,12 @@ struct EarTrainingCurriculum {
     /// Total number of levels
     static var totalLevels: Int {
         levels.count
+    }
+
+    /// Levels with id >= this value require premium (last 2 levels)
+    static var premiumThreshold: Int {
+        let ids = levels.map { $0.id }.sorted()
+        guard ids.count > 2 else { return ids.last.map { $0 + 1 } ?? Int.max }
+        return ids[ids.count - 2]
     }
 }

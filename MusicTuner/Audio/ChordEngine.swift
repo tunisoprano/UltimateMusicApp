@@ -272,11 +272,11 @@ struct ChordDatabase {
     // MARK: - Minor Chords
     
     static let minorChords: [ChordDefinition] = [
-        // Cm - Barre
+        // Cm - Open (high e muted — E natural is not in C minor)
         ChordDefinition(
             rootNote: .C, type: .minor,
-            midiNotes: [48, 51, 55, 60, 63],
-            fretPositions: [nil, 3, 1, 0, 1, 0],
+            midiNotes: [48, 51, 55, 60],
+            fretPositions: [nil, 3, 1, 0, 1, nil],
             startFret: 1,
             fingerPositions: [0, 3, 1, 0, 2, 0],
             barreInfo: nil
@@ -385,20 +385,20 @@ struct ChordDatabase {
     // MARK: - Seventh Chords
     
     static let seventhChords: [ChordDefinition] = [
-        // C7
+        // C7 — frets: x32310 → C(48) E(52) Bb(58) C(60) E(64)
         ChordDefinition(
             rootNote: .C, type: .seventh,
-            midiNotes: [48, 52, 55, 58, 64],
+            midiNotes: [48, 52, 58, 60, 64],
             fretPositions: [nil, 3, 2, 3, 1, 0],
             startFret: 1,
             fingerPositions: [0, 3, 2, 4, 1, 0],
             barreInfo: nil
         ),
-        // C#7
+        // C#7 — high e muted (E natural not in C#7): x4342x → C#(49) F(53) B(59) C#(61)
         ChordDefinition(
             rootNote: .Csharp, type: .seventh,
-            midiNotes: [49, 53, 56, 59, 65],
-            fretPositions: [nil, 4, 3, 4, 2, 0],
+            midiNotes: [49, 53, 59, 61],
+            fretPositions: [nil, 4, 3, 4, 2, nil],
             startFret: 1,
             fingerPositions: [0, 3, 2, 4, 1, 0],
             barreInfo: nil
@@ -448,19 +448,19 @@ struct ChordDatabase {
             fingerPositions: [1, 3, 1, 2, 1, 1],
             barreInfo: BarreInfo(fret: 2, fromString: 0, toString: 5)
         ),
-        // G7 - Open Position
+        // G7 - Open Position: 320001 → G(43) B(47) D(50) G(55) B(59) F(65)
         ChordDefinition(
             rootNote: .G, type: .seventh,
-            midiNotes: [43, 47, 50, 53, 59, 67],
+            midiNotes: [43, 47, 50, 55, 59, 65],
             fretPositions: [3, 2, 0, 0, 0, 1],
             startFret: 1,
             fingerPositions: [3, 2, 0, 0, 0, 1],
             barreInfo: nil
         ),
-        // G#7
+        // G#7: 431112 → G#(44) C(48) D#(51) G#(56) C(60) F#(66)
         ChordDefinition(
             rootNote: .Gsharp, type: .seventh,
-            midiNotes: [44, 48, 51, 54, 60, 68],
+            midiNotes: [44, 48, 51, 56, 60, 66],
             fretPositions: [4, 3, 1, 1, 1, 2],
             startFret: 1,
             fingerPositions: [4, 3, 1, 1, 1, 2],
@@ -484,10 +484,10 @@ struct ChordDatabase {
             fingerPositions: [0, 1, 3, 1, 4, 1],
             barreInfo: BarreInfo(fret: 1, fromString: 1, toString: 5)
         ),
-        // B7 - Open Position
+        // B7 - Open Position: x21202 → B(47) D#(51) A(57) B(59) F#(66)
         ChordDefinition(
             rootNote: .B, type: .seventh,
-            midiNotes: [47, 54, 57, 63, 66],
+            midiNotes: [47, 51, 57, 59, 66],
             fretPositions: [nil, 2, 1, 2, 0, 2],
             startFret: 1,
             fingerPositions: [0, 2, 1, 3, 0, 4],
@@ -608,8 +608,34 @@ struct ChordDatabase {
         )
     ]
     
+    // MARK: - MIDI Validation
+
+    /// Open string MIDI values: E2=40, A2=45, D3=50, G3=55, B3=59, E4=64
+    private static let openStringMIDI: [UInt8] = [40, 45, 50, 55, 59, 64]
+
+    /// Compute expected MIDI notes from fret positions (ground truth)
+    static func midiNotes(fromFrets frets: [Int?]) -> [UInt8] {
+        frets.enumerated().compactMap { index, fret in
+            guard let fret = fret else { return nil }
+            return openStringMIDI[index] + UInt8(fret)
+        }
+    }
+
+    /// Validate that all chord MIDI notes match their fret positions (debug only)
+    #if DEBUG
+    static func validateAllChords() {
+        for chord in allChords {
+            let expected = midiNotes(fromFrets: chord.fretPositions)
+            if chord.midiNotes != expected {
+                print("⚠️ MIDI mismatch for \(chord.name): stored=\(chord.midiNotes) expected=\(expected)")
+            }
+        }
+        print("✅ ChordDatabase validation complete (\(allChords.count) chords)")
+    }
+    #endif
+
     // MARK: - All Chords
-    
+
     static var allChords: [ChordDefinition] {
         majorChords + minorChords + seventhChords + powerChords
     }
@@ -670,12 +696,12 @@ struct ChordDatabase {
             midiNotes: [48, 55, 60, 64, 67, 72],
             barreInfo: BarreInfo(fret: 8, fromString: 0, toString: 5)
         ),
-        // 4. Triad (High Strings)
+        // 4. Triad (High Strings) — G5=C(60), B5=E(64), e3=G(67)
         ChordVariation(
             positionName: "Triad",
-            fretPositions: [nil, nil, nil, 5, 5, 5],
-            startFret: 5,
-            fingerPositions: [0, 0, 0, 1, 2, 3],
+            fretPositions: [nil, nil, nil, 5, 5, 3],
+            startFret: 3,
+            fingerPositions: [0, 0, 0, 3, 4, 1],
             midiNotes: [60, 64, 67],
             barreInfo: nil
         ),
@@ -741,23 +767,322 @@ struct ChordDatabase {
     
     /// Get variations for a specific chord (returns array of voicings)
     static func variations(for root: RootNote, type: ChordType) -> [ChordVariation] {
-        // Currently only C and G Major have full variations
+        var result: [ChordVariation]
+
+        // Hand-curated sets keep their special voicings (Add9, Folk...)
         switch (root, type) {
-        case (.C, .major): return cMajorVariations
-        case (.G, .major): return gMajorVariations
+        case (.C, .major): result = cMajorVariations
+        case (.G, .major): result = gMajorVariations
         default:
-            // For other chords, return single variation from existing chord
             if let chord = chord(root: root, type: type) {
-                return [ChordVariation(
-                    positionName: "Standard",
+                let isOpen = chord.fretPositions.contains(0) && chord.barreInfo == nil
+                result = [ChordVariation(
+                    positionName: isOpen ? "Open" : "Standard",
                     fretPositions: chord.fretPositions,
                     startFret: chord.startFret,
                     fingerPositions: chord.fingerPositions,
                     midiNotes: chord.midiNotes,
                     barreInfo: chord.barreInfo
                 )]
+            } else {
+                result = []
             }
-            return []
+        }
+
+        // Generated movable voicings, skipping any that duplicate existing positions
+        for variation in generatedVariations(for: root, type: type)
+        where !result.contains(where: { $0.fretPositions == variation.fretPositions }) {
+            result.append(variation)
+        }
+
+        return result
+    }
+
+    // MARK: - Generated Voicings (movable CAGED shapes)
+    //
+    // Barre shapes are movable: the same finger pattern shifted to fret N
+    // produces the chord whose root sits at fret N of the shape's root string.
+    // All generated voicings are verified against the chord's theoretical
+    // pitch-class set in validateAllVariations() (DEBUG).
+
+    /// A movable voicing shape. `baseFrets` are offsets relative to the barre fret N.
+    private struct MovableShape {
+        let namePrefix: String
+        let baseFrets: [Int?]              // nil = muted string
+        let fingers: [Int]
+        let barreStrings: (from: Int, to: Int)?
+        let rootOpenPC: Int                // pitch class of the shape's root string played open
+        let minFret: Int
+    }
+
+    private static let majorShapes: [MovableShape] = [
+        // E-shape (root on 6th string)
+        MovableShape(namePrefix: "Barre", baseFrets: [0, 2, 2, 1, 0, 0],
+                     fingers: [1, 3, 4, 2, 1, 1], barreStrings: (0, 5), rootOpenPC: 4, minFret: 1),
+        // A-shape (root on 5th string)
+        MovableShape(namePrefix: "Barre", baseFrets: [nil, 0, 2, 2, 2, 0],
+                     fingers: [0, 1, 3, 3, 3, 1], barreStrings: (1, 5), rootOpenPC: 9, minFret: 1)
+    ]
+
+    private static let minorShapes: [MovableShape] = [
+        // Em-shape
+        MovableShape(namePrefix: "Barre", baseFrets: [0, 2, 2, 0, 0, 0],
+                     fingers: [1, 3, 4, 1, 1, 1], barreStrings: (0, 5), rootOpenPC: 4, minFret: 1),
+        // Am-shape
+        MovableShape(namePrefix: "Barre", baseFrets: [nil, 0, 2, 2, 1, 0],
+                     fingers: [0, 1, 3, 4, 2, 1], barreStrings: (1, 5), rootOpenPC: 9, minFret: 1)
+    ]
+
+    private static let seventhShapes: [MovableShape] = [
+        // E7-shape
+        MovableShape(namePrefix: "Barre", baseFrets: [0, 2, 0, 1, 0, 0],
+                     fingers: [1, 3, 1, 2, 1, 1], barreStrings: (0, 5), rootOpenPC: 4, minFret: 1),
+        // A7-shape
+        MovableShape(namePrefix: "Barre", baseFrets: [nil, 0, 2, 0, 2, 0],
+                     fingers: [0, 1, 3, 1, 4, 1], barreStrings: (1, 5), rootOpenPC: 9, minFret: 1)
+    ]
+
+    /// Dominant 9th, A-shape (the classic "x32333"-style funk voicing, movable)
+    private static let ninthShape = MovableShape(
+        namePrefix: "9th", baseFrets: [nil, 0, -1, 0, 0, 0],
+        fingers: [0, 2, 1, 3, 3, 3], barreStrings: (3, 5), rootOpenPC: 9, minFret: 2
+    )
+
+    private static let powerShapes: [MovableShape] = [
+        MovableShape(namePrefix: "Alt", baseFrets: [0, 2, 2, nil, nil, nil],
+                     fingers: [1, 3, 4, 0, 0, 0], barreStrings: nil, rootOpenPC: 4, minFret: 1),
+        MovableShape(namePrefix: "Alt", baseFrets: [nil, 0, 2, 2, nil, nil],
+                     fingers: [0, 1, 3, 4, 0, 0], barreStrings: nil, rootOpenPC: 9, minFret: 1)
+    ]
+
+    /// Hand-curated open add9 voicings for popular chords (C's lives in cMajorVariations)
+    private static let add9Variations: [RootNote: ChordVariation] = [
+        .G: ChordVariation(
+            positionName: "Add9",
+            fretPositions: [3, nil, 0, 2, 0, 3],
+            startFret: 1,
+            fingerPositions: [2, 0, 0, 1, 0, 3],
+            midiNotes: midiNotes(fromFrets: [3, nil, 0, 2, 0, 3]),
+            barreInfo: nil
+        ),
+        .E: ChordVariation(
+            positionName: "Add9",
+            fretPositions: [0, 2, 2, 1, 0, 2],
+            startFret: 1,
+            fingerPositions: [0, 2, 3, 1, 0, 4],
+            midiNotes: midiNotes(fromFrets: [0, 2, 2, 1, 0, 2]),
+            barreInfo: nil
+        ),
+        .A: ChordVariation(
+            positionName: "Add9",
+            fretPositions: [nil, 0, 2, 4, 2, 0],
+            startFret: 1,
+            fingerPositions: [0, 0, 1, 3, 2, 0],
+            midiNotes: midiNotes(fromFrets: [nil, 0, 2, 4, 2, 0]),
+            barreInfo: nil
+        )
+    ]
+
+    private static func generatedVariations(for root: RootNote, type: ChordType) -> [ChordVariation] {
+        let pc = root.pitchClass
+        var generated: [ChordVariation] = []
+
+        let shapes: [MovableShape]
+        switch type {
+        case .major: shapes = majorShapes
+        case .minor: shapes = minorShapes
+        case .seventh: shapes = seventhShapes
+        case .power: shapes = powerShapes
+        }
+
+        for shape in shapes {
+            if let variation = variation(from: shape, rootPC: pc) {
+                generated.append(variation)
+            }
+        }
+        generated.sort { $0.startFret < $1.startFret }
+
+        // Top-string triad for major/minor
+        if type == .major || type == .minor,
+           let triad = triadVariation(rootPC: pc, third: type == .major ? 4 : 3) {
+            generated.append(triad)
+        }
+
+        // Dominant 9th voicing for 7th chords
+        if type == .seventh, let ninth = variation(from: ninthShape, rootPC: pc) {
+            generated.append(ninth)
+        }
+
+        // Open add9 voicings for popular majors
+        if type == .major, let add9 = add9Variations[root] {
+            generated.append(add9)
+        }
+
+        return generated
+    }
+
+    /// Build a voicing by shifting a movable shape to this root's fret
+    private static func variation(from shape: MovableShape, rootPC: Int) -> ChordVariation? {
+        var n = mod12(rootPC - shape.rootOpenPC)
+        if n < shape.minFret { n += 12 }
+        let maxBase = shape.baseFrets.compactMap { $0 }.max() ?? 0
+        guard n <= 12, n + maxBase <= 15 else { return nil }
+
+        let frets = shape.baseFrets.map { $0.map { $0 + n } }
+        let barre = shape.barreStrings.map {
+            BarreInfo(fret: n, fromString: $0.from, toString: $0.to)
+        }
+        // Diagram window must start at the lowest fretted position (can sit below the barre)
+        let lowestFretted = frets.compactMap { $0 }.filter { $0 > 0 }.min() ?? n
+
+        return ChordVariation(
+            positionName: "\(shape.namePrefix) (\(ordinal(n)))",
+            fretPositions: frets,
+            startFret: lowestFretted,
+            fingerPositions: shape.fingers,
+            midiNotes: midiNotes(fromFrets: frets),
+            barreInfo: barre
+        )
+    }
+
+    /// Compact triad on the top three strings (G B e). Picks the lowest playable inversion.
+    private static func triadVariation(rootPC: Int, third: Int) -> ChordVariation? {
+        // Frets on G(7)/B(11)/e(4) for root position, 1st and 2nd inversions
+        let candidates: [[Int]] = [
+            [mod12(rootPC - 7), mod12(rootPC + third - 11), mod12(rootPC + 7 - 4)],
+            [mod12(rootPC + third - 7), mod12(rootPC + 7 - 11), mod12(rootPC - 4)],
+            [mod12(rootPC + 7 - 7), mod12(rootPC - 11), mod12(rootPC + third - 4)]
+        ]
+
+        let playable = candidates.filter { frets in
+            guard let maxF = frets.max(), let minF = frets.min() else { return false }
+            return maxF >= 1 && maxF <= 12 && (maxF - minF) <= 3
+        }
+        guard let best = playable.min(by: { $0.max()! < $1.max()! }) else { return nil }
+
+        let frets: [Int?] = [nil, nil, nil] + best.map { Optional($0) }
+        let fingers = [0, 0, 0] + triadFingers(best)
+        let startFret = best.filter { $0 > 0 }.min() ?? 1
+
+        return ChordVariation(
+            positionName: "Triad",
+            fretPositions: frets,
+            startFret: startFret,
+            fingerPositions: fingers,
+            midiNotes: midiNotes(fromFrets: frets),
+            barreInfo: nil
+        )
+    }
+
+    /// Finger assignment heuristic for 3-note shapes: lowest fret gets index,
+    /// higher frets get ring/pinky (matches conventional triad fingerings).
+    private static func triadFingers(_ frets: [Int]) -> [Int] {
+        let distinct = Set(frets.filter { $0 > 0 }).sorted()
+        var baseForValue: [Int: Int] = [:]
+        for (index, value) in distinct.enumerated() {
+            baseForValue[value] = index == 0 ? 1 : (index == 1 ? 3 : 4)
+        }
+        var occurrences: [Int: Int] = [:]
+        return frets.map { fret in
+            guard fret > 0, let base = baseForValue[fret] else { return 0 }
+            let offset = occurrences[fret, default: 0]
+            occurrences[fret] = offset + 1
+            return min(base + offset, 4)
+        }
+    }
+
+    private static func mod12(_ value: Int) -> Int {
+        ((value % 12) + 12) % 12
+    }
+
+    private static func ordinal(_ n: Int) -> String {
+        switch n {
+        case 1: return "1st"
+        case 2: return "2nd"
+        case 3: return "3rd"
+        default: return "\(n)th"
+        }
+    }
+
+    // MARK: - Variation Validation (DEBUG)
+
+    #if DEBUG
+    /// Verify every voicing (hand-written and generated) against the chord's
+    /// theoretical pitch-class set. Triads may omit the fifth but never contain
+    /// a wrong note.
+    static func validateAllVariations() {
+        var issueCount = 0
+
+        for root in RootNote.allCases {
+            for type in ChordType.allCases {
+                let r = root.pitchClass
+                let fullSet: Set<Int>
+                switch type {
+                case .major: fullSet = Set([0, 4, 7].map { mod12(r + $0) })
+                case .minor: fullSet = Set([0, 3, 7].map { mod12(r + $0) })
+                case .seventh: fullSet = Set([0, 4, 7, 10].map { mod12(r + $0) })
+                case .power: fullSet = Set([0, 7].map { mod12(r + $0) })
+                }
+
+                for variation in variations(for: root, type: type) {
+                    let actual = Set(midiNotes(fromFrets: variation.fretPositions).map { Int($0) % 12 })
+                    let name = "\(root.displayName)\(type.suffix) [\(variation.positionName)]"
+
+                    // Allowed = every tone of the formula; required = formula minus
+                    // the fifth, which is conventionally omittable (e.g. open C7).
+                    let allowed: Set<Int>
+                    let required: Set<Int>
+                    if variation.positionName.hasPrefix("9th") {
+                        allowed = Set([0, 2, 4, 7, 10].map { mod12(r + $0) })
+                        required = Set([0, 2, 4, 10].map { mod12(r + $0) })
+                    } else if variation.positionName == "Add9" {
+                        allowed = Set([0, 2, 4, 7].map { mod12(r + $0) })
+                        required = allowed
+                    } else if variation.positionName == "Triad" {
+                        let third = type == .minor ? 3 : 4
+                        allowed = fullSet
+                        required = Set([0, third].map { mod12(r + $0) })
+                    } else if type == .seventh {
+                        allowed = fullSet
+                        required = Set([0, 4, 10].map { mod12(r + $0) })
+                    } else {
+                        allowed = fullSet
+                        required = fullSet
+                    }
+
+                    if !actual.isSubset(of: allowed) || !required.isSubset(of: actual) {
+                        print("⚠️ Variation pitch mismatch: \(name) got \(actual.sorted()) expected \(required.sorted()) ⊆ x ⊆ \(allowed.sorted())")
+                        issueCount += 1
+                    }
+                }
+            }
+        }
+
+        print(issueCount == 0
+              ? "✅ Variation validation complete — all voicings match their chord formulas"
+              : "❌ Variation validation found \(issueCount) issue(s)")
+    }
+    #endif
+}
+
+// MARK: - Root Note Pitch Class
+
+extension RootNote {
+    /// Chromatic pitch class (C = 0 ... B = 11)
+    var pitchClass: Int {
+        switch self {
+        case .C: return 0
+        case .Csharp: return 1
+        case .D: return 2
+        case .Dsharp: return 3
+        case .E: return 4
+        case .F: return 5
+        case .Fsharp: return 6
+        case .G: return 7
+        case .Gsharp: return 8
+        case .A: return 9
+        case .Asharp: return 10
+        case .B: return 11
         }
     }
 }
@@ -801,7 +1126,12 @@ final class ChordEngine: ObservableObject {
     /// Initialize the audio engine with SoundFont or fallback
     func initialize() async {
         guard !isInitialized else { return }
-        
+
+        #if DEBUG
+        ChordDatabase.validateAllChords()
+        ChordDatabase.validateAllVariations()
+        #endif
+
         do {
             // Configure audio session for playback (ambient allows mixing with mic input)
             try await configureAudioSession()
@@ -860,61 +1190,89 @@ final class ChordEngine: ObservableObject {
     private func loadSoundFont(url: URL) async throws {
         sampler = AppleSampler()
         guard let sampler = sampler, let engine = engine else { return }
-        
-        // Try loading with file name (AudioKit expects just the filename for bundle resources)
+
         let fileName = url.deletingPathExtension().lastPathComponent
-        print("🎸 Trying to load SoundFont: \(fileName)")
-        
-        // Try different methods to load the SoundFont
+        print("🎸 Trying to load SoundFont: \(fileName) at \(url.path)")
+
         var loaded = false
-        
-        // Method 1: Try loadSoundFont with URL path
-        for preset in [25, 24, 0, 1] {
+
+        // Method 1: AudioKit's loadSoundFont with just the FILENAME (no path, no extension)
+        // AudioKit internally calls findFileURL which searches Bundle.main
+        let guitarPresets: [Int] = [25, 24, 0, 1, 2, 3, 4, 5]
+        for preset in guitarPresets {
             do {
-                try sampler.loadSoundFont(url.path, preset: preset, bank: 0)
-                print("✅ Loaded with loadSoundFont, preset: \(preset)")
+                try sampler.loadSoundFont(fileName, preset: preset, bank: 0)
+                print("✅ Loaded SoundFont '\(fileName)' with preset: \(preset)")
                 loaded = true
                 break
             } catch {
-                print("⚠️ loadSoundFont preset \(preset) failed: \(error.localizedDescription)")
+                print("⚠️ loadSoundFont(\(fileName), preset: \(preset)) failed: \(error.localizedDescription)")
             }
         }
-        
-        // Method 2: Try with full path if filename method failed
+
+        // Method 2: Direct AVAudioUnitSampler load with full URL (bypasses AudioKit file search)
         if !loaded {
-            for preset in [25, 24, 0, 1] {
+            print("🔄 Trying direct AVAudioUnitSampler load with URL...")
+            for preset in guitarPresets {
                 do {
-                    try sampler.loadSoundFont(url.path, preset: preset, bank: 0)
-                    print("✅ Loaded with loadSoundFont path, preset: \(preset)")
+                    try sampler.samplerUnit.loadSoundBankInstrument(
+                        at: url,
+                        program: MIDIByte(preset),
+                        bankMSB: MIDIByte(0x79),  // kAUSampler_DefaultMelodicBankMSB
+                        bankLSB: MIDIByte(0)
+                    )
+                    print("✅ Direct load succeeded with preset: \(preset)")
                     loaded = true
                     break
                 } catch {
-                    print("⚠️ loadSoundFont path preset \(preset) failed")
+                    print("⚠️ Direct load preset \(preset) failed: \(error.localizedDescription)")
                 }
             }
         }
-        
+
+        // Method 3: Try bank MSB 0 (some SoundFonts use this instead of 0x79)
         if !loaded {
-            throw NSError(domain: "ChordEngine", code: -1, 
+            print("🔄 Trying with bankMSB 0...")
+            for preset in guitarPresets {
+                do {
+                    try sampler.samplerUnit.loadSoundBankInstrument(
+                        at: url,
+                        program: MIDIByte(preset),
+                        bankMSB: MIDIByte(0),
+                        bankLSB: MIDIByte(0)
+                    )
+                    print("✅ Bank 0 load succeeded with preset: \(preset)")
+                    loaded = true
+                    break
+                } catch {
+                    // Silent - last resort
+                }
+            }
+        }
+
+        if !loaded {
+            throw NSError(domain: "ChordEngine", code: -1,
                           userInfo: [NSLocalizedDescriptionKey: "Could not load SoundFont with any method"])
         }
-        
+
         engine.output = sampler
         usingSoundFont = true
     }
     
     private func setupFallbackSynth() {
         guard let engine = engine else { return }
-        
-        // Create a bank of oscillators for polyphonic playback
+
+        // Create 6 oscillators (one per guitar string) with triangle waveform
+        // Triangle waves have softer harmonics than sawtooth, closer to plucked string
         oscillatorBank = (0..<6).map { _ in
-            let osc = DynamicOscillator()
-            osc.amplitude = 0.3
+            let osc = DynamicOscillator(waveform: Table(.triangle))
+            osc.amplitude = 0
             osc.start()
             return osc
         }
-        
+
         mixer = Mixer(oscillatorBank)
+        mixer?.volume = 0.6
         engine.output = mixer
         usingSoundFont = false
     }
@@ -935,17 +1293,17 @@ final class ChordEngine: ObservableObject {
         
         // Stop any currently playing notes immediately
         stopAllNotes()
-        
-        // Transpose up one octave (+12 semitones) for brighter sound
-        let transposedNotes = chord.midiNotes.map { $0 + 12 }
-        
+
+        // Use MIDI notes directly — they already represent correct guitar pitches
+        let notes = chord.midiNotes
+
         // Calculate total strum duration
-        let totalStrumTime = Double(transposedNotes.count) * strumDelay
-        
+        let totalStrumTime = Double(notes.count) * strumDelay
+
         // Play notes with strum delay on dedicated queue for precise timing
         let capturedPlaybackID = playbackID
         strumQueue.async { [weak self] in
-            for (index, midiNote) in transposedNotes.enumerated() {
+            for (index, midiNote) in notes.enumerated() {
                 // Check if playback was cancelled
                 guard self?.currentPlaybackID == capturedPlaybackID else { return }
                 
@@ -969,17 +1327,40 @@ final class ChordEngine: ObservableObject {
         }
     }
     
+    /// Index of next available oscillator for fallback synth
+    private var nextOscIndex: Int = 0
+
     /// Play a single MIDI note
     private func playNote(midiNote: UInt8, velocity: UInt8 = 80) {
         activeNotes.insert(midiNote)
         if usingSoundFont {
             sampler?.play(noteNumber: MIDINoteNumber(midiNote), velocity: MIDIVelocity(velocity), channel: 0)
         } else {
-            // Fallback: Use oscillator
-            if let osc = oscillatorBank.first(where: { $0.amplitude < 0.1 }) ?? oscillatorBank.first {
-                let frequency = 440.0 * pow(2.0, (Double(midiNote) - 69.0) / 12.0)
-                osc.frequency = AUValue(frequency)
-                osc.amplitude = 0.3
+            // Fallback: Assign oscillators round-robin (one per string)
+            guard !oscillatorBank.isEmpty else { return }
+            let osc = oscillatorBank[nextOscIndex % oscillatorBank.count]
+            nextOscIndex += 1
+
+            let frequency = 440.0 * pow(2.0, (Double(midiNote) - 69.0) / 12.0)
+            osc.frequency = AUValue(frequency)
+
+            // Velocity-sensitive amplitude with pluck-like attack
+            let amp = AUValue(velocity) / 127.0 * 0.35
+            osc.amplitude = amp
+
+            // Simulate decay: fade out over 2 seconds for guitar-like pluck
+            let capturedOsc = osc
+            let capturedAmp = amp
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                // Only fade if the oscillator hasn't been reassigned
+                if capturedOsc.amplitude == capturedAmp || capturedOsc.amplitude > 0.05 {
+                    capturedOsc.amplitude = capturedAmp * 0.4
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                if capturedOsc.amplitude > 0.02 {
+                    capturedOsc.amplitude = capturedAmp * 0.1
+                }
             }
         }
     }
@@ -996,6 +1377,7 @@ final class ChordEngine: ObservableObject {
             for osc in oscillatorBank {
                 osc.amplitude = 0
             }
+            nextOscIndex = 0
         }
         activeNotes.removeAll()
     }

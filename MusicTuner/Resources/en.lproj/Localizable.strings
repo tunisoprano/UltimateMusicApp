@@ -100,8 +100,20 @@
 "level_barre_chords_subtitle" = "Unlock the entire fretboard";
 "level_sharp_chords" = "Sharp Chords";
 "level_sharp_chords_subtitle" = "Master the in-between notes";
-"level_final_challenge" = "Final Challenge";
+"level_final_challenge" = "Mixed Review";
 "level_final_challenge_subtitle" = "Test everything you've learned";
+"level_seventh_expansion" = "7th Expansion";
+"level_seventh_expansion_subtitle" = "New seventh chords across the neck";
+"level_power_master" = "Power Master";
+"level_power_master_subtitle" = "Power chords all over the fretboard";
+"level_grand_finale" = "Grand Finale";
+"level_grand_finale_subtitle" = "The toughest mix of everything";
+"current_level_label" = "Current Level";
+"continue_level" = "Continue";
+"replay_level" = "Practice Again";
+"show_all_levels" = "Show All Levels";
+"hide_all_levels" = "Hide Levels";
+"levels_completed_format" = "%d of %d levels completed";
 
 // Learning Session
 "study_this_chord" = "Study this chord";
@@ -144,8 +156,14 @@
 "et_level_seventh_subtitle" = "Recognize the jazzy seventh sound";
 "et_level_sharp_territory" = "Sharp Territory";
 "et_level_sharp_territory_subtitle" = "Sharps and flats challenge your ear";
-"et_level_final" = "Final Challenge";
+"et_level_final" = "Mixed Review";
 "et_level_final_subtitle" = "Test everything you've learned";
+"et_level_seventh_colors" = "Seventh Colors";
+"et_level_seventh_colors_subtitle" = "Tell new seventh sounds apart";
+"et_level_minor_sharps" = "Sharp Minors";
+"et_level_minor_sharps_subtitle" = "Minor chords in sharp territory";
+"et_level_grand_finale" = "Grand Finale";
+"et_level_grand_finale_subtitle" = "The ultimate listening test";
 
 // Fretboard Training - Level System
 "fb_title" = "Fretboard Training";
@@ -196,3 +214,33 @@
 "chord_library_subtitle" = "Learn chords with interactive diagrams";
 "chord_mastery_subtitle" = "Master chords step by step";
 "tempo_trainer" = "Tempo Trainer";
+
+// Missing Keys
+"tools" = "Tools";
+"select_an_item" = "Select an item";
+"loading" = "Loading…";
+"unavailable_try_later" = "Unavailable — try again later";
+"ad_loading" = "Ad Loading...";
+
+// Tuner States
+"tuner_play_a_note" = "Play a note";
+"tuner_too_low" = "Too Low ↓";
+"tuner_too_high" = "Too High ↑";
+"tuner_almost" = "Almost!";
+"tuner_perfect" = "Perfect! ✓";
+
+// Settings Hardcoded Strings
+"note_naming_section" = "Note Naming";
+"sound_feedback_section" = "Sound & Feedback";
+
+// Paywall
+"paywall_title" = "2Jam Premium";
+"paywall_subtitle" = "Unlock everything and practice without interruptions.";
+"paywall_feature_ads_title" = "No Ads";
+"paywall_feature_ads_desc" = "Remove all banner and interstitial ads.";
+"paywall_feature_levels_title" = "All Levels Unlocked";
+"paywall_feature_levels_desc" = "Access every level in Ear Training, Chord Mastery and Fretboard Training.";
+"paywall_feature_future_title" = "Future Features Included";
+"paywall_feature_future_desc" = "New premium features are included in your subscription.";
+"paywall_cta" = "Go Premium";
+"paywall_cancel_anytime" = "Cancel anytime in the App Store.";

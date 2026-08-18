@@ -100,8 +100,20 @@
 "level_barre_chords_subtitle" = "Tüm klavyenin kilidini aç";
 "level_sharp_chords" = "Diyez Akorlar";
 "level_sharp_chords_subtitle" = "Ara notaları öğren";
-"level_final_challenge" = "Final Sınavı";
+"level_final_challenge" = "Karışık Tekrar";
 "level_final_challenge_subtitle" = "Öğrendiğin her şeyi test et";
+"level_seventh_expansion" = "7'li Genişleme";
+"level_seventh_expansion_subtitle" = "Klavye boyunca yeni 7'li akorlar";
+"level_power_master" = "Power Ustası";
+"level_power_master_subtitle" = "Tüm klavyede power akorlar";
+"level_grand_finale" = "Büyük Final";
+"level_grand_finale_subtitle" = "Her şeyin en zorlu karışımı";
+"current_level_label" = "Güncel Seviye";
+"continue_level" = "Devam Et";
+"replay_level" = "Tekrar Çalış";
+"show_all_levels" = "Tüm Seviyeleri Göster";
+"hide_all_levels" = "Seviyeleri Gizle";
+"levels_completed_format" = "%d / %d seviye tamamlandı";
 
 // Learning Session
 "study_this_chord" = "Bu akoru çalış";
@@ -144,8 +156,14 @@
 "et_level_seventh_subtitle" = "Jazzy yedili sesi tanı";
 "et_level_sharp_territory" = "Diyez Bölgesi";
 "et_level_sharp_territory_subtitle" = "Diyez ve bemoller kulağını zorlar";
-"et_level_final" = "Final Sınavı";
+"et_level_final" = "Karışık Tekrar";
 "et_level_final_subtitle" = "Öğrendiğin her şeyi test et";
+"et_level_seventh_colors" = "7'li Renkler";
+"et_level_seventh_colors_subtitle" = "Yeni 7'li tınıları ayırt et";
+"et_level_minor_sharps" = "Diyez Minörler";
+"et_level_minor_sharps_subtitle" = "Diyez bölgesinde minör akorlar";
+"et_level_grand_finale" = "Büyük Final";
+"et_level_grand_finale_subtitle" = "Nihai dinleme testi";
 
 // Fretboard Training - Level System
 "fb_title" = "Klavye Eğitimi";
@@ -196,3 +214,33 @@
 "chord_library_subtitle" = "İnteraktif diyagramlarla akor öğren";
 "chord_mastery_subtitle" = "Akorları adım adım öğren";
 "tempo_trainer" = "Tempo Eğitmeni";
+
+// Eksik Anahtarlar
+"tools" = "Araçlar";
+"select_an_item" = "Bir öğe seçin";
+"loading" = "Yükleniyor…";
+"unavailable_try_later" = "Kullanılamıyor — daha sonra dene";
+"ad_loading" = "Reklam Yükleniyor...";
+
+// Akort Durumları
+"tuner_play_a_note" = "Bir nota çal";
+"tuner_too_low" = "Çok Düşük ↓";
+"tuner_too_high" = "Çok Yüksek ↑";
+"tuner_almost" = "Neredeyse!";
+"tuner_perfect" = "Mükemmel! ✓";
+
+// Ayarlar
+"note_naming_section" = "Nota Adlandırma";
+"sound_feedback_section" = "Ses ve Geri Bildirim";
+
+// Paywall
+"paywall_title" = "2Jam Premium";
+"paywall_subtitle" = "Tüm içeriğin kilidini aç, kesintisiz pratik yap.";
+"paywall_feature_ads_title" = "Reklamsız";
+"paywall_feature_ads_desc" = "Tüm banner ve geçiş reklamları kaldırılır.";
+"paywall_feature_levels_title" = "Tüm Seviyeler Açık";
+"paywall_feature_levels_desc" = "Kulak Eğitimi, Akor Diyagramları ve Klavye Eğitimi'ndeki tüm seviyelere eriş.";
+"paywall_feature_future_title" = "Gelecek Özellikler Dahil";
+"paywall_feature_future_desc" = "Yeni premium özellikler aboneliğine dahildir.";
+"paywall_cta" = "Premium'a Geç";
+"paywall_cancel_anytime" = "İstediğin zaman App Store'dan iptal edebilirsin.";
