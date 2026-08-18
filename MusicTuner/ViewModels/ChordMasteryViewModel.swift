@@ -181,6 +181,19 @@ final class ChordMasteryViewModel: ObservableObject {
         }
     }
     
+    /// Directly start quiz for a level (skips teaching phase safely)
+    func retryQuiz(_ level: LevelDefinition) {
+        guard isLevelUnlocked(level) else { return }
+        currentLevel = level
+        currentChordIndex = 0
+        score = 0
+        questionNumber = 0
+        lastAnswerCorrect = nil
+        showingCorrectAnswer = false
+        correctAnswerChord = nil
+        startQuiz(for: level)
+    }
+
     /// Reset to idle state
     func reset() {
         state = .idle

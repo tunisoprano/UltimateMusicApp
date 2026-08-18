@@ -23,6 +23,7 @@ final class StoreKitManager: ObservableObject {
     @Published private(set) var isPremium = false
     @Published private(set) var subscriptionProduct: Product?
     @Published private(set) var isPurchasing = false
+    @Published private(set) var isLoadingProducts = true
     @Published private(set) var errorMessage: String?
     @Published private(set) var expirationDate: Date?
     @Published private(set) var isSubscriptionActive = false
@@ -51,12 +52,19 @@ final class StoreKitManager: ObservableObject {
     // MARK: - Load Products
     
     func loadProducts() async {
+        isLoadingProducts = true
+        defer { isLoadingProducts = false }
+
         do {
             let products = try await Product.products(for: [premiumMonthlyID])
-            
+
             if let product = products.first {
                 subscriptionProduct = product
+                errorMessage = nil
                 print("✅ Subscription product loaded: \(product.displayName) - \(product.displayPrice)")
+            } else {
+                print("⚠️ No products returned for ID: \(premiumMonthlyID)")
+                errorMessage = "Subscription not available"
             }
         } catch {
             print("⚠️ Failed to load products: \(error)")
@@ -127,7 +135,8 @@ final class StoreKitManager: ObservableObject {
             if case .verified(let transaction) = result {
                 if transaction.productID == premiumMonthlyID {
                     // Check if subscription is still valid (not expired, not revoked)
-                    if transaction.revocationDate == nil {
+                    if transaction.revocationDate == nil,
+                       let expDate = transaction.expirationDate, expDate > Date() {
                         isPremium = true
                         isSubscriptionActive = true
                         expirationDate = transaction.expirationDate

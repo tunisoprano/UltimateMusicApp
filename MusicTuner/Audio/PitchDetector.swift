@@ -56,10 +56,10 @@ final class PitchDetector {
     /// MPM peak selection threshold (0.0 - 1.0)
     /// Higher = more selective (fewer false positives)
     /// MPM selects the first peak above (threshold × highest_peak_value)
-    private let mpmThreshold: Double = 0.93
+    private let mpmThreshold: Double = 0.88
     
     /// Minimum confidence to accept a detection
-    private let confidenceThreshold: Double = 0.50
+    private let confidenceThreshold: Double = 0.40
     
     // MARK: - State (protected by lock)
     

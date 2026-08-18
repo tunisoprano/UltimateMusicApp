@@ -123,10 +123,10 @@ struct SettingsView: View {
                     }
                     
                     // Note Naming Section
-                    SettingsSectionCard(title: "Note Naming") {
+                    SettingsSectionCard(title: L("note_naming_section")) {
                         VStack(spacing: 20) {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Display Style")
+                                Text(L("display_style"))
                                     .font(.system(size: 16, weight: .medium, design: .rounded))
                                     .foregroundStyle(theme.textPrimary)
                                 
@@ -144,7 +144,7 @@ struct SettingsView: View {
                             
                             // Live Preview
                             VStack(spacing: 12) {
-                                Text("Preview")
+                                Text(L("preview"))
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
                                     .foregroundStyle(theme.textSecondary)
                                 
@@ -158,7 +158,7 @@ struct SettingsView: View {
                     }
                     
                     // Sound & Feedback Section
-                    SettingsSectionCard(title: "Sound & Feedback") {
+                    SettingsSectionCard(title: L("sound_feedback_section")) {
                         VStack(spacing: 16) {
                             Toggle(isOn: $successSoundEnabled) {
                                 HStack(spacing: 12) {
@@ -168,10 +168,10 @@ struct SettingsView: View {
                                         .frame(width: 28)
                                     
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Success Sound")
+                                        Text(L("success_sound"))
                                             .font(.system(size: 15, weight: .medium, design: .rounded))
                                             .foregroundStyle(theme.textPrimary)
-                                        Text("Play ding when tuned")
+                                        Text(L("play_ding_when_tuned"))
                                             .font(.system(size: 12, design: .rounded))
                                             .foregroundStyle(theme.textSecondary)
                                     }
@@ -190,10 +190,10 @@ struct SettingsView: View {
                                         .frame(width: 28)
                                     
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Haptic Feedback")
+                                        Text(L("haptic_feedback"))
                                             .font(.system(size: 15, weight: .medium, design: .rounded))
                                             .foregroundStyle(theme.textPrimary)
-                                        Text("Vibrate when tuned")
+                                        Text(L("vibrate_when_tuned"))
                                             .font(.system(size: 12, design: .rounded))
                                             .foregroundStyle(theme.textSecondary)
                                     }
@@ -262,9 +262,15 @@ struct SettingsView: View {
                                         }
                                         
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text(L("iap_subscribe"))
-                                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                                                .foregroundStyle(.white)
+                                            if let product = storeManager.subscriptionProduct {
+                                                Text(product.displayName)
+                                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                                    .foregroundStyle(.white)
+                                            } else {
+                                                Text(L("iap_subscribe"))
+                                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                                    .foregroundStyle(.white)
+                                            }
                                             Text(L("iap_subscribe_desc"))
                                                 .font(.system(size: 12, design: .rounded))
                                                 .foregroundStyle(.white.opacity(0.8))
@@ -476,7 +482,7 @@ struct SettingsView: View {
                 .padding(20)
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle(L("settings"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .onAppear {

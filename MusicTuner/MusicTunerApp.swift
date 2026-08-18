@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct MusicTunerApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var languageManager = LanguageManager.shared
@@ -30,17 +32,17 @@ struct MusicTunerApp: App {
                 initializeServices()
             }
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                UNUserNotificationCenter.current().setBadgeCount(0)
+            }
+        }
     }
     
     private func initializeServices() {
-        // Request ATT permission, then initialize AdMob after app is fully loaded
-        // Delay ensures the view hierarchy is ready for the ATT alert
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            Task {
-                await AdsManager.shared.requestTrackingAndInitialize()
-            }
-        }
-        
+        // ATT permission + AdMob initialization is handled in ContentView.onAppear
+        // to ensure the UIWindowScene is fully ready on both iPhone and iPad.
+
         // Request notification permission and schedule reminders
         Task {
             let granted = await NotificationManager.shared.requestPermission()
@@ -50,7 +52,7 @@ struct MusicTunerApp: App {
                 }
             }
         }
-        
+
         // Trigger streak manager initialization (checks for missed days)
         _ = streakManager.currentStreak
     }

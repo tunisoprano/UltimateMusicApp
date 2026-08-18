@@ -13,6 +13,7 @@ struct MainMenuView: View {
     @ObservedObject var storeManager = StoreKitManager.shared
     @ObservedObject var adsManager = AdsManager.shared
     @Environment(\.colorScheme) var colorScheme
+    @State private var showPaywall = false
     
     var body: some View {
         ZStack {
@@ -39,6 +40,9 @@ struct MainMenuView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 StreakBadgeView()
@@ -210,48 +214,59 @@ struct MainMenuView: View {
     }
     
     // MARK: - Premium Section
-    
+
     private var premiumSection: some View {
         VStack(spacing: 12) {
             Button {
-                Task {
-                    await storeManager.purchaseSubscription()
-                }
+                showPaywall = true
             } label: {
                 HStack(spacing: 14) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(
                                 LinearGradient(
-                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    colors: [Color.orange, Color.yellow.opacity(0.85)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
+                            .shadow(color: Color.orange.opacity(0.3), radius: 6, x: 0, y: 3)
                             .frame(width: 40, height: 40)
-                        
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 18))
-                            .foregroundStyle(.white)
+
+                        if storeManager.isPurchasing || storeManager.isLoadingProducts {
+                            ProgressView()
+                                .tint(.white)
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 18))
+                                .foregroundStyle(.white)
+                        }
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L("iap_subscribe"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(theme.textPrimary)
-                        
-                        if let product = storeManager.subscriptionProduct {
+
+                        if storeManager.isLoadingProducts {
+                            Text(L("loading"))
+                                .font(.system(size: 13))
+                                .foregroundStyle(theme.textSecondary)
+                        } else if let product = storeManager.subscriptionProduct {
                             Text(product.displayPrice + " " + L("iap_per_month"))
+                                .font(.system(size: 13))
+                                .foregroundStyle(theme.textSecondary)
+                        } else {
+                            Text(L("unavailable_try_later"))
                                 .font(.system(size: 13))
                                 .foregroundStyle(theme.textSecondary)
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    if storeManager.isPurchasing {
-                        ProgressView()
-                    } else {
+
+                    if !storeManager.isPurchasing && !storeManager.isLoadingProducts {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Color(uiColor: .tertiaryLabel))
@@ -265,6 +280,14 @@ struct MainMenuView: View {
             }
             .disabled(storeManager.isPurchasing)
             .padding(.horizontal, 20)
+
+            // Error message when purchase fails
+            if let error = storeManager.errorMessage {
+                Text(error)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.error)
+                    .padding(.horizontal, 24)
+            }
             
             // Subscription legal text
             VStack(spacing: 8) {
@@ -373,7 +396,7 @@ struct MenuRow: View {
             Spacer()
             
             if isLocked {
-                Text("Soon")
+                Text(L("coming_soon"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(theme.textSecondary)
                     .padding(.horizontal, 8)

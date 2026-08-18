@@ -51,14 +51,21 @@ final class AudioManager: ObservableObject {
     private var maxFrequency: Double = 1400.0
     
     /// Amplitude threshold (lower = more sensitive)
-    private var amplitudeThreshold: Float = 0.015
+    private var amplitudeThreshold: Float = 0.008
     
     /// Noise gate: signal must drop below this fraction of threshold to reset
     /// Prevents flicker when signal hovers near threshold boundary
-    private let noiseGateHysteresis: Float = 0.6
+    private let noiseGateHysteresis: Float = 0.4
+    
+    /// Thread-safe lock for noise gate state (accessed from audio callback + main thread)
+    private let noiseGateLock = NSLock()
     
     /// Tracks whether we're currently above the noise gate
-    private var isAboveNoiseGate: Bool = false
+    private var _isAboveNoiseGate: Bool = false
+    private var isAboveNoiseGate: Bool {
+        get { noiseGateLock.withLock { _isAboveNoiseGate } }
+        set { noiseGateLock.withLock { _isAboveNoiseGate = newValue } }
+    }
     
     /// Current instrument for optimized detection
     private var currentInstrument: Instrument = .guitar
@@ -81,19 +88,19 @@ final class AudioManager: ObservableObject {
             // E2 (82Hz) to E5 (659Hz)
             minFrequency = 70.0
             maxFrequency = 700.0
-            amplitudeThreshold = 0.015
+            amplitudeThreshold = 0.008
             pitchDetector.configureForGuitar()
         case .bass:
             // E1 (41Hz) to G3 (196Hz)
             minFrequency = 30.0
             maxFrequency = 250.0
-            amplitudeThreshold = 0.012
+            amplitudeThreshold = 0.006
             pitchDetector.configureForBass()
         case .ukulele:
             // G4 (392Hz) to A4 (440Hz)
             minFrequency = 200.0
             maxFrequency = 500.0
-            amplitudeThreshold = 0.015
+            amplitudeThreshold = 0.008
             pitchDetector.minF0 = 200.0
             pitchDetector.maxF0 = 500.0
             pitchDetector.resetState()
@@ -101,7 +108,7 @@ final class AudioManager: ObservableObject {
             // Full range
             minFrequency = 27.5  // A0
             maxFrequency = 4000.0
-            amplitudeThreshold = 0.015
+            amplitudeThreshold = 0.008
             pitchDetector.configureForFreeMode()
         }
         
@@ -273,7 +280,7 @@ final class AudioManager: ObservableObject {
             self.amplitude = rms
             
             // If no pitch detected, reset
-            guard let freq = result.frequency, result.confidence > 0.5 else {
+            guard let freq = result.frequency, result.confidence > 0.35 else {
                 self.debugRawPitch = 0
                 self.detectedFrequency = 0.0
                 self.detectedNote = nil

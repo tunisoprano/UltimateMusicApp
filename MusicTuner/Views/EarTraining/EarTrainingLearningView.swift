@@ -42,10 +42,10 @@ struct EarTrainingLearningView: View {
         }
         .onAppear {
             viewModel.startLevel(level)
-            // Initialize audio and play first chord
+            // Initialize audio and play first chord only after engine is ready
             Task {
                 await ChordEngine.shared.initialize()
-                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard ChordEngine.shared.isInitialized else { return }
                 if level.chords.indices.contains(0) {
                     ChordEngine.shared.playChord(level.chords[0])
                 }

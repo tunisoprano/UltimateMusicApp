@@ -11,11 +11,11 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject var theme = ThemeManager.shared
-    
+
     // Deep link navigation
     @State private var navigateToTuner = false
     @State private var navigateToMetronome = false
-    
+
     var body: some View {
         Group {
             if horizontalSizeClass == .regular {
@@ -24,6 +24,15 @@ struct ContentView: View {
             } else {
                 // iPhone: Use existing dashboard layout
                 iPhoneLayout
+            }
+        }
+        .onAppear {
+            // Request ATT permission after the root view is fully on screen.
+            // Triggering from ContentView (instead of App.onAppear) ensures the
+            // UIWindowScene is ready on both iPhone and iPad (incl. Stage Manager).
+            Task {
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                await AdsManager.shared.requestTrackingAndInitialize()
             }
         }
         .onOpenURL { url in
@@ -85,7 +94,7 @@ struct ContentView: View {
         case .settings:
             SettingsView()
         case .none:
-            Text("Select an item")
+            Text(L("select_an_item"))
                 .font(.title)
                 .foregroundStyle(theme.textSecondary)
         }

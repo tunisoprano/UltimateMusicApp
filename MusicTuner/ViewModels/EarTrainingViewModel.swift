@@ -196,6 +196,19 @@ final class EarTrainingViewModel: ObservableObject {
     
     // MARK: - Private Methods
     
+    /// Directly start quiz for a level (skips teaching phase safely)
+    func retryQuiz(_ level: LevelDefinition) {
+        guard isLevelUnlocked(level) else { return }
+        currentLevel = level
+        currentChordIndex = 0
+        score = 0
+        questionNumber = 0
+        lastAnswerCorrect = nil
+        showingCorrectAnswer = false
+        correctAnswerChord = nil
+        startQuiz(for: level)
+    }
+
     private func startQuiz(for level: LevelDefinition) {
         // Generate quiz questions
         questions = generateQuestions(for: level)

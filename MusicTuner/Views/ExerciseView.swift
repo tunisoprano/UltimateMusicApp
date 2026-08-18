@@ -15,9 +15,11 @@ struct ExerciseView: View {
     @ObservedObject var theme = ThemeManager.shared
     @ObservedObject var storeManager = StoreKitManager.shared
     
-    /// Levels with id >= this value require premium
-    private let premiumThreshold = 8
-    
+    /// Dynamic premium threshold — last 2 levels require premium
+    private var premiumThreshold: Int { FretboardCurriculum.premiumThreshold }
+
+    @State private var showPaywall = false
+
     var body: some View {
         ZStack {
             theme.backgroundGradient.ignoresSafeArea()
@@ -48,6 +50,9 @@ struct ExerciseView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 streakBadge
             }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
         .onAppear {
             viewModel.loadProgress()
@@ -147,12 +152,21 @@ struct ExerciseView: View {
         let isPremiumLevel = level.id >= premiumThreshold
         let canAccess = isUnlocked && (!isPremiumLevel || storeManager.isPremium)
         
+        let isPremiumLocked = isPremiumLevel && !storeManager.isPremium && isUnlocked
+
         if canAccess {
             NavigationLink(destination: FretboardLearningView(level: level, instrument: viewModel.selectedInstrument)) {
                 levelCardContent(level: level, isUnlocked: true, isCompleted: isCompleted, isPremiumLocked: false)
             }
+        } else if isPremiumLocked {
+            // Premium-gated: tapping opens the paywall
+            Button {
+                showPaywall = true
+            } label: {
+                levelCardContent(level: level, isUnlocked: isUnlocked, isCompleted: false, isPremiumLocked: true)
+            }
         } else {
-            levelCardContent(level: level, isUnlocked: isUnlocked, isCompleted: false, isPremiumLocked: isPremiumLevel && !storeManager.isPremium && isUnlocked)
+            levelCardContent(level: level, isUnlocked: isUnlocked, isCompleted: false, isPremiumLocked: false)
         }
     }
     

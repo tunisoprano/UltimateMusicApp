@@ -142,16 +142,18 @@ final class TunerViewModel: ObservableObject {
     
     var tuningState: TuningState {
         guard detectedFrequency > 0 else { return .noSignal }
-        
-        // If locked, always return inTune
+
+        // If locked (stable for lockDuration), always in tune
         if isLocked {
             return .inTune
         }
-        
+
         let absCents = abs(smoothedCents)
-        
+
+        // Show green immediately when within ±lockThreshold cents.
+        // The success lock (haptic + sound) fires separately after 0.5 s of stability.
         if absCents <= lockThreshold {
-            return .close  // Not yet locked, but close
+            return .inTune
         } else if absCents <= 15 {
             return .close
         } else {
@@ -447,11 +449,11 @@ enum TuningState {
     
     var description: String {
         switch self {
-        case .noSignal: return "Play a note"
-        case .flat: return "Too Low ↓"
-        case .sharp: return "Too High ↑"
-        case .close: return "Almost!"
-        case .inTune: return "Perfect! ✓"
+        case .noSignal: return L("tuner_play_a_note")
+        case .flat: return L("tuner_too_low")
+        case .sharp: return L("tuner_too_high")
+        case .close: return L("tuner_almost")
+        case .inTune: return L("tuner_perfect")
         }
     }
 }

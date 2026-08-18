@@ -155,7 +155,7 @@ struct AdBannerContainer: View {
                 HStack {
                     Image(systemName: "rectangle.badge.plus")
                         .font(.system(size: 14))
-                    Text("Ad Loading...")
+                    Text(L("ad_loading"))
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                 }
                 .foregroundStyle(theme.textSecondary.opacity(0.5))

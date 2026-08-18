@@ -107,6 +107,13 @@ struct FretboardCurriculum {
     }
     
     static var totalLevels: Int { levels.count }
+
+    /// Levels with id >= this value require premium (last 2 levels)
+    static var premiumThreshold: Int {
+        let ids = levels.map { $0.id }.sorted()
+        guard ids.count > 2 else { return ids.last.map { $0 + 1 } ?? Int.max }
+        return ids[ids.count - 2]
+    }
 }
 
 /// Represents a single exercise question

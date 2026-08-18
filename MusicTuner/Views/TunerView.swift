@@ -56,9 +56,11 @@ struct TunerView: View {
             }
             
             // Debug overlay
+            #if DEBUG
             if showDebug && viewModel.isListening {
                 debugOverlay
             }
+            #endif
             
             // Error overlay
             errorView
@@ -66,6 +68,7 @@ struct TunerView: View {
         .navigationTitle("Tuner")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
+        #if DEBUG
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -76,6 +79,7 @@ struct TunerView: View {
                 }
             }
         }
+        #endif
         .onAppear {
             Task { await viewModel.startListening() }
         }
@@ -313,17 +317,68 @@ struct TunerView: View {
     private var errorView: some View {
         Group {
             if let error = viewModel.errorMessage {
-                VStack {
-                    Spacer()
-                    Text(error)
-                        .font(.system(size: 13, design: .rounded))
-                        .foregroundStyle(theme.error)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 80)
+                let isMicDenied = error.localizedCaseInsensitiveContains("denied") ||
+                                  error.localizedCaseInsensitiveContains("permission") ||
+                                  error.localizedCaseInsensitiveContains("microphone")
+
+                if isMicDenied {
+                    // Full-screen mic permission banner
+                    VStack(spacing: 20) {
+                        Spacer()
+
+                        VStack(spacing: 16) {
+                            Image(systemName: "mic.slash.fill")
+                                .font(.system(size: 44))
+                                .foregroundStyle(theme.error)
+
+                            Text("Microphone Access Required")
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                .foregroundStyle(theme.textPrimary)
+
+                            Text("Please allow microphone access in Settings so the tuner can hear your instrument.")
+                                .font(.system(size: 14, design: .rounded))
+                                .foregroundStyle(theme.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
+
+                            Button {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            } label: {
+                                Text("Open Settings")
+                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Capsule().fill(theme.accent))
+                            }
+                        }
+                        .padding(24)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(theme.cardBackground)
+                                .shadow(color: theme.shadow, radius: 16, x: 0, y: 8)
+                        )
+                        .padding(.horizontal, 24)
+
+                        Spacer()
+                    }
+                } else {
+                    // Generic error toast
+                    VStack {
+                        Spacer()
+                        Text(error)
+                            .font(.system(size: 13, design: .rounded))
+                            .foregroundStyle(theme.error)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 80)
+                    }
                 }
             }
         }

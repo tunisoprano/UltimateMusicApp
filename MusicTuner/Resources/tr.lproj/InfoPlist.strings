@@ -1,2 +1,3 @@
 /* InfoPlist.strings (Turkish) */
 "NSUserTrackingUsageDescription" = "Bu, size ilgili reklamlar göstermemizi sağlar. Bunu istediğiniz zaman Ayarlar'dan değiştirebilirsiniz.";
+"NSMicrophoneUsageDescription" = "Akort ve alıştırmalar sırasında enstrümanının sesini algılayabilmek için mikrofon erişimi gerekiyor.";

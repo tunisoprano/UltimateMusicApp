@@ -132,7 +132,8 @@ final class NotificationManager: ObservableObject {
         bodyTR: String
     ) {
         // Get system language
-        let isTurkish = Locale.current.language.languageCode?.identifier == "tr"
+        // Use app language setting (not system locale)
+        let isTurkish = LanguageManager.shared.language == .turkish
         
         let content = UNMutableNotificationContent()
         content.title = isTurkish ? titleTR : titleEN
