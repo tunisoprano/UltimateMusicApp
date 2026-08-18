@@ -178,12 +178,13 @@ final class AudioManager: ObservableObject {
         let format = inputNode.outputFormat(forBus: 0)
         sampleRate = format.sampleRate
         
-        // Verify sample rate matches session
+        // Informational only: the tap delivers buffers in the INPUT NODE's
+        // format, so that is the source of truth for pitch math. The session
+        // rate can legitimately differ (Bluetooth mics, USB interfaces) and
+        // must NOT override it, or every detection is scaled off-pitch.
         let sessionRate = AVAudioSession.sharedInstance().sampleRate
         if abs(sampleRate - sessionRate) > 1.0 {
-            print("⚠️ Sample rate mismatch: format=\(sampleRate), session=\(sessionRate)")
-            // Prefer the session rate as the source of truth
-            sampleRate = sessionRate
+            print("ℹ️ Input runs at \(sampleRate)Hz while session reports \(sessionRate)Hz — using input rate")
         }
         
         // Install tap for pitch detection
@@ -268,8 +269,9 @@ final class AudioManager: ObservableObject {
         // Convert buffer to [Float] array for YIN
         let bufferArray = Array(UnsafeBufferPointer(start: channelData[0], count: Int(frames)))
         
-        // Detect pitch using YIN algorithm
-        let result = pitchDetector.detectPitch(buffer: bufferArray, sampleRate: sampleRate)
+        // Detect pitch using the buffer's own sample rate — robust even if the
+        // input route (and its rate) changes mid-session, e.g. AirPods connect
+        let result = pitchDetector.detectPitch(buffer: bufferArray, sampleRate: buffer.format.sampleRate)
         
         // Update on Main thread
         DispatchQueue.main.async { [weak self] in

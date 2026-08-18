@@ -40,7 +40,7 @@ struct MetronomeView: View {
                 AdBannerContainer()
             }
         }
-        .navigationTitle("Metronome")
+        .navigationTitle(L("metronome"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .onDisappear {

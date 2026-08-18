@@ -1179,12 +1179,27 @@ final class ChordEngine: ObservableObject {
     
     private func configureAudioSession() async throws {
         let session = AVAudioSession.sharedInstance()
-        // Use .playAndRecord so playback and mic can coexist without session conflicts
-        // .mixWithOthers prevents interrupting other audio (e.g., Tuner's mic)
-        // .defaultToSpeaker ensures sound comes from speaker, not earpiece
-        try session.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
+        // Playback-only: follows the system route automatically
+        // (wired headphones, Bluetooth via A2DP, or the built-in speaker).
+        // No mic screen uses ChordEngine, so .playAndRecord is unnecessary —
+        // it forced .defaultToSpeaker routing and broke headphone output.
+        try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
         try session.setPreferredIOBufferDuration(0.005) // 5ms buffer for lower latency
         try session.setActive(true)
+    }
+
+    /// Re-assert the playback session if another feature (tuner/fretboard mic)
+    /// left the shared session in .playAndRecord + .measurement, which makes
+    /// chord playback quiet and mis-routed.
+    private func ensurePlaybackSession() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.category != .playback else { return }
+        do {
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            print("⚠️ ChordEngine: could not restore playback session: \(error)")
+        }
     }
     
     private func loadSoundFont(url: URL) async throws {
@@ -1286,6 +1301,9 @@ final class ChordEngine: ObservableObject {
             print("⚠️ ChordEngine: Not initialized")
             return
         }
+        
+        // Restore the playback route in case the mic screens changed the session
+        ensurePlaybackSession()
         
         // Generate new playback ID to cancel any pending stop from previous chord
         let playbackID = UUID()

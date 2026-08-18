@@ -39,8 +39,13 @@ final class MetronomeEngine: ObservableObject {
     @Published var currentBeat: Int = 0
     
     // MARK: - Audio
-    private var accentPlayer: AVAudioPlayer?
-    private var normalPlayer: AVAudioPlayer?
+    // Clicks are synthesized into PCM buffers and played through AVAudioEngine.
+    // This routes correctly (headphones/Bluetooth/speaker), ignores the silent
+    // switch like other playback, and needs no bundled sound files.
+    private var audioEngine: AVAudioEngine?
+    private var clickPlayer: AVAudioPlayerNode?
+    private var accentBuffer: AVAudioPCMBuffer?
+    private var normalBuffer: AVAudioPCMBuffer?
     
     // MARK: - Timer
     private var timer: DispatchSourceTimer?
@@ -69,7 +74,7 @@ final class MetronomeEngine: ObservableObject {
     // MARK: - Audio Setup
     
     private func setupAudioPlayers() {
-        // Configure audio session for playback
+        // Configure audio session for playback (follows the system output route)
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
@@ -78,16 +83,47 @@ final class MetronomeEngine: ObservableObject {
             print("⚠️ Metronome audio session failed: \(error)")
         }
         
-        // Try to load custom sounds
-        if let accentURL = Bundle.main.url(forResource: "metronome_accent", withExtension: "wav") {
-            accentPlayer = try? AVAudioPlayer(contentsOf: accentURL)
-            accentPlayer?.prepareToPlay()
-        }
+        let engine = AVAudioEngine()
+        let player = AVAudioPlayerNode()
+        engine.attach(player)
         
-        if let normalURL = Bundle.main.url(forResource: "metronome_click", withExtension: "wav") {
-            normalPlayer = try? AVAudioPlayer(contentsOf: normalURL)
-            normalPlayer?.prepareToPlay()
+        let format = engine.outputNode.outputFormat(forBus: 0)
+        engine.connect(player, to: engine.mainMixerNode, format: format)
+        
+        accentBuffer = Self.makeClickBuffer(frequency: 1600, format: format)
+        normalBuffer = Self.makeClickBuffer(frequency: 1050, format: format)
+        
+        do {
+            try engine.start()
+            player.play()
+            audioEngine = engine
+            clickPlayer = player
+        } catch {
+            print("⚠️ Metronome engine failed to start: \(error)")
+            audioEngine = nil
+            clickPlayer = nil
         }
+    }
+    
+    /// Synthesize a short percussive click: a sine burst with a fast exponential decay
+    private static func makeClickBuffer(frequency: Double, format: AVAudioFormat) -> AVAudioPCMBuffer? {
+        let sampleRate = format.sampleRate
+        let duration = 0.030
+        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return nil }
+        buffer.frameLength = frameCount
+        
+        for frame in 0..<Int(frameCount) {
+            let t = Double(frame) / sampleRate
+            // 1ms attack to avoid a pop, then fast decay
+            let attack = min(1.0, t / 0.001)
+            let envelope = attack * exp(-t * 90.0)
+            let sample = Float(sin(2.0 * .pi * frequency * t) * envelope * 0.85)
+            for channel in 0..<Int(format.channelCount) {
+                buffer.floatChannelData?[channel][frame] = sample
+            }
+        }
+        return buffer
     }
     
     // MARK: - Control
@@ -124,11 +160,13 @@ final class MetronomeEngine: ObservableObject {
         stopTimer()
         isPlaying = false
         
-        // Release audio players
-        accentPlayer?.stop()
-        normalPlayer?.stop()
-        accentPlayer = nil
-        normalPlayer = nil
+        // Release audio engine
+        clickPlayer?.stop()
+        audioEngine?.stop()
+        clickPlayer = nil
+        audioEngine = nil
+        accentBuffer = nil
+        normalBuffer = nil
         
         tapTimes.removeAll()
     }
@@ -181,21 +219,25 @@ final class MetronomeEngine: ObservableObject {
     // MARK: - Sounds
     
     private func playAccentSound() {
-        if let player = accentPlayer {
-            player.currentTime = 0
-            player.play()
-        } else {
-            AudioServicesPlaySystemSound(1104)
-        }
+        playClick(accentBuffer)
     }
     
     private func playNormalSound() {
-        if let player = normalPlayer {
-            player.currentTime = 0
-            player.play()
-        } else {
+        playClick(normalBuffer)
+    }
+    
+    private func playClick(_ buffer: AVAudioPCMBuffer?) {
+        guard let buffer, let player = clickPlayer, let engine = audioEngine else {
+            // Last-resort fallback (no engine): system tick
             AudioServicesPlaySystemSound(1103)
+            return
         }
+        // Recover if the engine was interrupted (phone call, route change)
+        if !engine.isRunning {
+            try? engine.start()
+            player.play()
+        }
+        player.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
     }
     
     // MARK: - BPM Control

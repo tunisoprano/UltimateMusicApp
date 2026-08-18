@@ -65,7 +65,7 @@ struct TunerView: View {
             // Error overlay
             errorView
         }
-        .navigationTitle("Tuner")
+        .navigationTitle(L("tuner"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         #if DEBUG
