@@ -356,13 +356,16 @@ final class PitchDetector {
 extension PitchDetector {
     func configureForGuitar() {
         minF0 = 70.0
-        maxF0 = 400.0
+        // 12th fret on the high E string is E5 (659 Hz) — the fretboard
+        // trainer needs headroom above the tuner's open-string range.
+        maxF0 = 700.0
         resetState()
     }
     
     func configureForBass() {
         minF0 = 30.0
-        maxF0 = 200.0
+        // 12th fret on the G string is G3 (196 Hz); 250 leaves margin.
+        maxF0 = 250.0
         resetState()
     }
     

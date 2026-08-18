@@ -97,12 +97,12 @@ final class AudioManager: ObservableObject {
             amplitudeThreshold = 0.006
             pitchDetector.configureForBass()
         case .ukulele:
-            // G4 (392Hz) to A4 (440Hz)
+            // Open strings G4-A4 (392-440Hz) up to the 12th fret A5 (880Hz)
             minFrequency = 200.0
-            maxFrequency = 500.0
+            maxFrequency = 1000.0
             amplitudeThreshold = 0.008
             pitchDetector.minF0 = 200.0
-            pitchDetector.maxF0 = 500.0
+            pitchDetector.maxF0 = 1000.0
             pitchDetector.resetState()
         case .free:
             // Full range
