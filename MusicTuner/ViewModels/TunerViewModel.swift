@@ -20,12 +20,21 @@ final class TunerViewModel: ObservableObject {
         didSet {
             audioManager.configureForInstrument(selectedInstrument)
             selectedTargetString = nil
+            selectedPreset = TuningPreset.presets(for: selectedInstrument).first ?? .standard
             resetSmoothing()
         }
     }
     @Published var isListening = false
     @Published var errorMessage: String?
     @Published var selectedTargetString: InstrumentString? = nil
+
+    /// Currently active alternate tuning (Standard, Drop D, Half-Step Down, ...)
+    @Published var selectedPreset: TuningPreset = TuningPreset.presets(for: .guitar).first ?? .standard {
+        didSet {
+            selectedTargetString = nil
+            resetSmoothing()
+        }
+    }
     
     // Smoothed values for UI (ultra-smooth)
     @Published private(set) var smoothedNeedlePosition: Double = 0
@@ -176,7 +185,12 @@ final class TunerViewModel: ObservableObject {
     }
     
     var instrumentStrings: [InstrumentString] {
-        selectedInstrument.strings
+        selectedPreset.apply(to: selectedInstrument.strings)
+    }
+
+    /// All alternate tunings available for the current instrument
+    var availablePresets: [TuningPreset] {
+        TuningPreset.presets(for: selectedInstrument)
     }
     
     var closestString: InstrumentString? {

@@ -7,26 +7,33 @@
 
 import SwiftUI
 
-/// Main dashboard - Apple-standard grouped design
+/// Gamified brand accent used for progress/streak elements (see DESIGN.md redesign)
+private enum Gamify {
+    static let acid = Color(hex: "F2FE08")
+    static let acidDim = Color(hex: "C5CF00")
+    static let cyan = Color(hex: "3FE0E0")
+    static let violet = Color(hex: "C77DFF")
+    static let amber = Color(hex: "FFB454")
+}
+
+/// Main dashboard - gamified, exercises-first layout
 struct MainMenuView: View {
     @ObservedObject var theme = ThemeManager.shared
     @ObservedObject var storeManager = StoreKitManager.shared
     @ObservedObject var adsManager = AdsManager.shared
     @Environment(\.colorScheme) var colorScheme
     @State private var showPaywall = false
-    
+
     var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 28) {
-                        headerSection
-                        practiceSection
-                        toolsSection
-                        learnSection
-                        
+                        dailyExercisesSection
+                        studioToolsSection
+
                         if !storeManager.isPremium {
                             premiumSection
                         }
@@ -34,7 +41,7 @@ struct MainMenuView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 24)
                 }
-                
+
                 // Banner Ad at bottom
                 AdBannerContainer()
             }
@@ -44,171 +51,140 @@ struct MainMenuView: View {
             PaywallView()
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text("2Jam")
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(hex: "F2FE08")) // Acid Yellow
+                    Spacer()
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 StreakBadgeView()
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 17, weight: .medium))
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(theme.textSecondary)
                 }
             }
         }
     }
     
-    // MARK: - Header
     
-    private var headerSection: some View {
-        VStack(spacing: 6) {
-            Text("2Jam")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(theme.textPrimary)
-            
-            Text(L("app_subtitle"))
-                .font(.subheadline)
-                .foregroundStyle(theme.textSecondary)
-        }
-        .padding(.top, 8)
-    }
-    
-    // MARK: - Practice Section (Tools)
-    
-    private var practiceSection: some View {
+    // MARK: - Daily Exercises Section (gamified progress cards, shown first)
+
+    private var dailyExercisesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: L("tools"), icon: "wrench.and.screwdriver")
-            
-            HStack(spacing: 12) {
-                // Tuner
-                NavigationLink(destination: TunerView()) {
-                    ToolTile(
-                        icon: "tuningfork",
-                        title: L("tuner"),
-                        tint: .blue,
-                        theme: theme
-                    )
-                }
-                .simultaneousGesture(TapGesture().onEnded { _ in
-                    adsManager.recordPageTransition()
-                })
-                
-                // Metronome
-                NavigationLink(destination: MetronomeView()) {
-                    ToolTile(
-                        icon: "metronome.fill",
-                        title: L("metronome"),
-                        tint: .orange,
-                        theme: theme
-                    )
-                }
-                .simultaneousGesture(TapGesture().onEnded { _ in
-                    adsManager.recordPageTransition()
-                })
-            }
-            .padding(.horizontal, 20)
-        }
-    }
-    
-    // MARK: - Tools Section → actually "Learn" features
-    
-    private var toolsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: L("ear_training"), icon: "music.note.list")
-            
-            VStack(spacing: 2) {
-                // Ear Training
+            sectionHeader(title: L("daily_exercises"), icon: "flame.fill")
+
+            VStack(spacing: 12) {
                 NavigationLink(destination: EarTrainingLevelSelectView()) {
-                    MenuRow(
+                    GamifiedExerciseCard(
                         icon: "ear.fill",
                         title: L("ear_training"),
-                        subtitle: L("ear_training_subtitle"),
-                        tint: .purple,
+                        level: LocalProgressService.shared.getEarTrainingUnlockedLevel(),
+                        totalLevels: EarTrainingCurriculum.totalLevels,
+                        tint: Gamify.acid,
                         theme: theme
                     )
                 }
                 .simultaneousGesture(TapGesture().onEnded { _ in
                     adsManager.recordPageTransition()
                 })
-                
-                Divider().padding(.leading, 60)
-                
-                // Fretboard Training
+
                 NavigationLink(destination: ExerciseView()) {
-                    MenuRow(
+                    GamifiedExerciseCard(
                         icon: "guitars.fill",
                         title: L("fretboard"),
-                        subtitle: L("fretboard_subtitle"),
-                        tint: .green,
+                        level: LocalProgressService.shared.getFretboardUnlockedLevel(),
+                        totalLevels: FretboardCurriculum.totalLevels,
+                        tint: Gamify.cyan,
                         theme: theme
                     )
                 }
                 .simultaneousGesture(TapGesture().onEnded { _ in
                     adsManager.recordPageTransition()
                 })
-                
-                Divider().padding(.leading, 60)
-                
-                // Tempo Trainer - Coming Soon
-                MenuRow(
-                    icon: "waveform.path",
-                    title: L("tempo_trainer"),
-                    subtitle: L("coming_soon"),
-                    tint: .indigo,
-                    theme: theme,
-                    isLocked: true
-                )
+
+                NavigationLink(destination: LevelSelectView()) {
+                    GamifiedExerciseCard(
+                        icon: "music.note",
+                        title: L("learn_chord_diagrams"),
+                        level: LocalProgressService.shared.getUnlockedLevel(),
+                        totalLevels: ChordCurriculum.totalLevels,
+                        tint: Gamify.violet,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
             }
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(theme.cardBackground)
-            )
             .padding(.horizontal, 20)
         }
     }
-    
-    // MARK: - Learn Section (Chords)
-    
-    private var learnSection: some View {
+
+    // MARK: - Studio Tools Section (Tuner / Metronome)
+
+    private var studioToolsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: L("chord_library"), icon: "book.fill")
-            
-            VStack(spacing: 2) {
-                // Chord Library
-                NavigationLink(destination: ChordLibraryView()) {
-                    MenuRow(
-                        icon: "book.fill",
-                        title: L("chord_library"),
-                        subtitle: L("chord_library_subtitle"),
-                        tint: .red,
-                        theme: theme
-                    )
+            sectionHeader(title: L("tools"), icon: "wrench.and.screwdriver")
+
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    NavigationLink(destination: ChordMakerView()) {
+                        ToolTile(
+                            icon: "wand.and.stars.inverse",
+                            title: L("chord_maker"),
+                            tint: Gamify.violet,
+                            theme: theme
+                        )
+                    }
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        adsManager.recordPageTransition()
+                    })
+
+                    NavigationLink(destination: ChordLibraryView()) {
+                        ToolTile(
+                            icon: "book.fill",
+                            title: L("chord_library"),
+                            tint: Gamify.amber,
+                            theme: theme
+                        )
+                    }
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        adsManager.recordPageTransition()
+                    })
                 }
-                .simultaneousGesture(TapGesture().onEnded { _ in
-                    adsManager.recordPageTransition()
-                })
-                
-                Divider().padding(.leading, 60)
-                
-                // Chord Mastery
-                NavigationLink(destination: LevelSelectView()) {
-                    MenuRow(
-                        icon: "graduationcap.fill",
-                        title: L("learn_chord_diagrams"),
-                        subtitle: L("chord_mastery_subtitle"),
-                        tint: .cyan,
-                        theme: theme
-                    )
+
+                HStack(spacing: 12) {
+                    NavigationLink(destination: TunerView()) {
+                        ToolTile(
+                            icon: "tuningfork",
+                            title: L("tuner"),
+                            tint: Gamify.acid,
+                            theme: theme
+                        )
+                    }
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        adsManager.recordPageTransition()
+                    })
+
+                    NavigationLink(destination: MetronomeView()) {
+                        ToolTile(
+                            icon: "metronome.fill",
+                            title: L("metronome"),
+                            tint: Gamify.cyan,
+                            theme: theme
+                        )
+                    }
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        adsManager.recordPageTransition()
+                    })
                 }
-                .simultaneousGesture(TapGesture().onEnded { _ in
-                    adsManager.recordPageTransition()
-                })
             }
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(theme.cardBackground)
-            )
             .padding(.horizontal, 20)
         }
     }
@@ -327,6 +303,72 @@ struct MainMenuView: View {
     }
 }
 
+// MARK: - Gamified Exercise Card (Home screen "Daily Exercises")
+
+struct GamifiedExerciseCard: View {
+    let icon: String
+    let title: String
+    let level: Int
+    let totalLevels: Int
+    let tint: Color
+    let theme: ThemeManager
+
+    private var progress: CGFloat {
+        guard totalLevels > 0 else { return 0 }
+        return CGFloat(min(level - 1, totalLevels)) / CGFloat(totalLevels)
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(tint.opacity(0.15))
+                    .frame(width: 52, height: 52)
+
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(tint)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.textPrimary)
+
+                Text(L("level_n", level))
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(theme.textSecondary)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(theme.inactive.opacity(0.25))
+                        Capsule()
+                            .fill(tint)
+                            .frame(width: max(6, geo.size.width * progress))
+                    }
+                }
+                .frame(height: 8)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(theme.inactive)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(theme.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(tint.opacity(0.25), lineWidth: 1)
+        )
+    }
+}
+
 // MARK: - Tool Tile (Square card for Tuner/Metronome)
 
 struct ToolTile: View {
@@ -336,26 +378,40 @@ struct ToolTile: View {
     let theme: ThemeManager
     
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 16) {
             ZStack {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(tint.gradient)
-                    .frame(width: 52, height: 52)
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(tint.opacity(0.15))
+                    .frame(width: 56, height: 56)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(tint)
             }
             
             Text(title)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(theme.textPrimary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 22)
+        .padding(.vertical, 24)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(theme.cardBackground)
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(theme.cardBackground)
+                
+                // 3D bottom shadow effect
+                VStack {
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.black.opacity(0.3))
+                        .frame(height: 4)
+                }
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color(hex: "2a2a2a"), lineWidth: 1.5)
         )
     }
 }

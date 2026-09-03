@@ -16,17 +16,18 @@ struct FretboardQuizView: View {
     @StateObject private var viewModel = ExerciseViewModel()
     @ObservedObject var theme = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("handsFreeModeEnabled") private var handsFreeModeEnabled: Bool = false
     
     var body: some View {
         ZStack {
-            theme.backgroundGradient.ignoresSafeArea()
-            
+            Color(hex: "131313").ignoresSafeArea()
+
             if viewModel.showSuccess {
-                theme.success.opacity(0.15)
+                LearningPath.acid.opacity(0.12)
                     .ignoresSafeArea()
                     .transition(.opacity)
             }
-            
+
             VStack(spacing: 0) {
                 switch viewModel.state {
                 case .idle:
@@ -40,22 +41,10 @@ struct FretboardQuizView: View {
                 }
             }
         }
-        .navigationTitle(L("quiz"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.background, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    viewModel.stopExercise()
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(theme.textSecondary)
-                }
-            }
-        }
+        .environment(\.colorScheme, .dark)
+        .toolbar(.hidden, for: .navigationBar)
         .animation(.easeInOut(duration: 0.3), value: viewModel.showSuccess)
         .onAppear {
             viewModel.selectInstrument(instrument)
@@ -69,131 +58,106 @@ struct FretboardQuizView: View {
     }
     
     // MARK: - Loading View
-    
+
     private var loadingView: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(theme.accent)
-            
+                .tint(LearningPath.acid)
+
             Text(L("loading_quiz"))
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
+                .foregroundStyle(Color(hex: "C8C8AB"))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     // MARK: - Quiz Content
-    
+
     private func quizContent(question: ExerciseQuestion) -> some View {
-        VStack(spacing: 20) {
-            // Progress Header
-            quizProgressHeader
-            
+        let progress = viewModel.totalQuestions > 0 ? CGFloat(viewModel.questionNumber - 1) / CGFloat(viewModel.totalQuestions) : 0
+
+        return VStack(spacing: 20) {
+            QuizTopBar(progress: progress) {
+                viewModel.stopExercise()
+                dismiss()
+            }
+
             Spacer()
-            
+
             // Question Card
             questionCard(question: question)
-            
+
             // Detected Note Display
             detectedNoteDisplay
-            
+
             // Skip Button
             skipButton
-            
+
             Spacer()
-            
+
             // Error
             if let error = viewModel.errorMessage {
                 Text(error)
                     .font(.system(size: 14, design: .rounded))
-                    .foregroundStyle(theme.error)
+                    .foregroundStyle(.red)
                     .padding(.horizontal)
             }
-            
+
             Spacer().frame(height: 20)
         }
-        .padding(.top, 16)
-    }
-    
-    // MARK: - Progress Header
-    
-    private var quizProgressHeader: some View {
-        VStack(spacing: 8) {
-            // Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(theme.cardBackground)
-                    
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(LinearGradient(colors: level.gradientColors, startPoint: .leading, endPoint: .trailing))
-                        .frame(width: geometry.size.width * CGFloat(viewModel.questionNumber) / CGFloat(max(viewModel.totalQuestions, 1)))
-                        .animation(.easeInOut, value: viewModel.questionNumber)
-                }
-            }
-            .frame(height: 6)
-            .padding(.horizontal, 20)
-            
-            // Question Counter & Score
-            HStack {
-                Text(L("question_n_of_m", viewModel.questionNumber, viewModel.totalQuestions))
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(theme.textSecondary)
-                
-                Spacer()
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    Text("\(viewModel.score)")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(theme.textPrimary)
-                }
-            }
-            .padding(.horizontal, 20)
-        }
+        .padding(.top, 8)
     }
     
     // MARK: - Question Card
     
     private func questionCard(question: ExerciseQuestion) -> some View {
         VStack(spacing: 20) {
-            Text(L("play_this_note"))
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
-            
+            HStack(spacing: 8) {
+                Text(L("play_this_note"))
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(hex: "C8C8AB"))
+
+                if handsFreeModeEnabled {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(LearningPath.acid)
+                }
+            }
+
             // Note Circle
             ZStack {
                 Circle()
                     .fill(viewModel.isCorrect ?
                           LinearGradient(colors: [.green, .teal], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                          LinearGradient(colors: level.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
+                          LinearGradient(colors: [LearningPath.acid, LearningPath.acidDim], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 140, height: 140)
-                    .shadow(color: viewModel.isCorrect ? .green.opacity(0.4) : level.gradientColors[0].opacity(0.3), radius: 16)
-                
+                    .shadow(color: viewModel.isCorrect ? .green.opacity(0.4) : LearningPath.acid.opacity(0.4), radius: 16)
+
                 VStack(spacing: 4) {
                     Text(question.noteName)
                         .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                    
+                        .foregroundStyle(Color(hex: "303300"))
+
                     Text("\(question.noteOctave)")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle(Color(hex: "303300").opacity(0.8))
                 }
             }
-            
+
             // String & Fret
             VStack(spacing: 4) {
                 Text(question.promptText)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.textPrimary)
-                
-                Text(L("fret") + " \(question.fret)")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(theme.textSecondary)
+                    .foregroundStyle(Color(hex: "E2E2E2"))
+
+                if !handsFreeModeEnabled {
+                    Text(L("fret") + " \(question.fret)")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(hex: "C8C8AB"))
+                }
             }
-            
+
             // Correct Feedback
             if viewModel.isCorrect {
                 HStack(spacing: 10) {
@@ -209,8 +173,7 @@ struct FretboardQuizView: View {
         .padding(30)
         .background(
             RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
-                .fill(theme.cardBackground)
-                .shadow(color: viewModel.isCorrect ? .green.opacity(0.3) : theme.shadow, radius: 12, x: 0, y: 6)
+                .fill(Color(hex: "1F1F1F"))
                 .overlay(
                     RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
                         .stroke(
@@ -223,64 +186,61 @@ struct FretboardQuizView: View {
         .padding(.horizontal, 20)
         .animation(.spring(response: 0.3), value: viewModel.isCorrect)
     }
-    
+
     // MARK: - Detected Note Display
-    
+
     private var detectedNoteDisplay: some View {
         Group {
             if let note = viewModel.detectedNote {
                 VStack(spacing: 8) {
                     Text(L("you_are_playing"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(theme.textSecondary)
-                    
+                        .foregroundStyle(Color(hex: "C8C8AB"))
+
                     Text(NoteFormatter.format(note.displayName))
                         .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundStyle(viewModel.isMatchingTarget ? theme.success : theme.textPrimary)
+                        .foregroundStyle(viewModel.isMatchingTarget ? LearningPath.acid : Color(hex: "E2E2E2"))
                 }
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                        .fill(theme.cardBackground)
-                        .shadow(color: theme.shadow, radius: 6)
+                        .fill(Color(hex: "1F1F1F"))
                 )
                 .padding(.horizontal, 20)
             } else {
                 VStack(spacing: 12) {
                     Image(systemName: "waveform")
                         .font(.system(size: 28))
-                        .foregroundStyle(theme.inactive)
+                        .foregroundStyle(Color(hex: "929277"))
                         .symbolEffect(.variableColor.iterative, options: .repeating)
                     Text(L("listening"))
                         .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(theme.textSecondary)
+                        .foregroundStyle(Color(hex: "C8C8AB"))
                 }
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                        .fill(theme.cardBackground)
-                        .shadow(color: theme.shadow, radius: 6)
+                        .fill(Color(hex: "1F1F1F"))
                 )
                 .padding(.horizontal, 20)
             }
         }
     }
-    
+
     // MARK: - Skip Button
-    
+
     private var skipButton: some View {
         Button {
             viewModel.skipQuestion()
         } label: {
             Text(L("skip"))
                 .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
+                .foregroundStyle(Color(hex: "C8C8AB"))
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
                 .background(
                     Capsule()
-                        .fill(theme.cardBackground)
-                        .shadow(color: theme.shadow, radius: 6)
+                        .fill(Color(hex: "1F1F1F"))
                 )
         }
     }

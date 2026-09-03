@@ -3,7 +3,7 @@
 //  MusicTuner
 //
 //  Manages local notifications for daily practice reminders
-//  3x daily: Morning (09:00), Afternoon (14:00), Evening (20:00)
+//  2x daily: Morning (09:00), Evening (20:00)
 //
 
 import Foundation
@@ -21,7 +21,6 @@ final class NotificationManager: ObservableObject {
     
     // MARK: - Notification Identifiers
     private let morningNotificationId = "daily_reminder_morning"
-    private let afternoonNotificationId = "daily_reminder_afternoon"
     private let eveningNotificationId = "daily_reminder_evening"
     
     // MARK: - Initialization
@@ -52,7 +51,7 @@ final class NotificationManager: ObservableObject {
         }
     }
     
-    /// Schedule all 3 daily notifications
+    /// Schedule all daily notifications (2x: morning + evening)
     func scheduleDailyNotifications() {
         // Cancel existing first
         cancelAllNotifications()
@@ -72,17 +71,6 @@ final class NotificationManager: ObservableObject {
             bodyEN: "Start your day with music practice.",
             titleTR: "Günaydın! 🌅",
             bodyTR: "Güne müzik pratiğiyle başla."
-        )
-        
-        // Schedule afternoon (14:00)
-        scheduleNotification(
-            id: afternoonNotificationId,
-            hour: 14,
-            minute: 0,
-            titleEN: "Lunch break? 🎸",
-            bodyEN: "Perfect time for a quick tune-up!",
-            titleTR: "Öğle arası? 🎸",
-            bodyTR: "Hızlı bir pratik için ideal zaman!"
         )
         
         // Schedule evening (20:00)
@@ -108,7 +96,9 @@ final class NotificationManager: ObservableObject {
     /// Cancel all scheduled notifications
     func cancelAllNotifications() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [morningNotificationId, afternoonNotificationId, eveningNotificationId]
+            // Includes the legacy "afternoon" id so existing installs that already
+            // scheduled it get it cleaned up after this update.
+            withIdentifiers: [morningNotificationId, eveningNotificationId, "daily_reminder_afternoon"]
         )
     }
     

@@ -243,6 +243,7 @@ struct ChordDiagramView: View {
     @State private var selectedVariationIndex = 0
     @State private var showFingerNumbers = true
     @ObservedObject var theme = ThemeManager.shared
+    @ObservedObject var favorites = ChordFavoritesManager.shared
     
     private var variations: [ChordVariation] {
         ChordDatabase.variations(for: chord.rootNote, type: chord.type)
@@ -325,9 +326,55 @@ struct ChordDiagramView: View {
                                     .shadow(color: theme.shadow, radius: 4)
                             )
                     }
+
+                    // Favorite toggle
+                    if showName {
+                        Button {
+                            withAnimation(.spring(response: 0.3)) {
+                                favorites.toggleFavorite(chord)
+                            }
+                        } label: {
+                            Image(systemName: favorites.isFavorite(chord) ? "heart.fill" : "heart")
+                                .font(.system(size: 18))
+                                .foregroundStyle(favorites.isFavorite(chord) ? theme.error : theme.textSecondary)
+                                .frame(width: 36, height: 36)
+                                .background(
+                                    Circle()
+                                        .fill(theme.cardBackground)
+                                        .shadow(color: theme.shadow, radius: 4)
+                                )
+                        }
+                    }
                 }
                 .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                .padding(.bottom, variations.count > 1 && showName ? 8 : 12)
+
+                // Common Variations — quick-jump chips for this chord's alternate voicings/positions
+                if showName && variations.count > 1 {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(variations.enumerated()), id: \.offset) { index, variation in
+                                Button {
+                                    withAnimation {
+                                        selectedVariationIndex = index
+                                    }
+                                } label: {
+                                    Text(variation.positionName)
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(index == selectedVariationIndex ? .white : theme.textSecondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(index == selectedVariationIndex ? theme.accentGradient : LinearGradient(colors: [theme.background], startPoint: .top, endPoint: .bottom))
+                                        )
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.bottom, 12)
+                }
             }
         }
     }

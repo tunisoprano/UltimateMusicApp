@@ -12,7 +12,7 @@ import SwiftUI
 
 /// Singleton for managing AdMob ads
 @MainActor
-final class AdsManager: ObservableObject {
+final class AdsManager: NSObject, ObservableObject {
     
     // MARK: - Singleton
     static let shared = AdsManager()
@@ -36,7 +36,8 @@ final class AdsManager: ObservableObject {
     }
     
     // MARK: - Initialization
-    private init() {
+    private override init() {
+        super.init()
         // Do NOT call MobileAds.shared.start() here
         // It will be called later after ATT permission + app is fully loaded
     }
@@ -81,6 +82,7 @@ final class AdsManager: ObservableObject {
                     return
                 }
                 
+                ad?.fullScreenContentDelegate = self
                 self?.interstitialAd = ad
                 self?.isInterstitialReady = true
                 print("✅ Interstitial loaded")
@@ -100,20 +102,42 @@ final class AdsManager: ObservableObject {
     }
     
     func showInterstitial() {
-        guard !isPremium, let ad = interstitialAd else { return }
-        
+        guard !isPremium, let ad = interstitialAd else {
+            // Nothing ready to show yet — make sure one is on the way.
+            if isAdMobReady { loadInterstitial() }
+            return
+        }
+
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootVC = windowScene.windows.first?.rootViewController else {
             return
         }
-        
+
+        // An interstitial can only be presented once — drop the reference
+        // immediately so a second trigger before the next ad loads can't
+        // try to re-present the already-used ad (which silently no-ops).
+        interstitialAd = nil
+        isInterstitialReady = false
         ad.present(from: rootVC)
+    }
+
+    func getBannerAdUnitID() -> String {
+        bannerAdUnitID
+    }
+}
+
+// MARK: - FullScreenContentDelegate
+
+extension AdsManager: FullScreenContentDelegate {
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        print("⚠️ Interstitial failed to present: \(error.localizedDescription)")
+        interstitialAd = nil
         isInterstitialReady = false
         loadInterstitial()
     }
-    
-    func getBannerAdUnitID() -> String {
-        bannerAdUnitID
+
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        loadInterstitial()
     }
 }
 

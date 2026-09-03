@@ -91,6 +91,8 @@ struct ContentView: View {
             EarTrainingView()
         case .fretboardTraining:
             ExerciseView()
+        case .chordMaker:
+            ChordMakerView()
         case .settings:
             SettingsView()
         case .none:
@@ -133,6 +135,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     case chordMastery
     case earTraining
     case fretboardTraining
+    case chordMaker
     case settings
     
     var id: String { rawValue }
@@ -145,6 +148,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .chordMastery: return L("learn_chord_diagrams")
         case .earTraining: return L("ear_training")
         case .fretboardTraining: return L("fretboard")
+        case .chordMaker: return L("chord_maker") // Or localized equivalent
         case .settings: return L("settings")
         }
     }
@@ -157,6 +161,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .chordMastery: return "graduationcap.fill"
         case .earTraining: return "ear.fill"
         case .fretboardTraining: return "guitars.fill"
+        case .chordMaker: return "wand.and.stars.inverse"
         case .settings: return "gearshape.fill"
         }
     }

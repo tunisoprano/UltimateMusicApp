@@ -1348,8 +1348,33 @@ final class ChordEngine: ObservableObject {
     /// Index of next available oscillator for fallback synth
     private var nextOscIndex: Int = 0
 
+
+    /// Plays an array of MIDI notes with a slight arpeggiated delay (strum)
+    func playMidiNotes(_ notes: [UInt8]) {
+        // guard isInitialized else { return }
+        ensurePlaybackSession()
+        
+        let playbackID = UUID()
+        currentPlaybackID = playbackID
+        stopAllNotes()
+        
+        let strumDelay: TimeInterval = 0.03
+        for (index, note) in notes.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (strumDelay * Double(index))) {
+                guard self.currentPlaybackID == playbackID else { return }
+                self.playNote(midiNote: note)
+            }
+        }
+        
+        let totalDuration = strumDelay * Double(notes.count) + 2.0
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            guard self.currentPlaybackID == playbackID else { return }
+            self.stopAllNotes()
+        }
+    }
+
     /// Play a single MIDI note
-    private func playNote(midiNote: UInt8, velocity: UInt8 = 80) {
+    func playNote(midiNote: UInt8, velocity: UInt8 = 80) {
         activeNotes.insert(midiNote)
         if usingSoundFont {
             sampler?.play(noteNumber: MIDINoteNumber(midiNote), velocity: MIDIVelocity(velocity), channel: 0)

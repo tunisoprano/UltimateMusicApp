@@ -228,6 +228,25 @@
 "tuner_almost" = "Neredeyse!";
 "tuner_perfect" = "Mükemmel! ✓";
 
+// Tuner Yeniden Tasarım
+"tuner_auto_detect" = "Otomatik Algıla";
+"tuner_tap_peg_manual" = "Manuel akort için bir burguya dokun";
+"tuner_manual_mode" = "Manuel: %@";
+"tuner_auto" = "Otomatik";
+"tuner_active_tuning" = "Akort";
+"tuner_change" = "Değiştir";
+"tuner_select_tuning" = "Akort Seç";
+"tuner_chromatic" = "Kromatik";
+"tuning_standard" = "Standart";
+"tuning_drop_d" = "Drop D";
+"tuning_half_step_down" = "Yarım Ton Aşağı";
+"tuning_open_g" = "Açık G";
+"tuning_dadgad" = "DADGAD";
+"tuning_low_g" = "Düşük G";
+"mic_access_required" = "Mikrofon Erişimi Gerekli";
+"mic_access_message" = "Tuner'ın enstrümanını duyabilmesi için lütfen Ayarlar'dan mikrofon erişimine izin ver.";
+"open_settings" = "Ayarları Aç";
+
 // Ayarlar
 "note_naming_section" = "Nota Adlandırma";
 "sound_feedback_section" = "Ses ve Geri Bildirim";
@@ -243,3 +262,30 @@
 "paywall_feature_future_desc" = "Yeni premium özellikler aboneliğine dahildir.";
 "paywall_cta" = "Premium'a Geç";
 "paywall_cancel_anytime" = "İstediğin zaman App Store'dan iptal edebilirsin.";
+
+// Bakmadan Çal Modu
+"hands_free_mode" = "Bakmadan Çal Modu";
+"hands_free_mode_desc" = "Notayı ekrandan okumak yerine sesli duy";
+
+// Ana Sayfa — Oyunlaştırılmış Tasarım
+"daily_exercises" = "Eğitim";
+"level_n" = "Seviye %d";
+
+// Öğrenme Yolu
+"start_lesson" = "Derse Başla";
+
+// Akor Kütüphanesi — Favoriler
+"favorites" = "Favoriler";
+
+// Quiz Yeniden Tasarım
+"check" = "KONTROL ET";
+"tap_to_listen" = "Dinlemek için tıkla";
+"chord_maker" = "Akor Oluşturucu";
+
+// Akor Oluşturucu
+"clear" = "Temizle";
+"strum" = "Strum";
+"finger" = "Parmak";
+"barre" = "Barre";
+"did_you_mean" = "💡 Bunu mu demek istedin:";
+"custom_chord" = "Özel Akor (%@)";

@@ -2,84 +2,75 @@
 //  TunerView.swift
 //  MusicTuner
 //
-//  Premium GuitarTuna-style tuner interface
-//  Layout: Tuning indicator (top) → Note display → Headstock with pegs (bottom)
+//  "Playful Premium" tuner — GuitarTuna-inspired, acid/black theme.
+//  Layout: instrument pills → tuning meter card → Auto-Detect / Tuning
+//  preset cards → vector pegboard.
 //
 
 import SwiftUI
 
-/// Main tuner interface — GuitarTuna-inspired premium design
+/// Main tuner interface — acid/black "Playful Premium" design
 struct TunerView: View {
     @StateObject private var viewModel = TunerViewModel()
-    @ObservedObject var theme = ThemeManager.shared
-    @ObservedObject var storeManager = StoreKitManager.shared
     @State private var showDebug = false
-    
+    @State private var showTuningSheet = false
+
     var body: some View {
         ZStack {
-            // Dark background
-            theme.backgroundGradient.ignoresSafeArea()
-            
+            Color(hex: "131313").ignoresSafeArea()
+
             VStack(spacing: 0) {
-                // Main content
-                VStack(spacing: 0) {
-                    // Instrument picker at top
-                    instrumentPicker
-                        .padding(.top, 8)
-                    
-                    Spacer(minLength: 12)
-                    
-                    // Tuning section: indicator + note
-                    tuningSection
-                    
-                    // Headstock fills remaining space
-                    if viewModel.selectedInstrument.hasStringTargeting {
-                        headstockSection
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        instrumentPicker
+                            .padding(.top, 16)
+
+                        tuningMeterCard
+
+                        controlCardsRow
+
+                        if viewModel.selectedInstrument.hasStringTargeting {
+                            headstockSection
+                        }
                     }
-                    
-                    Spacer(minLength: 0)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
                 }
-                
-                // Ad banner at very bottom
+
                 AdBannerContainer()
             }
-            
-            // Floating mic button (bottom right)
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    miniMicButton
-                        .padding(.trailing, 24)
-                        .padding(.bottom, 70)
-                }
-            }
-            
-            // Debug overlay
+
             #if DEBUG
             if showDebug && viewModel.isListening {
                 debugOverlay
             }
             #endif
-            
-            // Error overlay
+
             errorView
         }
         .navigationTitle(L("tuner"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.background, for: .navigationBar)
-        #if DEBUG
+        .environment(\.colorScheme, .dark)
+        .toolbarBackground(Color(hex: "131313"), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
+            #if DEBUG
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showDebug.toggle()
                 } label: {
                     Image(systemName: showDebug ? "ladybug.fill" : "ladybug")
-                        .foregroundStyle(theme.textSecondary)
+                        .foregroundStyle(Color(hex: "929277"))
                 }
             }
+            #endif
+            ToolbarItem(placement: .topBarTrailing) {
+                StreakBadgeView()
+            }
         }
-        #endif
+        .sheet(isPresented: $showTuningSheet) {
+            tuningPresetSheet
+        }
         .onAppear {
             Task { await viewModel.startListening() }
         }
@@ -87,118 +78,146 @@ struct TunerView: View {
             viewModel.stopListening()
         }
     }
-    
-    // MARK: - Instrument Picker
-    
+
+    // MARK: - Instrument Picker (pill segmented)
+
     private var instrumentPicker: some View {
-        Picker("Instrument", selection: $viewModel.selectedInstrument) {
+        HStack(spacing: 8) {
             ForEach(Instrument.allCases) { inst in
-                Text(inst.rawValue).tag(inst)
+                let isActive = viewModel.selectedInstrument == inst
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.selectedInstrument = inst
+                    }
+                } label: {
+                    Text(inst == .free ? L("tuner_chromatic") : inst.rawValue)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(isActive ? Color(hex: "303300") : Color(hex: "C8C8AB"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule().fill(isActive ? LearningPath.acid : Color(hex: "1F1F1F"))
+                        )
+                }
             }
         }
-        .pickerStyle(.segmented)
-        .padding(.horizontal, 20)
     }
-    
-    // MARK: - Tuning Section (Indicator + Note)
-    
-    private var tuningSection: some View {
-        VStack(spacing: 16) {
-            // Tuning needle/gauge
+
+    // MARK: - Tuning Meter Card
+
+    private var tuningMeterCard: some View {
+        VStack(spacing: 20) {
+            statusPill
+
             tunerNeedle
-            
-            // Note display circle
+                .padding(.horizontal, 8)
+
             noteDisplay
         }
+        .padding(.vertical, 24)
         .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(hex: "1F1F1F"))
+        )
     }
-    
+
+    private var statusPill: some View {
+        Text(viewModel.tuningState.description)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(statusTextColor)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(
+                Capsule().fill(statusTextColor.opacity(0.15))
+            )
+    }
+
+    private var statusTextColor: Color {
+        switch viewModel.tuningState {
+        case .inTune: return LearningPath.acid
+        case .close: return Color(hex: "FFC94A")
+        case .sharp, .flat: return Color(hex: "FF5A5A")
+        case .noSignal: return Color(hex: "929277")
+        }
+    }
+
     // MARK: - Note Display
-    
+
     private var noteDisplay: some View {
         ZStack {
-            // Outer glow when in tune
             if viewModel.tuningState == .inTune {
                 Circle()
-                    .fill(theme.success.opacity(0.2))
-                    .frame(width: 120, height: 120)
-                    .blur(radius: 12)
+                    .fill(LearningPath.acid.opacity(0.25))
+                    .frame(width: 140, height: 140)
+                    .blur(radius: 16)
             }
-            
-            // Note circle
+
             Circle()
-                .fill(theme.cardBackground)
-                .frame(width: 100, height: 100)
-                .shadow(
-                    color: viewModel.tuningState == .inTune
-                        ? theme.success.opacity(0.4) : theme.shadow,
-                    radius: 10
-                )
+                .fill(Color(hex: "131313"))
+                .frame(width: 116, height: 116)
                 .overlay(
                     Circle()
                         .stroke(
                             viewModel.tuningState == .inTune
-                                ? theme.success : theme.inactive.opacity(0.3),
+                                ? LearningPath.acid : Color(hex: "353534"),
                             lineWidth: 3
                         )
                 )
-            
-            // Note text
+                .shadow(color: .black.opacity(0.4), radius: 10)
+
             if let note = viewModel.detectedNote {
                 VStack(spacing: 2) {
                     Text(NoteFormatter.formatLetter(note.name))
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(theme.textPrimary)
-                    
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "E2E2E2"))
+
                     Text("\(note.octave)")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(theme.textSecondary)
+                        .foregroundStyle(Color(hex: "929277"))
                 }
             } else {
                 Text("--")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.inactive)
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "353534"))
             }
         }
     }
-    
+
     // MARK: - Tuning Needle
-    
+
     private var tunerNeedle: some View {
         GeometryReader { geo in
             let centerX = geo.size.width / 2
             let needleOffset = CGFloat(viewModel.needlePosition) * (centerX - 20)
-            
+
             ZStack {
-                // Gradient track
                 tunerTrack
-                
-                // Center marker (green)
+
                 Rectangle()
-                    .fill(theme.success)
+                    .fill(LearningPath.acid)
                     .frame(width: 3, height: 20)
                     .position(x: centerX, y: 14)
-                
-                // Tick marks
+
                 ForEach([-2, -1, 1, 2], id: \.self) { tick in
                     Rectangle()
-                        .fill(theme.inactive.opacity(0.5))
+                        .fill(Color(hex: "929277").opacity(0.5))
                         .frame(width: 1, height: 10)
                         .position(x: centerX + CGFloat(tick) * (centerX / 2.5), y: 14)
                 }
-                
-                // Flat/Sharp labels
+
                 Text("♭")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(theme.textSecondary.opacity(0.6))
+                    .foregroundStyle(Color(hex: "929277").opacity(0.7))
                     .position(x: 14, y: 14)
-                
+
                 Text("♯")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(theme.textSecondary.opacity(0.6))
+                    .foregroundStyle(Color(hex: "929277").opacity(0.7))
                     .position(x: geo.size.width - 14, y: 14)
-                
-                // Needle indicator
+
                 needleIndicator
                     .position(x: centerX + needleOffset, y: 14)
                     .animation(.easeInOut(duration: 0.35), value: viewModel.needlePosition)
@@ -206,18 +225,18 @@ struct TunerView: View {
         }
         .frame(height: 28)
     }
-    
+
     private var tunerTrack: some View {
         GeometryReader { geo in
             Capsule()
                 .fill(
                     LinearGradient(
                         stops: [
-                            .init(color: theme.error.opacity(0.3), location: 0),
-                            .init(color: theme.warning.opacity(0.3), location: 0.3),
-                            .init(color: theme.success.opacity(0.5), location: 0.5),
-                            .init(color: theme.warning.opacity(0.3), location: 0.7),
-                            .init(color: theme.error.opacity(0.3), location: 1)
+                            .init(color: Color(hex: "FF5A5A").opacity(0.3), location: 0),
+                            .init(color: Color(hex: "FFC94A").opacity(0.3), location: 0.3),
+                            .init(color: LearningPath.acid.opacity(0.5), location: 0.5),
+                            .init(color: Color(hex: "FFC94A").opacity(0.3), location: 0.7),
+                            .init(color: Color(hex: "FF5A5A").opacity(0.3), location: 1)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
@@ -227,37 +246,167 @@ struct TunerView: View {
                 .position(x: geo.size.width / 2, y: 14)
         }
     }
-    
+
     private var needleIndicator: some View {
         ZStack {
             if viewModel.tuningState == .inTune {
                 Circle()
-                    .fill(theme.success.opacity(0.5))
+                    .fill(LearningPath.acid.opacity(0.5))
                     .frame(width: 36, height: 36)
                     .blur(radius: 6)
             }
-            
+
             Circle()
-                .fill(stateColor)
+                .fill(statusTextColor)
                 .frame(width: 24, height: 24)
-                .shadow(color: stateColor.opacity(0.5), radius: 4, x: 0, y: 2)
+                .shadow(color: statusTextColor.opacity(0.5), radius: 4, x: 0, y: 2)
                 .overlay(
                     Circle()
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 )
         }
     }
-    
-    // MARK: - Headstock Section (Bottom)
-    
+
+    // MARK: - Control Cards (Auto-Detect + Active Tuning)
+
+    private var controlCardsRow: some View {
+        HStack(spacing: 12) {
+            autoDetectCard
+
+            if viewModel.selectedInstrument.hasStringTargeting {
+                activeTuningCard
+            }
+        }
+    }
+
+    private var autoDetectCard: some View {
+        Button {
+            Task { await viewModel.toggleListening() }
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: viewModel.isListening ? "mic.fill" : "mic.slash.fill")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(viewModel.isListening ? LearningPath.acid : Color(hex: "FF5A5A"))
+                    Spacer()
+                }
+                Text(L("tuner_auto_detect"))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "E2E2E2"))
+                Text(viewModel.isListening ? L("tuner_perfect") : L("tuner_play_a_note"))
+                    .font(.system(size: 11, design: .rounded))
+                    .foregroundStyle(Color(hex: "929277"))
+                    .lineLimit(1)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(hex: "1F1F1F"))
+            )
+        }
+    }
+
+    private var activeTuningCard: some View {
+        Button {
+            showTuningSheet = true
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "tuningfork")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color(hex: "D5FBFF"))
+                    Spacer()
+                    Text(L("tuner_change"))
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(LearningPath.acid)
+                }
+                Text(L("tuner_active_tuning"))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "E2E2E2"))
+                Text(viewModel.selectedPreset.displayName)
+                    .font(.system(size: 11, design: .rounded))
+                    .foregroundStyle(Color(hex: "929277"))
+                    .lineLimit(1)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(hex: "1F1F1F"))
+            )
+        }
+    }
+
+    // MARK: - Tuning Preset Sheet
+
+    private var tuningPresetSheet: some View {
+        ZStack {
+            Color(hex: "131313").ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                HStack {
+                    Text(L("tuner_select_tuning"))
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "E2E2E2"))
+                    Spacer()
+                    Button(L("done")) {
+                        showTuningSheet = false
+                    }
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(LearningPath.acid)
+                }
+                .padding(20)
+
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(viewModel.availablePresets) { preset in
+                            let isActive = viewModel.selectedPreset.id == preset.id
+
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    viewModel.selectedPreset = preset
+                                }
+                                showTuningSheet = false
+                            } label: {
+                                HStack {
+                                    Text(preset.displayName)
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(isActive ? Color(hex: "303300") : Color(hex: "E2E2E2"))
+                                    Spacer()
+                                    if isActive {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(Color(hex: "303300"))
+                                    }
+                                }
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(isActive ? LearningPath.acid : Color(hex: "1F1F1F"))
+                                )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+        .environment(\.colorScheme, .dark)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Headstock Section (Pegboard)
+
     private var headstockSection: some View {
-        VStack(spacing: 4) {
-            // Mode label
+        VStack(spacing: 8) {
             HStack {
-                Text(viewModel.isAutoMode ? "Tap a peg for manual mode" : "Manual: \(viewModel.selectedTargetString?.name ?? "")")
+                Text(viewModel.isAutoMode ? L("tuner_tap_peg_manual") : L("tuner_manual_mode", viewModel.selectedTargetString?.name ?? ""))
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(theme.textSecondary)
-                
+                    .foregroundStyle(Color(hex: "929277"))
+
                 if !viewModel.isAutoMode {
                     Button {
                         viewModel.selectString(nil)
@@ -265,21 +414,21 @@ struct TunerView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.triangle.2.circlepath")
                                 .font(.system(size: 10))
-                            Text("Auto")
+                            Text(L("tuner_auto"))
                                 .font(.system(size: 11, weight: .medium, design: .rounded))
                         }
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(LearningPath.acid)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(
-                            Capsule()
-                                .fill(theme.accent.opacity(0.15))
+                            Capsule().fill(LearningPath.acid.opacity(0.15))
                         )
                     }
                 }
+
+                Spacer()
             }
-            
-            // Headstock — fills available space, flush to bottom
+
             HeadstockView(
                 instrument: viewModel.selectedInstrument,
                 strings: viewModel.instrumentStrings,
@@ -289,31 +438,17 @@ struct TunerView: View {
                     viewModel.toggleStringSelection(string)
                 }
             )
-            .frame(maxHeight: .infinity)
-            .padding(.horizontal, 0)
+            .frame(height: 260)
         }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(hex: "1F1F1F"))
+        )
     }
-    
-    // MARK: - Mini Mic Button
-    
-    private var miniMicButton: some View {
-        Button {
-            Task { await viewModel.toggleListening() }
-        } label: {
-            Image(systemName: viewModel.isListening ? "mic.fill" : "mic.slash.fill")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(
-                    Circle()
-                        .fill(viewModel.isListening ? theme.success : theme.error)
-                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-                )
-        }
-    }
-    
+
     // MARK: - Error View
-    
+
     private var errorView: some View {
         Group {
             if let error = viewModel.errorMessage {
@@ -322,22 +457,21 @@ struct TunerView: View {
                                   error.localizedCaseInsensitiveContains("microphone")
 
                 if isMicDenied {
-                    // Full-screen mic permission banner
                     VStack(spacing: 20) {
                         Spacer()
 
                         VStack(spacing: 16) {
                             Image(systemName: "mic.slash.fill")
                                 .font(.system(size: 44))
-                                .foregroundStyle(theme.error)
+                                .foregroundStyle(Color(hex: "FF5A5A"))
 
-                            Text("Microphone Access Required")
+                            Text(L("mic_access_required"))
                                 .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                .foregroundStyle(theme.textPrimary)
+                                .foregroundStyle(Color(hex: "E2E2E2"))
 
-                            Text("Please allow microphone access in Settings so the tuner can hear your instrument.")
+                            Text(L("mic_access_message"))
                                 .font(.system(size: 14, design: .rounded))
-                                .foregroundStyle(theme.textSecondary)
+                                .foregroundStyle(Color(hex: "929277"))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 8)
 
@@ -346,32 +480,31 @@ struct TunerView: View {
                                     UIApplication.shared.open(url)
                                 }
                             } label: {
-                                Text("Open Settings")
+                                Text(L("open_settings"))
                                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color(hex: "303300"))
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 12)
-                                    .background(Capsule().fill(theme.accent))
+                                    .background(Capsule().fill(LearningPath.acid))
                             }
                         }
                         .padding(24)
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(theme.cardBackground)
-                                .shadow(color: theme.shadow, radius: 16, x: 0, y: 8)
+                                .fill(Color(hex: "1F1F1F"))
+                                .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8)
                         )
                         .padding(.horizontal, 24)
 
                         Spacer()
                     }
                 } else {
-                    // Generic error toast
                     VStack {
                         Spacer()
                         Text(error)
                             .font(.system(size: 13, design: .rounded))
-                            .foregroundStyle(theme.error)
+                            .foregroundStyle(Color(hex: "FF5A5A"))
                             .multilineTextAlignment(.center)
                             .padding()
                             .background(.ultraThinMaterial)
@@ -383,9 +516,10 @@ struct TunerView: View {
             }
         }
     }
-    
+
     // MARK: - Debug Overlay
-    
+
+    #if DEBUG
     private var debugOverlay: some View {
         VStack {
             HStack {
@@ -393,23 +527,23 @@ struct TunerView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("DEBUG")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(LearningPath.acid)
                     Text("RMS: \(String(format: "%.4f", AudioManager.shared.debugRMS))")
                     Text("Raw: \(String(format: "%.1f", AudioManager.shared.debugRawPitch))")
                     Text("Smooth: \(String(format: "%.1f", viewModel.smoothedCents))")
                     Text("Locked: \(viewModel.isLocked ? "YES" : "NO")")
-                    
-                    Divider().background(theme.textSecondary)
-                    
+
+                    Divider().background(Color(hex: "929277"))
+
                     Text("CALIBRATION")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(theme.accent)
-                    
+                        .foregroundStyle(LearningPath.acid)
+
                     HStack(spacing: 4) {
                         Text("\(String(format: "%+.0f", viewModel.calibrationCents)) ct")
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
                             .frame(width: 40, alignment: .trailing)
-                        
+
                         Slider(
                             value: Binding(
                                 get: { viewModel.calibrationCents },
@@ -419,40 +553,30 @@ struct TunerView: View {
                             step: 1
                         )
                         .frame(width: 100)
-                        .tint(theme.accent)
-                        
+                        .tint(LearningPath.acid)
+
                         Button {
                             viewModel.calibrationCents = 0
                         } label: {
                             Image(systemName: "arrow.counterclockwise")
                                 .font(.system(size: 10))
-                                .foregroundStyle(theme.accent)
+                                .foregroundStyle(LearningPath.acid)
                         }
                     }
                 }
                 .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(theme.textSecondary)
+                .foregroundStyle(Color(hex: "929277"))
                 .padding(8)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(theme.cardBackground.opacity(0.95))
+                        .fill(Color(hex: "1F1F1F").opacity(0.95))
                 )
                 .padding(10)
             }
             Spacer()
         }
     }
-    
-    // MARK: - Helpers
-    
-    private var stateColor: Color {
-        switch viewModel.tuningState {
-        case .inTune: return theme.success
-        case .close: return theme.warning
-        case .sharp, .flat: return theme.error
-        case .noSignal: return theme.inactive
-        }
-    }
+    #endif
 }
 
 #Preview {

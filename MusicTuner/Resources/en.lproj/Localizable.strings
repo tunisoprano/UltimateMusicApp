@@ -228,6 +228,25 @@
 "tuner_almost" = "Almost!";
 "tuner_perfect" = "Perfect! ✓";
 
+// Tuner Redesign
+"tuner_auto_detect" = "Auto-Detect";
+"tuner_tap_peg_manual" = "Tap a peg to tune manually";
+"tuner_manual_mode" = "Manual: %@";
+"tuner_auto" = "Auto";
+"tuner_active_tuning" = "Tuning";
+"tuner_change" = "Change";
+"tuner_select_tuning" = "Select Tuning";
+"tuner_chromatic" = "Chromatic";
+"tuning_standard" = "Standard";
+"tuning_drop_d" = "Drop D";
+"tuning_half_step_down" = "Half-Step Down";
+"tuning_open_g" = "Open G";
+"tuning_dadgad" = "DADGAD";
+"tuning_low_g" = "Low G";
+"mic_access_required" = "Microphone Access Required";
+"mic_access_message" = "Please allow microphone access in Settings so the tuner can hear your instrument.";
+"open_settings" = "Open Settings";
+
 // Settings Hardcoded Strings
 "note_naming_section" = "Note Naming";
 "sound_feedback_section" = "Sound & Feedback";
@@ -243,3 +262,30 @@
 "paywall_feature_future_desc" = "New premium features are included in your subscription.";
 "paywall_cta" = "Go Premium";
 "paywall_cancel_anytime" = "Cancel anytime in the App Store.";
+
+// Hands-Free Mode
+"hands_free_mode" = "Hands-Free Mode";
+"hands_free_mode_desc" = "Hear the note instead of reading it on screen";
+
+// Home — Gamified Redesign
+"daily_exercises" = "Training";
+"level_n" = "Level %d";
+
+// Learning Path
+"start_lesson" = "Start Lesson";
+
+// Chord Library — Favorites
+"favorites" = "Favorites";
+
+// Quiz Redesign
+"check" = "CHECK";
+"tap_to_listen" = "Tap to listen";
+"chord_maker" = "Chord Maker";
+
+// Chord Maker
+"clear" = "Clear";
+"strum" = "Strum";
+"finger" = "Finger";
+"barre" = "Barre";
+"did_you_mean" = "💡 Did you mean:";
+"custom_chord" = "Custom Chord (%@)";

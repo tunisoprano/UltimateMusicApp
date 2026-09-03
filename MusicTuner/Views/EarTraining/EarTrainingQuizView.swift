@@ -22,7 +22,7 @@ struct EarTrainingQuizView: View {
 
     var body: some View {
         ZStack {
-            theme.backgroundGradient.ignoresSafeArea()
+            Color(hex: "131313").ignoresSafeArea()
 
             VStack(spacing: 0) {
                 switch viewModel.state {
@@ -37,21 +37,10 @@ struct EarTrainingQuizView: View {
                 }
             }
         }
-        .navigationTitle(L("quiz"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.background, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(theme.textSecondary)
-                }
-            }
-        }
+        .environment(\.colorScheme, .dark)
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $navigateToNextLevel) {
             if let nextLevel = EarTrainingCurriculum.nextLevel(after: level) {
                 EarTrainingLearningView(level: nextLevel)
@@ -63,6 +52,9 @@ struct EarTrainingQuizView: View {
                 viewModel.retryQuiz(level)
             }
         }
+        .onChange(of: viewModel.questionNumber) { _, _ in
+            selectedAnswer = nil
+        }
     }
 
     // MARK: - Loading View
@@ -71,11 +63,11 @@ struct EarTrainingQuizView: View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(theme.accent)
+                .tint(LearningPath.acid)
 
             Text(L("loading_quiz"))
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
+                .foregroundStyle(Color(hex: "C8C8AB"))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -83,197 +75,99 @@ struct EarTrainingQuizView: View {
     // MARK: - Quiz Content
 
     private func quizContent(chord: ChordDefinition) -> some View {
-        VStack(spacing: 20) {
-            // Progress Header
-            quizProgressHeader
+        let progress = viewModel.totalQuestions > 0 ? CGFloat(viewModel.questionNumber - 1) / CGFloat(viewModel.totalQuestions) : 0
 
-            // Question
+        return VStack(spacing: 28) {
+            QuizTopBar(progress: progress) { dismiss() }
+
             Text(L("what_chord_sounds"))
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.textPrimary)
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(hex: "C8C8AB"))
 
-            // Play Audio Button (instead of chord diagram)
             playAudioSection(chord: chord)
 
             Spacer()
 
-            // Answer Buttons
             if let question = viewModel.currentQuizQuestion {
-                answerButtons(options: question.options, correctChord: chord)
+                answerGrid(options: question.options, correctChord: chord)
             }
 
-            Spacer().frame(height: 20)
+            checkButtonSection
+
+            Spacer().frame(height: 12)
         }
-        .padding(.top, 16)
+        .padding(.top, 8)
     }
 
-    // MARK: - Progress Header
-
-    private var quizProgressHeader: some View {
-        VStack(spacing: 8) {
-            // Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(theme.cardBackground)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(LinearGradient(colors: level.gradientColors, startPoint: .leading, endPoint: .trailing))
-                        .frame(width: geometry.size.width * CGFloat(viewModel.questionNumber) / CGFloat(viewModel.totalQuestions))
-                        .animation(.easeInOut, value: viewModel.questionNumber)
-                }
-            }
-            .frame(height: 6)
-            .padding(.horizontal, 20)
-
-            // Question Counter
-            Text(L("question_n_of_m", viewModel.questionNumber, viewModel.totalQuestions))
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
-
-            // Score
-            HStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                Text("\(viewModel.score)")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.textPrimary)
-            }
-        }
-    }
-
-    // MARK: - Play Audio Section (replaces chord diagram)
+    // MARK: - Play Audio Section (big glowing tap-to-listen button)
 
     private func playAudioSection(chord: ChordDefinition) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
-                .fill(theme.cardBackground)
-                .shadow(color: theme.shadow, radius: 10, y: 5)
-
-            VStack(spacing: 20) {
-                // Speaker Animation
+        VStack(spacing: 14) {
+            Button {
+                viewModel.replayQuizChord()
+            } label: {
                 ZStack {
                     Circle()
-                        .fill(theme.accent.opacity(0.1))
-                        .frame(width: 120, height: 120)
+                        .fill(LearningPath.acid.opacity(0.18))
+                        .frame(width: 150, height: 150)
 
                     Circle()
-                        .fill(theme.accent.opacity(0.15))
-                        .frame(width: 90, height: 90)
+                        .fill(LearningPath.acid)
+                        .frame(width: 96, height: 96)
+                        .shadow(color: LearningPath.acid.opacity(0.6), radius: 24)
 
-                    Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(theme.accent)
-                        .symbolEffect(.variableColor.iterative, options: .repeating)
-                }
-
-                // Replay Button
-                Button {
-                    viewModel.replayQuizChord()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text(L("play_again"))
-                    }
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                            .fill(theme.accentGradient)
-                    )
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(Color(hex: "303300"))
                 }
             }
-            .padding(20)
-        }
-        .frame(height: 280)
-        .padding(.horizontal, 20)
-        .overlay(
-            feedbackOverlay
-        )
-    }
 
-    // MARK: - Feedback Overlay
-
-    @ViewBuilder
-    private var feedbackOverlay: some View {
-        if let isCorrect = viewModel.lastAnswerCorrect {
-            ZStack {
-                RoundedRectangle(cornerRadius: ThemeManager.radiusLarge)
-                    .fill(isCorrect ? Color.green.opacity(0.3) : Color.red.opacity(0.3))
-
-                VStack(spacing: 12) {
-                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(isCorrect ? .green : .red)
-
-                    if !isCorrect, let correctChord = viewModel.correctAnswerChord {
-                        Text(L("correct_answer_was", correctChord.name))
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(theme.textPrimary)
-                    }
-                }
-            }
-            .padding(.horizontal, 20)
-            .transition(.opacity)
-            .animation(.easeInOut(duration: 0.3), value: viewModel.lastAnswerCorrect)
+            Text(L("tap_to_listen").uppercased())
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .tracking(1.2)
+                .foregroundStyle(Color(hex: "929277"))
         }
     }
 
-    // MARK: - Answer Buttons
+    // MARK: - Answer Grid
 
-    private func answerButtons(options: [ChordDefinition], correctChord: ChordDefinition) -> some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 12) {
+    private func answerGrid(options: [ChordDefinition], correctChord: ChordDefinition) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             ForEach(options) { option in
-                answerButton(chord: option, correctChord: correctChord)
+                QuizChoiceCard(
+                    title: option.rootNote.displayName,
+                    subtitle: option.type.localizedName,
+                    isSelected: selectedAnswer == option,
+                    result: choiceResult(for: option, correctChord: correctChord)
+                ) {
+                    guard viewModel.lastAnswerCorrect == nil else { return }
+                    selectedAnswer = option
+                }
             }
         }
         .padding(.horizontal, 20)
-        .disabled(viewModel.lastAnswerCorrect != nil)
     }
 
-    private func answerButton(chord: ChordDefinition, correctChord: ChordDefinition) -> some View {
-        let isSelected = selectedAnswer == chord
-        let isCorrectAnswer = chord.rootNote == correctChord.rootNote && chord.type == correctChord.type
-        let showFeedback = viewModel.lastAnswerCorrect != nil
-
-        return Button {
-            selectedAnswer = chord
-            viewModel.submitAnswer(chord)
-        } label: {
-            Text(chord.name)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(buttonTextColor(isSelected: isSelected, isCorrect: isCorrectAnswer, showFeedback: showFeedback))
-                .frame(maxWidth: .infinity)
-                .frame(height: 70)
-                .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                        .fill(buttonBackground(isSelected: isSelected, isCorrect: isCorrectAnswer, showFeedback: showFeedback))
-                        .shadow(color: theme.shadow, radius: 6)
-                )
-        }
+    private func choiceResult(for option: ChordDefinition, correctChord: ChordDefinition) -> QuizChoiceResult {
+        guard viewModel.lastAnswerCorrect != nil else { return .none }
+        let isCorrectAnswer = option.rootNote == correctChord.rootNote && option.type == correctChord.type
+        if isCorrectAnswer { return .correct }
+        if selectedAnswer == option { return .incorrect }
+        return .none
     }
 
-    private func buttonTextColor(isSelected: Bool, isCorrect: Bool, showFeedback: Bool) -> Color {
-        if showFeedback && isCorrect {
-            return .white
-        } else if showFeedback && isSelected && !isCorrect {
-            return .white
-        }
-        return theme.textPrimary
-    }
+    // MARK: - Check Button
 
-    private func buttonBackground(isSelected: Bool, isCorrect: Bool, showFeedback: Bool) -> some ShapeStyle {
-        if showFeedback && isCorrect {
-            return AnyShapeStyle(Color.green)
-        } else if showFeedback && isSelected && !isCorrect {
-            return AnyShapeStyle(Color.red)
+    private var checkButtonSection: some View {
+        QuizCheckButton(
+            title: L("check"),
+            isEnabled: selectedAnswer != nil && viewModel.lastAnswerCorrect == nil
+        ) {
+            if let selected = selectedAnswer {
+                viewModel.submitAnswer(selected)
+            }
         }
-        return AnyShapeStyle(theme.cardBackground)
+        .padding(.horizontal, 20)
     }
 
     // MARK: - Results View

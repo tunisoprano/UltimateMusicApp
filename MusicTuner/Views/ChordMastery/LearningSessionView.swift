@@ -18,24 +18,26 @@ struct LearningSessionView: View {
     
     var body: some View {
         ZStack {
-            theme.backgroundGradient.ignoresSafeArea()
-            
+            Color(hex: "131313").ignoresSafeArea()
+
             VStack(spacing: 0) {
                 // Progress Header
                 progressHeader
-                
+
                 // Chord TabView
                 chordTabView
-                
+
                 // Navigation Buttons
                 navigationButtons
-                
+
                 Spacer().frame(height: 20)
             }
         }
+        .environment(\.colorScheme, .dark)
         .navigationTitle(level.localizedTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.background, for: .navigationBar)
+        .toolbarBackground(Color(hex: "131313"), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .navigationDestination(isPresented: $showQuiz) {
             QuizSessionView(level: level)
         }
@@ -60,19 +62,17 @@ struct LearningSessionView: View {
             HStack(spacing: 8) {
                 ForEach(0..<level.chords.count, id: \.self) { index in
                     Capsule()
-                        .fill(index <= currentPage ? 
-                              LinearGradient(colors: level.gradientColors, startPoint: .leading, endPoint: .trailing) :
-                              LinearGradient(colors: [theme.cardBackground], startPoint: .leading, endPoint: .trailing))
+                        .fill(index <= currentPage ? LearningPath.acid : Color(hex: "353534"))
                         .frame(height: 4)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
-            
+
             // Counter
             Text("\(currentPage + 1) / \(level.chords.count)")
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.textSecondary)
+                .foregroundStyle(Color(hex: "C8C8AB"))
         }
     }
     
@@ -85,23 +85,22 @@ struct LearningSessionView: View {
                     // Study instruction
                     Text(L("study_this_chord"))
                         .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(theme.textSecondary)
-                    
+                        .foregroundStyle(Color(hex: "C8C8AB"))
+
                     // Chord Diagram
                     ChordDiagramView(chord: chord) {
                         ChordEngine.shared.playChord(chord)
                     }
                     .frame(height: 380)
                     .padding(.horizontal, 20)
-                    .shadow(color: theme.shadow, radius: 10, y: 5)
-                    
+
                     // Tap to play hint
                     HStack(spacing: 6) {
                         Image(systemName: "hand.tap.fill")
                         Text(L("tap_to_play"))
                     }
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(theme.textSecondary.opacity(0.7))
+                    .foregroundStyle(Color(hex: "C8C8AB").opacity(0.7))
                 }
                 .tag(index)
             }
@@ -132,16 +131,16 @@ struct LearningSessionView: View {
                     Text(L("previous"))
                 }
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(currentPage > 0 ? theme.textPrimary : theme.textSecondary.opacity(0.5))
+                .foregroundStyle(currentPage > 0 ? Color(hex: "E2E2E2") : Color(hex: "929277").opacity(0.5))
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
                     RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                        .fill(theme.cardBackground)
+                        .fill(Color(hex: "1F1F1F"))
                 )
             }
             .disabled(currentPage == 0)
-            
+
             // Next / Start Quiz Button
             Button {
                 withAnimation {
@@ -159,14 +158,13 @@ struct LearningSessionView: View {
                          L("start_quiz"))
                     Image(systemName: currentPage < level.chords.count - 1 ? "chevron.right" : "play.fill")
                 }
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "303300"))
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
                     RoundedRectangle(cornerRadius: ThemeManager.radiusMedium)
-                        .fill(LinearGradient(colors: level.gradientColors, startPoint: .leading, endPoint: .trailing))
-                        .shadow(color: level.gradientColors[0].opacity(0.3), radius: 8, x: 0, y: 4)
+                        .fill(LearningPath.acid)
                 )
             }
         }

@@ -83,8 +83,12 @@ final class ExerciseViewModel: ObservableObject {
     private var monitorTimer: Timer?
     private var correctHoldDuration: TimeInterval = 0
     private let requiredHoldDuration: TimeInterval = 0.5
+    private var missedTickStreak: Int = 0
+    private let maxMissedTicksBeforeReset: Int = 3 // ~150ms of grace for brief mic dropouts/vibrato
     private var successSoundID: SystemSoundID = 1057
     private var hasRecordedTodaySession = false
+    private let noteAnnouncer = NoteAnnouncer()
+    @AppStorage("handsFreeModeEnabled") private var handsFreeModeEnabled: Bool = false
     
     // Teaching notes
     private var teachingNotes: [ExerciseQuestion] = []
@@ -220,8 +224,9 @@ final class ExerciseViewModel: ObservableObject {
             
             if let first = questions.first {
                 state = .quizzing(level: level, questionIndex: 0, question: first)
+                announceIfEnabled(first)
             }
-            
+
             // Start pitch monitoring
             startMonitoring()
         } catch {
@@ -264,33 +269,45 @@ final class ExerciseViewModel: ObservableObject {
     private func checkPitchMatch() {
         guard isListening,
               case .quizzing(_, _, let question) = state else { return }
-        
+
         guard detectedFrequency > 0 else {
-            isMatchingTarget = false
-            correctHoldDuration = 0
+            registerMissedTick()
             return
         }
-        
+
         let matches = NoteUtility.frequencyMatches(detectedFrequency, target: question.targetFrequency, toleranceCents: 15)
         isMatchingTarget = matches
-        
+
         if matches {
+            missedTickStreak = 0
             correctHoldDuration += 0.05
-            
+
             if correctHoldDuration >= requiredHoldDuration && !isCorrect {
                 handleCorrectAnswer()
             }
         } else {
+            registerMissedTick()
+        }
+    }
+
+    /// A brief mic dropout, vibrato wobble, or transient octave-jump correction
+    /// shouldn't wipe out an otherwise-sustained correct hold. Only reset after
+    /// a short streak of consecutive misses.
+    private func registerMissedTick() {
+        isMatchingTarget = false
+        missedTickStreak += 1
+        if missedTickStreak >= maxMissedTicksBeforeReset {
             correctHoldDuration = 0
         }
     }
     
     private func handleCorrectAnswer() {
         guard case .quizzing(let level, let qIndex, _) = state else { return }
-        
+
         isCorrect = true
         showSuccess = true
         score += 1
+        noteAnnouncer.stopRepeating()
         
         // Streak
         if !hasRecordedTodaySession {
@@ -319,19 +336,31 @@ final class ExerciseViewModel: ObservableObject {
         showSuccess = false
         isMatchingTarget = false
         correctHoldDuration = 0
-        
+        missedTickStreak = 0
+        noteAnnouncer.stopRepeating()
+
         let nextIndex = currentIndex + 1
         if nextIndex < questions.count {
             currentQuestionIndex = nextIndex
             questionNumber = nextIndex + 1
-            state = .quizzing(level: level, questionIndex: nextIndex, question: questions[nextIndex])
+            let nextQuestion = questions[nextIndex]
+            state = .quizzing(level: level, questionIndex: nextIndex, question: nextQuestion)
+            announceIfEnabled(nextQuestion)
         } else {
             finishQuiz(level: level)
         }
     }
-    
+
+    /// Speaks the target string + note aloud when Hands-Free Mode is enabled,
+    /// so the player doesn't need to look at the screen to know what to play.
+    private func announceIfEnabled(_ question: ExerciseQuestion) {
+        guard handsFreeModeEnabled else { return }
+        noteAnnouncer.announce(stringNumber: question.instrumentString.stringNumber, noteName: question.noteName)
+    }
+
     private func finishQuiz(level: FretboardLevel) {
         stopMonitoring()
+        noteAnnouncer.stopRepeating()
         audioManager.stop()
         isListening = false
         
@@ -360,6 +389,7 @@ final class ExerciseViewModel: ObservableObject {
     
     func reset() {
         stopMonitoring()
+        noteAnnouncer.stopRepeating()
         if isListening {
             audioManager.stop()
             isListening = false
@@ -374,6 +404,7 @@ final class ExerciseViewModel: ObservableObject {
         showSuccess = false
         isMatchingTarget = false
         correctHoldDuration = 0
+        missedTickStreak = 0
         questions = []
         teachingNotes = []
         errorMessage = nil
