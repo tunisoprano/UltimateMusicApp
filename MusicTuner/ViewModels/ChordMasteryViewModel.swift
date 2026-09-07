@@ -238,8 +238,8 @@ final class ChordMasteryViewModel: ObservableObject {
         var questions: [QuizQuestion] = []
         let levelChords = level.chords
         
-        // Each chord appears three times in the quiz
-        for _ in 0..<3 {
+        // Each chord appears twice in the quiz
+        for _ in 0..<2 {
             for chord in levelChords {
                 // Generate wrong options from other level chords + some random chords
                 var options = [chord]
