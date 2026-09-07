@@ -240,18 +240,27 @@ final class ExerciseViewModel: ObservableObject {
     
     private func generateQuizQuestions(for level: FretboardLevel) -> [ExerciseQuestion] {
         let strings = selectedInstrument.strings
-        var qs: [ExerciseQuestion] = []
-        
-        // Generate random questions covering the fret range
-        let questionCount = max(8, strings.count * 2)
-        
-        for _ in 0..<questionCount {
-            guard let randomString = strings.randomElement() else { continue }
-            let randomFret = Int.random(in: level.fretRange)
-            qs.append(ExerciseQuestion(instrumentString: randomString, fret: randomFret))
+        guard !strings.isEmpty else { return [] }
+
+        // Every distinct string×fret combo for this level, shuffled. Drawing
+        // full shuffled laps (instead of independent random picks) guarantees
+        // every combo appears once before any repeats — the old fully-random
+        // draw could (and on Level 1's single fret, always did) repeat the
+        // same question back-to-back.
+        var allCombos: [ExerciseQuestion] = []
+        for string in strings {
+            for fret in level.fretRange {
+                allCombos.append(ExerciseQuestion(instrumentString: string, fret: fret))
+            }
         }
-        
-        return qs.shuffled()
+        guard !allCombos.isEmpty else { return [] }
+
+        let questionCount = strings.count * 3
+        var qs: [ExerciseQuestion] = []
+        while qs.count < questionCount {
+            qs.append(contentsOf: allCombos.shuffled())
+        }
+        return Array(qs.prefix(questionCount))
     }
     
     // MARK: - Monitoring

@@ -65,7 +65,9 @@ class ChordMakerViewModel: ObservableObject {
             "m7b5": [0, 3, 6, 10],
             "dim7": [0, 3, 6, 9],
             "add9": [0, 4, 7, 2],
-            "m(add9)": [0, 3, 7, 2]
+            "m(add9)": [0, 3, 7, 2],
+            "6": [0, 4, 7, 9],
+            "m6": [0, 3, 7, 9]
         ]
         
         let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -162,49 +164,38 @@ class ChordMakerViewModel: ObservableObject {
     }
     
 
+    /// Nearest-neighbor "did you mean" suggestions: database chords that
+    /// differ from the current shape on only 1-2 strings (wrong fret, wrong
+    /// mute state, or a missing press), ranked closest-first.
     var suggestedChords: [ChordDefinition] {
-        var suggestions: [ChordDefinition] = []
-        
-        for chord in ChordDatabase.allChords {
-            var isPotentialMatch = true
-            var forgotToMuteSomething = false
-            var hasPressedFretMatch = false
-            
+        guard state.strings.contains(where: { $0 != nil && $0! > 0 }) else { return [] }
+
+        func distance(to chord: ChordDefinition) -> Int? {
+            guard chord.fretPositions.count == 6 else { return nil }
+            var diff = 0
             for i in 0..<6 {
-                let dbFret = chord.fretPositions[i]
-                let userFret = state.strings[i]
-                
-                if let dbFret = dbFret {
-                    if dbFret != userFret {
-                        isPotentialMatch = false
-                        break
-                    }
-                    if dbFret > 0 { hasPressedFretMatch = true }
-                } else {
-                    if userFret == 0 {
-                        forgotToMuteSomething = true
-                    } else if userFret != nil {
-                        isPotentialMatch = false
-                        break
-                    }
+                switch (chord.fretPositions[i], state.strings[i]) {
+                case (nil, nil):
+                    break
+                case (.some(let dbFret), .some(let userFret)) where dbFret == userFret:
+                    break
+                default:
+                    diff += 1
                 }
             }
-            
-            if isPotentialMatch && forgotToMuteSomething && hasPressedFretMatch {
-                suggestions.append(chord)
-            }
+            return diff
         }
-        
-        // Remove duplicates if any (by name)
-        var uniqueSuggestions: [ChordDefinition] = []
+
         var seenNames = Set<String>()
-        for s in suggestions {
-            if !seenNames.contains(s.displayName) {
-                seenNames.insert(s.displayName)
-                uniqueSuggestions.append(s)
+        return ChordDatabase.allChords
+            .compactMap { chord -> (ChordDefinition, Int)? in
+                guard let d = distance(to: chord), d > 0, d <= 2 else { return nil }
+                return (chord, d)
             }
-        }
-        return uniqueSuggestions
+            .sorted { $0.1 < $1.1 }
+            .compactMap { seenNames.insert($0.0.displayName).inserted ? $0.0 : nil }
+            .prefix(5)
+            .map { $0 }
     }
     
     func applySuggestion(_ chord: ChordDefinition) {
