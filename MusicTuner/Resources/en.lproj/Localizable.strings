@@ -289,3 +289,14 @@
 "barre" = "Barre";
 "did_you_mean" = "💡 Did you mean:";
 "custom_chord" = "Custom Chord (%@)";
+
+// Tempo Training
+"tempo_training" = "Tempo Training";
+"tempo_training_subtitle" = "Guess the tempo by ear";
+"tempo_training_select_signature" = "Choose Time Signature";
+"tempo_training_select_signature_desc" = "Pick the time signature for the tempos you'll hear";
+"mixed" = "Mixed";
+"tempo_training_prompt" = "Listen and guess the tempo";
+"your_guess" = "Your Guess";
+"actual_tempo_format" = "Actual tempo: %d BPM";
+"tempo_incorrect_feedback" = "Not quite";

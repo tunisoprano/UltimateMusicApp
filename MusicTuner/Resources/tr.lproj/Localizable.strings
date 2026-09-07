@@ -289,3 +289,14 @@
 "barre" = "Barre";
 "did_you_mean" = "💡 Bunu mu demek istedin:";
 "custom_chord" = "Özel Akor (%@)";
+
+// Tempo Eğitimi
+"tempo_training" = "Tempo Eğitimi";
+"tempo_training_subtitle" = "Tempoyu kulağınla tahmin et";
+"tempo_training_select_signature" = "Ölçü Tipini Seç";
+"tempo_training_select_signature_desc" = "Duyacağın tempoların ölçü tipini seç";
+"mixed" = "Karışık";
+"tempo_training_prompt" = "Dinle ve tempoyu tahmin et";
+"your_guess" = "Tahminin";
+"actual_tempo_format" = "Gerçek tempo: %d BPM";
+"tempo_incorrect_feedback" = "Tam olmadı";

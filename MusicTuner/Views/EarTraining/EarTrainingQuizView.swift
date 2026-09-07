@@ -92,8 +92,6 @@ struct EarTrainingQuizView: View {
                 answerGrid(options: question.options, correctChord: chord)
             }
 
-            checkButtonSection
-
             Spacer().frame(height: 12)
         }
         .padding(.top, 8)
@@ -142,6 +140,7 @@ struct EarTrainingQuizView: View {
                 ) {
                     guard viewModel.lastAnswerCorrect == nil else { return }
                     selectedAnswer = option
+                    viewModel.submitAnswer(option)
                 }
             }
         }
@@ -154,20 +153,6 @@ struct EarTrainingQuizView: View {
         if isCorrectAnswer { return .correct }
         if selectedAnswer == option { return .incorrect }
         return .none
-    }
-
-    // MARK: - Check Button
-
-    private var checkButtonSection: some View {
-        QuizCheckButton(
-            title: L("check"),
-            isEnabled: selectedAnswer != nil && viewModel.lastAnswerCorrect == nil
-        ) {
-            if let selected = selectedAnswer {
-                viewModel.submitAnswer(selected)
-            }
-        }
-        .padding(.horizontal, 20)
     }
 
     // MARK: - Results View

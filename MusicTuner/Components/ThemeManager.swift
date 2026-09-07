@@ -11,34 +11,20 @@ import SwiftUI
 // MARK: - App Theme
 
 enum AppTheme: String, CaseIterable, Identifiable {
-    case system = "System"
-    case light = "Light"
     case dark = "Dark"
-    
+
     var id: String { rawValue }
-    
+
     var displayName: String {
-        switch self {
-        case .system: return L("theme_system")
-        case .light: return L("theme_light")
-        case .dark: return L("theme_dark")
-        }
+        L("theme_dark")
     }
-    
+
     var icon: String {
-        switch self {
-        case .system: return "circle.lefthalf.filled"
-        case .light: return "sun.max.fill"
-        case .dark: return "moon.fill"
-        }
+        "moon.fill"
     }
-    
+
     var colorScheme: ColorScheme? {
-        switch self {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
-        }
+        .dark
     }
 }
 
@@ -50,15 +36,7 @@ final class ThemeManager: ObservableObject {
     
     static let shared = ThemeManager()
     
-    @AppStorage("selectedTheme") private var selectedThemeRaw: String = AppTheme.system.rawValue
-    
-    var currentTheme: AppTheme {
-        get { AppTheme(rawValue: selectedThemeRaw) ?? .system }
-        set { 
-            selectedThemeRaw = newValue.rawValue 
-            objectWillChange.send()
-        }
-    }
+    var currentTheme: AppTheme { .dark }
     
     var colorScheme: ColorScheme? {
         currentTheme.colorScheme

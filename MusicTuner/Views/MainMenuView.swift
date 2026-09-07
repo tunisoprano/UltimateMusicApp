@@ -29,6 +29,15 @@ struct MainMenuView: View {
             theme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                HStack {
+                    Text("2Jam")
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(hex: "F2FE08")) // Acid Yellow
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+
                 ScrollView {
                     VStack(spacing: 28) {
                         dailyExercisesSection
@@ -51,14 +60,6 @@ struct MainMenuView: View {
             PaywallView()
         }
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                HStack {
-                    Text("2Jam")
-                        .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(hex: "F2FE08")) // Acid Yellow
-                    Spacer()
-                }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 StreakBadgeView()
             }
@@ -115,6 +116,19 @@ struct MainMenuView: View {
                         level: LocalProgressService.shared.getUnlockedLevel(),
                         totalLevels: ChordCurriculum.totalLevels,
                         tint: Gamify.violet,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
+
+                NavigationLink(destination: TempoTrainingSignatureSelectView()) {
+                    SimpleExerciseCard(
+                        icon: "metronome.fill",
+                        title: L("tempo_training"),
+                        subtitle: L("tempo_training_subtitle"),
+                        tint: Gamify.amber,
                         theme: theme
                     )
                 }
@@ -349,6 +363,55 @@ struct GamifiedExerciseCard: View {
                     }
                 }
                 .frame(height: 8)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(theme.inactive)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(theme.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(tint.opacity(0.25), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Simple Exercise Card (no level/progress — for single-round exercises)
+
+struct SimpleExerciseCard: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let tint: Color
+    let theme: ThemeManager
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(tint.opacity(0.15))
+                    .frame(width: 52, height: 52)
+
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(tint)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.textPrimary)
+
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(theme.textSecondary)
             }
 
             Spacer(minLength: 0)

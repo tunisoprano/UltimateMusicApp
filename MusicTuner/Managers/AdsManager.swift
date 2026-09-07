@@ -28,7 +28,9 @@ final class AdsManager: NSObject, ObservableObject {
     // MARK: - Interstitial
     private var interstitialAd: InterstitialAd?
     private var pageTransitionCount = 0
-    private let transitionsBeforeAd = 4
+    private let transitionsBeforeAd = 3
+    private var lastInterstitialPresentedAt: Date?
+    private let minimumIntervalBetweenInterstitials: TimeInterval = 60
     
     // MARK: - Premium Check
     var isPremium: Bool {
@@ -75,7 +77,7 @@ final class AdsManager: NSObject, ObservableObject {
     func loadInterstitial() {
         guard !isPremium, isAdMobReady else { return }
         
-        InterstitialAd.load(with: interstitialAdUnitID) { [weak self] ad, error in
+        InterstitialAd.load(with: interstitialAdUnitID, request: Request()) { [weak self] ad, error in
             DispatchQueue.main.async {
                 if let error = error {
                     print("⚠️ Interstitial failed: \(error.localizedDescription)")
@@ -92,25 +94,38 @@ final class AdsManager: NSObject, ObservableObject {
     
     func recordPageTransition() {
         guard !isPremium else { return }
-        
+
         pageTransitionCount += 1
-        
-        if pageTransitionCount >= transitionsBeforeAd {
-            showInterstitial()
+        guard pageTransitionCount >= transitionsBeforeAd else { return }
+
+        // Only reset the counter once an ad actually presents. If it's not
+        // ready yet (or we're still in the cooldown window), keep counting
+        // so we retry on the very next transition instead of waiting for
+        // another full cycle.
+        if showInterstitial() {
             pageTransitionCount = 0
         }
     }
-    
-    func showInterstitial() {
+
+    @discardableResult
+    func showInterstitial() -> Bool {
         guard !isPremium, let ad = interstitialAd else {
             // Nothing ready to show yet — make sure one is on the way.
             if isAdMobReady { loadInterstitial() }
-            return
+            return false
+        }
+
+        // Client-side cooldown so back-to-back triggers (e.g. counter-based
+        // navigation plus a direct post-quiz call) can't spam the user;
+        // AdMob's own 5-minute frequency cap is the hard backstop.
+        if let lastShown = lastInterstitialPresentedAt,
+           Date().timeIntervalSince(lastShown) < minimumIntervalBetweenInterstitials {
+            return false
         }
 
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootVC = windowScene.windows.first?.rootViewController else {
-            return
+            return false
         }
 
         // An interstitial can only be presented once — drop the reference
@@ -118,7 +133,9 @@ final class AdsManager: NSObject, ObservableObject {
         // try to re-present the already-used ad (which silently no-ops).
         interstitialAd = nil
         isInterstitialReady = false
+        lastInterstitialPresentedAt = Date()
         ad.present(from: rootVC)
+        return true
     }
 
     func getBannerAdUnitID() -> String {
