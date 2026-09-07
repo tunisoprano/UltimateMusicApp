@@ -86,6 +86,8 @@ final class ExerciseViewModel: ObservableObject {
     private var missedTickStreak: Int = 0
     private let maxMissedTicksBeforeReset: Int = 3 // ~150ms of grace for brief mic dropouts/vibrato
     private var hasRecordedTodaySession = false
+    private var sessionStartedAt: Date = Date()
+    private var sessionAttempts: [(label: String, isCorrect: Bool)] = []
     private let noteAnnouncer = NoteAnnouncer()
     @AppStorage("handsFreeModeEnabled") private var handsFreeModeEnabled: Bool = false
     
@@ -214,6 +216,8 @@ final class ExerciseViewModel: ObservableObject {
         showSuccess = false
         hasRecordedTodaySession = false
         errorMessage = nil
+        sessionStartedAt = Date()
+        sessionAttempts = []
         
         // Start audio
         do {
@@ -301,12 +305,13 @@ final class ExerciseViewModel: ObservableObject {
     }
     
     private func handleCorrectAnswer() {
-        guard case .quizzing(let level, let qIndex, _) = state else { return }
+        guard case .quizzing(let level, let qIndex, let question) = state else { return }
 
         isCorrect = true
         showSuccess = true
         score += 1
         noteAnnouncer.stopRepeating()
+        sessionAttempts.append((label: question.promptText, isCorrect: true))
         
         // Streak
         if !hasRecordedTodaySession {
@@ -326,7 +331,8 @@ final class ExerciseViewModel: ObservableObject {
     }
     
     func skipQuestion() {
-        guard case .quizzing(let level, let qIndex, _) = state else { return }
+        guard case .quizzing(let level, let qIndex, let question) = state else { return }
+        sessionAttempts.append((label: question.promptText, isCorrect: false))
         moveToNextQuestion(level: level, currentIndex: qIndex)
     }
     
@@ -382,8 +388,16 @@ final class ExerciseViewModel: ObservableObject {
         
         AdsManager.shared.showInterstitial()
         StreakManager.shared.markDailyActivity()
+
+        PracticeInsightsManager.shared.recordSession(
+            module: .fretboard,
+            score: score,
+            total: totalQuestions,
+            durationSeconds: Date().timeIntervalSince(sessionStartedAt),
+            attempts: sessionAttempts
+        )
     }
-    
+
     // MARK: - Reset
     
     func reset() {

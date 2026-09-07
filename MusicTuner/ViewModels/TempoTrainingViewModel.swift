@@ -55,10 +55,18 @@ final class TempoTrainingViewModel: ObservableObject {
     private var signatureChoice: TempoSignatureChoice = .fourFour
     private var advanceWorkItem: DispatchWorkItem?
 
+    // Practice Insights tracking
+    private var sessionStartedAt: Date = Date()
+    private var sessionAttempts: [(label: String, isCorrect: Bool)] = []
+    private var hasRecordedSession = false
+
     func begin(with choice: TempoSignatureChoice) {
         signatureChoice = choice
         correctCount = 0
         totalCount = 0
+        sessionStartedAt = Date()
+        sessionAttempts = []
+        hasRecordedSession = false
         startNewRound()
     }
 
@@ -83,6 +91,7 @@ final class TempoTrainingViewModel: ObservableObject {
         lastResult = RoundResult(isCorrect: isCorrect, actualBPM: targetBPM, guessedBPM: guessed)
         totalCount += 1
         if isCorrect { correctCount += 1 }
+        sessionAttempts.append((label: "\(targetBPM) BPM", isCorrect: isCorrect))
 
         let workItem = DispatchWorkItem { [weak self] in
             self?.startNewRound()
@@ -98,5 +107,21 @@ final class TempoTrainingViewModel: ObservableObject {
     func cleanup() {
         advanceWorkItem?.cancel()
         engine.cleanup()
+
+        // Only record a session if the player actually played a round — opening
+        // the screen and immediately backing out shouldn't count. Guarded
+        // against double-recording since both the close button and
+        // .onDisappear call cleanup().
+        guard totalCount > 0, !hasRecordedSession else { return }
+        hasRecordedSession = true
+
+        StreakManager.shared.markDailyActivity()
+        PracticeInsightsManager.shared.recordSession(
+            module: .tempoTraining,
+            score: correctCount,
+            total: totalCount,
+            durationSeconds: Date().timeIntervalSince(sessionStartedAt),
+            attempts: sessionAttempts
+        )
     }
 }

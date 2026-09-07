@@ -73,6 +73,10 @@ final class ChordMasteryViewModel: ObservableObject {
     // Quiz tracking
     private var questions: [QuizQuestion] = []
     private var currentQuestionIndex: Int = 0
+
+    // Practice Insights tracking
+    private var sessionStartedAt: Date = Date()
+    private var sessionAttempts: [(label: String, isCorrect: Bool)] = []
     
     // MARK: - Initialization
     
@@ -157,10 +161,11 @@ final class ChordMasteryViewModel: ObservableObject {
     func submitAnswer(_ selectedChord: ChordDefinition) {
         guard case .quizzing(let level, let qIndex, let correctChord) = state else { return }
         
-        let isCorrect = selectedChord.rootNote == correctChord.rootNote && 
+        let isCorrect = selectedChord.rootNote == correctChord.rootNote &&
                         selectedChord.type == correctChord.type
-        
+
         lastAnswerCorrect = isCorrect
+        sessionAttempts.append((label: correctChord.displayName, isCorrect: isCorrect))
         
         if isCorrect {
             score += 1
@@ -212,6 +217,9 @@ final class ChordMasteryViewModel: ObservableObject {
     // MARK: - Private Methods
     
     private func startQuiz(for level: LevelDefinition) {
+        sessionStartedAt = Date()
+        sessionAttempts = []
+
         // Generate quiz questions
         questions = generateQuestions(for: level)
         totalQuestions = questions.count
@@ -305,9 +313,17 @@ final class ChordMasteryViewModel: ObservableObject {
         
         // Show interstitial ad after quiz completion
         AdsManager.shared.showInterstitial()
-        
+
         // Mark daily streak activity
         StreakManager.shared.markDailyActivity()
+
+        PracticeInsightsManager.shared.recordSession(
+            module: .chordMastery,
+            score: score,
+            total: totalQuestions,
+            durationSeconds: Date().timeIntervalSince(sessionStartedAt),
+            attempts: sessionAttempts
+        )
     }
     
     // MARK: - Computed Properties

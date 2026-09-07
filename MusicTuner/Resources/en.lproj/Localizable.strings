@@ -304,3 +304,16 @@
 "your_guess" = "Your Guess";
 "actual_tempo_format" = "Actual tempo: %d BPM";
 "tempo_incorrect_feedback" = "Not quite";
+
+// Practice Insights
+"practice_insights" = "Practice Insights";
+"day_streak" = "Day Streak";
+"this_week" = "This Week";
+"practice_this_week" = "Practice This Week";
+"no_practice_yet" = "No practice logged yet — finish a quiz to see it here.";
+"needs_practice" = "Needs Practice";
+"missed_count" = "missed %d×";
+"by_module" = "By Module";
+"sessions_this_week" = "%d session(s) this week";
+"no_sessions_this_week" = "No sessions this week";
+"minutes_short" = "%d min";

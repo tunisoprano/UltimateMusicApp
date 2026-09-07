@@ -304,3 +304,16 @@
 "your_guess" = "Tahminin";
 "actual_tempo_format" = "Gerçek tempo: %d BPM";
 "tempo_incorrect_feedback" = "Tam olmadı";
+
+// Pratik İstatistikleri
+"practice_insights" = "Pratik İstatistikleri";
+"day_streak" = "Günlük Seri";
+"this_week" = "Bu Hafta";
+"practice_this_week" = "Bu Haftaki Pratik";
+"no_practice_yet" = "Henüz pratik kaydı yok — bir quiz bitirince burada görünecek.";
+"needs_practice" = "Pratik Gerekiyor";
+"missed_count" = "%d kez kaçırıldı";
+"by_module" = "Modüle Göre";
+"sessions_this_week" = "Bu hafta %d oturum";
+"no_sessions_this_week" = "Bu hafta oturum yok";
+"minutes_short" = "%d dk";

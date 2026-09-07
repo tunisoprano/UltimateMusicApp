@@ -198,11 +198,23 @@ struct MainMenuView: View {
                         adsManager.recordPageTransition()
                     })
                 }
+
+                NavigationLink(destination: PracticeInsightsView()) {
+                    ToolTile(
+                        icon: "chart.bar.fill",
+                        title: L("practice_insights"),
+                        tint: Gamify.acid,
+                        theme: theme
+                    )
+                }
+                .simultaneousGesture(TapGesture().onEnded { _ in
+                    adsManager.recordPageTransition()
+                })
             }
             .padding(.horizontal, 20)
         }
     }
-    
+
     // MARK: - Premium Section
 
     private var premiumSection: some View {
