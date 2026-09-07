@@ -16,6 +16,7 @@ struct EarTrainingLevelSelectView: View {
     private var premiumThreshold: Int { EarTrainingCurriculum.premiumThreshold }
 
     @State private var showPaywall = false
+    @AppStorage("showLessonPreview") private var showLessonPreview: Bool = true
 
     var body: some View {
         ZStack {
@@ -110,7 +111,13 @@ struct EarTrainingLevelSelectView: View {
 
         Group {
             if canAccess {
-                NavigationLink(destination: EarTrainingLearningView(level: level)) {
+                NavigationLink {
+                    if showLessonPreview {
+                        EarTrainingLearningView(level: level)
+                    } else {
+                        EarTrainingQuizView(level: level)
+                    }
+                } label: {
                     LearningPathNodeView(state: state, icon: icon, startLessonLabel: L("start_lesson"))
                 }
             } else if isPremiumLocked {

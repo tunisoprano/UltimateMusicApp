@@ -267,6 +267,10 @@
 "hands_free_mode" = "Bakmadan Çal Modu";
 "hands_free_mode_desc" = "Notayı ekrandan okumak yerine sesli duy";
 
+// Ders Önizlemesi
+"show_lesson_preview" = "Ders Önizlemesini Göster";
+"show_lesson_preview_desc" = "Quiz başlamadan önce akorları veya notaları göster";
+
 // Ana Sayfa — Oyunlaştırılmış Tasarım
 "daily_exercises" = "Eğitim";
 "level_n" = "Seviye %d";

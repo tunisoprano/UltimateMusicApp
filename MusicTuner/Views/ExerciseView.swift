@@ -18,6 +18,7 @@ struct ExerciseView: View {
     private var premiumThreshold: Int { FretboardCurriculum.premiumThreshold }
 
     @State private var showPaywall = false
+    @AppStorage("showLessonPreview") private var showLessonPreview: Bool = true
 
     var body: some View {
         ZStack {
@@ -140,7 +141,13 @@ struct ExerciseView: View {
 
         Group {
             if canAccess {
-                NavigationLink(destination: FretboardLearningView(level: level, instrument: viewModel.selectedInstrument)) {
+                NavigationLink {
+                    if showLessonPreview {
+                        FretboardLearningView(level: level, instrument: viewModel.selectedInstrument)
+                    } else {
+                        FretboardQuizView(level: level, instrument: viewModel.selectedInstrument)
+                    }
+                } label: {
                     LearningPathNodeView(state: state, icon: icon, startLessonLabel: L("start_lesson"))
                 }
             } else if isPremiumLocked {

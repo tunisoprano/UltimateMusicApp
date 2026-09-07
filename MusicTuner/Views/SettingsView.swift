@@ -50,6 +50,7 @@ enum UserPreferences {
     @AppStorage("successSoundEnabled") static var successSoundEnabled: Bool = true
     @AppStorage("hapticFeedbackEnabled") static var hapticFeedbackEnabled: Bool = true
     @AppStorage("handsFreeModeEnabled") static var handsFreeModeEnabled: Bool = false
+    @AppStorage("showLessonPreview") static var showLessonPreview: Bool = true
 }
 
 /// Settings screen with theme picker, note naming, sound settings, and restore purchases
@@ -60,6 +61,7 @@ struct SettingsView: View {
     @AppStorage("successSoundEnabled") private var successSoundEnabled: Bool = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled: Bool = true
     @AppStorage("handsFreeModeEnabled") private var handsFreeModeEnabled: Bool = false
+    @AppStorage("showLessonPreview") private var showLessonPreview: Bool = true
 
     // Local state for immediate preview updates
     @State private var localNamingStyle: NoteNamingStyle = .english
@@ -197,6 +199,28 @@ struct SettingsView: View {
                                             .font(.system(size: 15, weight: .medium, design: .rounded))
                                             .foregroundStyle(STheme.textPrimary)
                                         Text(L("hands_free_mode_desc"))
+                                            .font(.system(size: 12, design: .rounded))
+                                            .foregroundStyle(STheme.textSecondary)
+                                    }
+                                }
+                            }
+                            .tint(STheme.acid)
+
+                            Divider()
+                                .background(STheme.border)
+
+                            Toggle(isOn: $showLessonPreview) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "text.book.closed.fill")
+                                        .font(.system(size: 18))
+                                        .foregroundStyle(STheme.acid)
+                                        .frame(width: 28)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(L("show_lesson_preview"))
+                                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                                            .foregroundStyle(STheme.textPrimary)
+                                        Text(L("show_lesson_preview_desc"))
                                             .font(.system(size: 12, design: .rounded))
                                             .foregroundStyle(STheme.textSecondary)
                                     }

@@ -80,7 +80,7 @@ struct FretboardQuizView: View {
         return VStack(spacing: 20) {
             QuizTopBar(progress: progress) {
                 viewModel.stopExercise()
-                dismiss()
+                AppRouter.shared.goHome()
             }
 
             Spacer()

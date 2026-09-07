@@ -64,6 +64,19 @@ struct TempoTrainingView: View {
         }
         .navigationTitle(L("tempo_training"))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    viewModel.cleanup()
+                    AppRouter.shared.goHome()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(hex: "929277"))
+                }
+            }
+        }
         .environment(\.colorScheme, .dark)
         .toolbarBackground(Color(hex: "131313"), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)

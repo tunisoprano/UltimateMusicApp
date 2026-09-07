@@ -11,6 +11,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ObservedObject var theme = ThemeManager.shared
+    @ObservedObject private var router = AppRouter.shared
 
     // Deep link navigation
     @State private var navigateToTuner = false
@@ -52,6 +53,9 @@ struct ContentView: View {
                     MetronomeView()
                 }
         }
+        // Changing this id tears down and rebuilds the whole stack, popping
+        // back to MainMenuView in one shot — see AppRouter.goHome().
+        .id(router.homeResetToken)
     }
     
     // MARK: - iPad Layout

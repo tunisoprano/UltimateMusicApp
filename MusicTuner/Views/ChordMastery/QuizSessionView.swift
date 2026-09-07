@@ -19,6 +19,7 @@ struct QuizSessionView: View {
     @State private var showResults: Bool = false
     @State private var navigateToNextLevel: Bool = false
     @State private var scoreAnimated: Bool = false
+    @AppStorage("showLessonPreview") private var showLessonPreview: Bool = true
 
     var body: some View {
         ZStack {
@@ -43,7 +44,11 @@ struct QuizSessionView: View {
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $navigateToNextLevel) {
             if let nextLevel = ChordCurriculum.nextLevel(after: level) {
-                LearningSessionView(level: nextLevel)
+                if showLessonPreview {
+                    LearningSessionView(level: nextLevel)
+                } else {
+                    QuizSessionView(level: nextLevel)
+                }
             }
         }
         .onAppear {
@@ -78,7 +83,7 @@ struct QuizSessionView: View {
         let progress = viewModel.totalQuestions > 0 ? CGFloat(viewModel.questionNumber - 1) / CGFloat(viewModel.totalQuestions) : 0
 
         return VStack(spacing: 20) {
-            QuizTopBar(progress: progress) { dismiss() }
+            QuizTopBar(progress: progress) { AppRouter.shared.goHome() }
 
             Text(L("what_chord_is_this"))
                 .font(.system(size: 16, weight: .medium, design: .rounded))

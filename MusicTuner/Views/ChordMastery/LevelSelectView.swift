@@ -16,6 +16,7 @@ struct LevelSelectView: View {
     private var premiumThreshold: Int { ChordCurriculum.premiumThreshold }
 
     @State private var showPaywall = false
+    @AppStorage("showLessonPreview") private var showLessonPreview: Bool = true
 
     var body: some View {
         ZStack {
@@ -110,7 +111,13 @@ struct LevelSelectView: View {
 
         Group {
             if canAccess {
-                NavigationLink(destination: LearningSessionView(level: level)) {
+                NavigationLink {
+                    if showLessonPreview {
+                        LearningSessionView(level: level)
+                    } else {
+                        QuizSessionView(level: level)
+                    }
+                } label: {
                     LearningPathNodeView(state: state, icon: icon, startLessonLabel: L("start_lesson"))
                 }
             } else if isPremiumLocked {

@@ -267,6 +267,10 @@
 "hands_free_mode" = "Hands-Free Mode";
 "hands_free_mode_desc" = "Hear the note instead of reading it on screen";
 
+// Lesson Preview
+"show_lesson_preview" = "Show Lesson Preview";
+"show_lesson_preview_desc" = "See the chords or notes before each quiz starts";
+
 // Home — Gamified Redesign
 "daily_exercises" = "Training";
 "level_n" = "Level %d";
