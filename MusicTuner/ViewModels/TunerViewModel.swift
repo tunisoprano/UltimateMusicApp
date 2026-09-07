@@ -323,7 +323,7 @@ final class TunerViewModel: ObservableObject {
         
         // 1. Play success sound if enabled
         if UserDefaults.standard.object(forKey: "successSoundEnabled") as? Bool ?? true {
-            AudioServicesPlaySystemSound(1057)
+            audioManager.playFeedbackChime()
         }
         
         // 2. Success haptic if enabled

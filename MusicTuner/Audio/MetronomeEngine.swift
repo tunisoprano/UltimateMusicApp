@@ -65,14 +65,30 @@ final class MetronomeEngine: ObservableObject {
     
     init() {
         setupAudioPlayers()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleConfigurationChange),
+            name: .AVAudioEngineConfigurationChange, object: nil
+        )
     }
-    
+
     deinit {
+        NotificationCenter.default.removeObserver(self)
         cleanup()
     }
-    
+
+    /// The engine's graph/format changed under us (route change, interruption
+    /// recovery). The pre-rendered click buffers target the old format, so
+    /// rebuild everything rather than risk silent or mismatched playback.
+    @objc private func handleConfigurationChange(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.audioEngine?.stop()
+            self.setupAudioPlayers()
+        }
+    }
+
     // MARK: - Audio Setup
-    
+
     private func setupAudioPlayers() {
         // Configure audio session for playback (follows the system output route)
         do {
@@ -227,6 +243,11 @@ final class MetronomeEngine: ObservableObject {
     }
     
     private func playClick(_ buffer: AVAudioPCMBuffer?) {
+        // Another feature (tuner/fretboard mic) may have left the shared
+        // session in .playAndRecord + .measurement, which plays clicks back
+        // very quietly. Re-assert playback before every tick.
+        ensurePlaybackSession()
+
         guard let buffer, let player = clickPlayer, let engine = audioEngine else {
             // Last-resort fallback (no engine): system tick
             AudioServicesPlaySystemSound(1103)
@@ -238,6 +259,19 @@ final class MetronomeEngine: ObservableObject {
             player.play()
         }
         player.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
+    }
+
+    /// Re-assert the playback session if another feature (tuner/fretboard
+    /// mic) left the shared session in .playAndRecord + .measurement.
+    private func ensurePlaybackSession() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.category != .playback else { return }
+        do {
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            print("⚠️ Metronome: could not restore playback session: \(error)")
+        }
     }
     
     // MARK: - BPM Control

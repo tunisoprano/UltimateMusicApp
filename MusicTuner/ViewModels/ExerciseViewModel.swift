@@ -85,7 +85,6 @@ final class ExerciseViewModel: ObservableObject {
     private let requiredHoldDuration: TimeInterval = 0.5
     private var missedTickStreak: Int = 0
     private let maxMissedTicksBeforeReset: Int = 3 // ~150ms of grace for brief mic dropouts/vibrato
-    private var successSoundID: SystemSoundID = 1057
     private var hasRecordedTodaySession = false
     private let noteAnnouncer = NoteAnnouncer()
     @AppStorage("handsFreeModeEnabled") private var handsFreeModeEnabled: Bool = false
@@ -316,7 +315,7 @@ final class ExerciseViewModel: ObservableObject {
         }
         
         // Sound + haptic
-        AudioServicesPlaySystemSound(successSoundID)
+        audioManager.playFeedbackChime()
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
         

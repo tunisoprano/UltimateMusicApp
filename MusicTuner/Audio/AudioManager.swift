@@ -42,6 +42,14 @@ final class AudioManager: ObservableObject {
     private let pitchDetector = PitchDetector()
     private let bufferSize: UInt32 = 4096
     private var sampleRate: Double = 44100.0
+
+    // MARK: - Feedback Chime
+    // Played through this engine (not AudioServicesPlaySystemSound) because
+    // .measurement mode disables the system loudness/limiter processing that
+    // system sounds rely on, which made them play back very quietly during
+    // quizzes. Synthesizing our own buffer controls loudness explicitly.
+    private var feedbackPlayer: AVAudioPlayerNode?
+    private var feedbackBuffer: AVAudioPCMBuffer?
     
     // MARK: - Configuration
     /// Minimum frequency to detect (filters out noise)
@@ -177,6 +185,13 @@ final class AudioManager: ObservableObject {
         let inputNode = engine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         sampleRate = format.sampleRate
+
+        // Wire up the feedback chime player on this same engine/session
+        let feedback = AVAudioPlayerNode()
+        engine.attach(feedback)
+        engine.connect(feedback, to: engine.mainMixerNode, format: format)
+        feedbackPlayer = feedback
+        feedbackBuffer = Self.makeChimeBuffer(format: format)
         
         // Informational only: the tap delivers buffers in the INPUT NODE's
         // format, so that is the source of truth for pitch math. The session
@@ -207,12 +222,15 @@ final class AudioManager: ObservableObject {
     @MainActor
     func stop() {
         audioEngine?.inputNode.removeTap(onBus: 0)
+        feedbackPlayer?.stop()
         audioEngine?.stop()
         audioEngine = nil
-        
+        feedbackPlayer = nil
+        feedbackBuffer = nil
+
         isRunning = false
         isAboveNoiseGate = false
-        
+
         // Reset values
         detectedFrequency = 0.0
         detectedNote = nil
@@ -220,8 +238,60 @@ final class AudioManager: ObservableObject {
         amplitude = 0.0
         debugRMS = 0.0
         debugRawPitch = 0.0
-        
+
+        // Release the .playAndRecord/.measurement session so whatever plays
+        // next (metronome, chord playback) starts from a clean session
+        // instead of inheriting this mode's disabled loudness processing.
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("⚠️ AudioManager: failed to deactivate session: \(error)")
+        }
+
         print("🛑 Audio engine stopped")
+    }
+
+    /// Plays a short success chime through the engine already running for
+    /// pitch detection. See the `feedbackPlayer` doc comment for why this
+    /// replaces `AudioServicesPlaySystemSound`.
+    func playFeedbackChime() {
+        guard let buffer = feedbackBuffer, let player = feedbackPlayer, let engine = audioEngine else {
+            AudioServicesPlaySystemSound(1057) // fallback if the engine isn't running
+            return
+        }
+        if !engine.isRunning {
+            try? engine.start()
+        }
+        player.play()
+        player.scheduleBuffer(buffer, at: nil, options: .interrupts, completionHandler: nil)
+    }
+
+    /// Synthesizes a short two-tone success chime at an explicit amplitude,
+    /// so its loudness doesn't depend on system processing that `.measurement`
+    /// mode disables.
+    private static func makeChimeBuffer(format: AVAudioFormat) -> AVAudioPCMBuffer? {
+        let sampleRate = format.sampleRate
+        let duration = 0.18
+        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return nil }
+        buffer.frameLength = frameCount
+
+        let tones: [(frequency: Double, start: Double)] = [(880, 0), (1320, 0.06)]
+        for frame in 0..<Int(frameCount) {
+            let t = Double(frame) / sampleRate
+            var sample = 0.0
+            for tone in tones where t >= tone.start {
+                let localT = t - tone.start
+                let attack = min(1.0, localT / 0.005)
+                let envelope = attack * exp(-localT * 14.0)
+                sample += sin(2.0 * .pi * tone.frequency * localT) * envelope
+            }
+            let value = Float(sample * 0.5)
+            for channel in 0..<Int(format.channelCount) {
+                buffer.floatChannelData?[channel][frame] = value
+            }
+        }
+        return buffer
     }
     
     // MARK: - Audio Processing (Background Thread)
